@@ -134,5 +134,17 @@ LOGGING = {
     },
 }
 
-# API Keys (add your own)
-BARCODE_LOOKUP_API_KEY = None  # Get from barcodelookup.com
+API_CONFIG = {
+    'openfoodfacts': {
+        'global': 'https://world.openfoodfacts.org/api/v2/product/{barcode}.json',
+        'india': 'https://in.openfoodfacts.org/api/v2/product/{barcode}.json'
+    },
+    'barcodelookup': {
+        'url': 'https://api.barcodelookup.com/v3/products',
+        'key': os.getenv('BARCODE_LOOKUP_API_KEY', '')  # Get free key at barcodelookup.com
+    },
+    'upcitemdb': {
+        'url': 'https://api.upcitemdb.com/prod/trial/lookup',
+        'key': os.getenv('UPCITEMDB_API_KEY', '')  # Get free key at upcitemdb.com
+    }
+}
