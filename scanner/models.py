@@ -190,7 +190,7 @@ class Product(models.Model):
         
         
 class ScanHistory(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey('accounts.CustomUser', on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     scanned_at = models.DateTimeField(auto_now_add=True)
 
@@ -222,7 +222,7 @@ class NutritionFact(models.Model):
 
 class Review(models.Model):
     """Product reviews"""
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='product_reviews')
+    user = models.ForeignKey('accounts.CustomUser', on_delete=models.CASCADE, related_name='product_reviews')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='product_reviews')
     rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
     review_text = models.TextField()

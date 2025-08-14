@@ -10,7 +10,7 @@ urlpatterns = [
     path('scan/manual/', views.manual_entry, name='manual_entry'),
     path('product/<str:barcode>/', views.product_detail, name='product_detail'),
     path('search/', views.search_products, name='search'),
-    path('history/', views.scan_history, name='scan_history'),
+    path('history/', views.scan_history, name='history'),
     path('submit_review/<str:barcode>/', views.submit_review, name='submit_review'),
     path('toggle_favorite/<str:barcode>/', views.toggle_favorite, name='toggle_favorite'),
 ]
