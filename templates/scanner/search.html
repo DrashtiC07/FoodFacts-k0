@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Search Products - Food Facts Scanner{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h2 class="fw-bold mb-4">
+                        <i class="bi bi-search me-2"></i>Search Products
+                    </h2>
+                    
+                    <form method="get" class="mb-4">
+                        <div class="input-group input-group-lg">
+                            <input type="text" class="form-control" name="q" value="{{ query }}" 
+                                   placeholder="Search by product name, brand, or barcode...">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-search me-1"></i>Search
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {% if query %}
+            <div class="mb-4">
+                <h4>Search Results for "{{ query }}"</h4>
+                <p class="text-muted">Found {{ products|length }} product{{ products|length|pluralize }}</p>
+            </div>
+            {% endif %}
+
+            {% if products %}
+            <div class="row g-4">
+                {% for product in products %}
+                <div class="col-md-6">
+                    <div class="card product-card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-start">
+                                <div class="product-image me-3">
+                                    {% if product.image_url %}
+                                        <img src="{{ product.image_url }}" alt="{{ product.name }}" 
+                                             class="rounded" width="60" height="60" style="object-fit: cover;">
+                                    {% else %}
+                                        <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                             style="width: 60px; height: 60px;">
+                                            <i class="bi bi-image text-muted"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h5 class="card-title mb-1">
+                                        <a href="{% url 'scanner:product_detail' product.barcode %}" 
+                                           class="text-decoration-none">
+                                            {{ product.name|truncatechars:50 }}
+                                        </a>
+                                    </h5>
+                                    <p class="text-muted small mb-2">{{ product.brand|default:"Unknown Brand" }}</p>
+                                    <small class="text-muted">Barcode: {{ product.barcode }}</small>
+                                    {% if product.ecoscore %}
+                                        <div class="mt-2">
+                                            <span class="badge bg-{{ product.ecoscore|lower }}">
+                                                Eco-Score {{ product.ecoscore }}
+                                            </span>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% elif query %}
+            <div class="text-center py-5">
+                <i class="bi bi-search display-1 text-muted mb-3"></i>
+                <h4>No products found</h4>
+                <p class="text-muted">Try searching with different keywords or check the spelling.</p>
+                <a href="{% url 'scanner:scan' %}" class="btn btn-primary">
+                    <i class="bi bi-camera me-2"></i>Scan a Product Instead
+                </a>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-search display-1 text-muted mb-3"></i>
+                <h4>Search for Products</h4>
+                <p class="text-muted">Enter a product name, brand, or barcode to search our database.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.product-card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+}
+
+.badge.bg-a { background-color: #2e7d32 !important; }
+.badge.bg-b { background-color: #66bb6a !important; }
+.badge.bg-c { background-color: #ffeb3b !important; color: #000 !important; }
+.badge.bg-d { background-color: #ff9800 !important; }
+.badge.bg-e { background-color: #f44336 !important; }
+</style>
+{% endblock %}

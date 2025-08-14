@@ -1,0 +1,311 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Food Scanner{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="display-6">
+                    <i class="bi bi-speedometer2 me-3"></i>Dashboard
+                </h1>
+                <div class="text-muted">
+                    Welcome back, <strong>{{ user.username }}</strong>!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Overview -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="avatar-circle mx-auto mb-3">
+                        {% if user.profile_picture %}
+                            <img src="{{ user.profile_picture.url }}" alt="Profile" class="rounded-circle" width="80" height="80">
+                        {% else %}
+                            <i class="bi bi-person-circle display-1 text-primary"></i>
+                        {% endif %}
+                    </div>
+                    <h5 class="card-title">{{ user.get_full_name|default:user.username }}</h5>
+                    <p class="text-muted">{{ user.email }}</p>
+                    <small class="text-muted">Member since {{ user.date_joined|date:"M Y" }}</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent">
+                    <h5 class="mb-0">
+                        <i class="bi bi-bullseye me-2"></i>Daily Nutrition Goals
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-medium">Calories</span>
+                                <span class="text-muted">{{ dietary_goals.calories_consumed }}/{{ dietary_goals.calories_target }} kcal</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-success" style="width: {{ calories_progress }}%"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-medium">Protein</span>
+                                <span class="text-muted">{{ dietary_goals.protein_consumed }}/{{ dietary_goals.protein_target }}g</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-info" style="width: {{ protein_progress }}%"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-medium">Fat</span>
+                                <span class="text-muted">{{ dietary_goals.fat_consumed }}/{{ dietary_goals.fat_target }}g</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-warning" style="width: {{ fat_progress }}%"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-medium">Carbs</span>
+                                <span class="text-muted">{{ dietary_goals.carbs_consumed }}/{{ dietary_goals.carbs_target }}g</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-primary" style="width: {{ carbs_progress }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm text-center">
+                <div class="card-body">
+                    <div class="display-6 text-primary mb-2">
+                        <i class="bi bi-upc-scan"></i>
+                    </div>
+                    <h3 class="mb-1">{{ scan_history|length }}</h3>
+                    <p class="text-muted mb-0">Products Scanned</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm text-center">
+                <div class="card-body">
+                    <div class="display-6 text-danger mb-2">
+                        <i class="bi bi-heart-fill"></i>
+                    </div>
+                    <h3 class="mb-1">{{ favorite_products|length }}</h3>
+                    <p class="text-muted mb-0">Favorite Products</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm text-center">
+                <div class="card-body">
+                    <div class="display-6 text-warning mb-2">
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                    <h3 class="mb-1">{{ user_reviews|length }}</h3>
+                    <p class="text-muted mb-0">Reviews Written</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm text-center">
+                <div class="card-body">
+                    <div class="display-6 text-success mb-2">
+                        <i class="bi bi-calendar-check"></i>
+                    </div>
+                    <h3 class="mb-1">{{ user.date_joined|timesince|truncatewords:1 }}</h3>
+                    <p class="text-muted mb-0">Days Active</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history me-2"></i>Recent Scans
+                    </h5>
+                    <a href="{% url 'scanner:scan_history' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if scan_history %}
+                        {% for scan in scan_history %}
+                        <div class="d-flex align-items-center mb-3 {% if not forloop.last %}border-bottom pb-3{% endif %}">
+                            <div class="product-image me-3">
+                                {% if scan.product.image_url %}
+                                    <img src="{{ scan.product.image_url }}" alt="{{ scan.product.name }}" class="rounded" width="50" height="50" style="object-fit: cover;">
+                                {% else %}
+                                    <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                        <i class="bi bi-image text-muted"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">
+                                    <a href="{% url 'scanner:product_detail' scan.product.barcode %}" class="text-decoration-none">
+                                        {{ scan.product.name|truncatechars:40 }}
+                                    </a>
+                                </h6>
+                                <small class="text-muted">
+                                    <i class="bi bi-clock me-1"></i>{{ scan.scanned_at|timesince }} ago
+                                </small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-upc-scan display-1 text-muted mb-3"></i>
+                            <p class="text-muted">No scans yet. <a href="{% url 'scanner:scan' %}">Start scanning!</a></p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent">
+                    <h5 class="mb-0">
+                        <i class="bi bi-heart-fill me-2"></i>Favorite Products
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if favorite_products %}
+                        {% for favorite in favorite_products %}
+                        <div class="d-flex align-items-center mb-3 {% if not forloop.last %}border-bottom pb-3{% endif %}">
+                            <div class="product-image me-3">
+                                {% if favorite.product.image_url %}
+                                    <img src="{{ favorite.product.image_url }}" alt="{{ favorite.product.name }}" class="rounded" width="50" height="50" style="object-fit: cover;">
+                                {% else %}
+                                    <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                        <i class="bi bi-image text-muted"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">
+                                    <a href="{% url 'scanner:product_detail' favorite.product.barcode %}" class="text-decoration-none">
+                                        {{ favorite.product.name|truncatechars:40 }}
+                                    </a>
+                                </h6>
+                                <small class="text-muted">
+                                    {% if favorite.product.nutrition_grade %}
+                                        <span class="badge bg-{{ favorite.product.nutrition_grade|lower }} me-1">{{ favorite.product.nutrition_grade }}</span>
+                                    {% endif %}
+                                    {{ favorite.product.brand|default:"Unknown Brand" }}
+                                </small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-heart display-1 text-muted mb-3"></i>
+                            <p class="text-muted">No favorites yet. Start adding products to your favorites!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Reviews -->
+    {% if user_reviews %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent">
+                    <h5 class="mb-0">
+                        <i class="bi bi-star-fill me-2"></i>Your Recent Reviews
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for review in user_reviews %}
+                    <div class="mb-3 {% if not forloop.last %}border-bottom pb-3{% endif %}">
+                        <div class="d-flex align-items-start">
+                            <div class="product-image me-3">
+                                {% if review.product.image_url %}
+                                    <img src="{{ review.product.image_url }}" alt="{{ review.product.name }}" class="rounded" width="50" height="50" style="object-fit: cover;">
+                                {% else %}
+                                    <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                        <i class="bi bi-image text-muted"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">
+                                    <a href="{% url 'scanner:product_detail' review.product.barcode %}" class="text-decoration-none">
+                                        {{ review.product.name }}
+                                    </a>
+                                </h6>
+                                <div class="mb-2">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= review.rating %}
+                                            <i class="bi bi-star-fill text-warning"></i>
+                                        {% else %}
+                                            <i class="bi bi-star text-muted"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <small class="text-muted ms-2">{{ review.created_at|date:"M d, Y" }}</small>
+                                </div>
+                                {% if review.review_text %}
+                                    <p class="mb-0 text-muted">{{ review.review_text|truncatechars:100 }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.avatar-circle {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.progress {
+    background-color: var(--bs-gray-200);
+}
+
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.product-image img,
+.product-image div {
+    border: 1px solid var(--bs-border-color);
+}
+</style>
+{% endblock %}
