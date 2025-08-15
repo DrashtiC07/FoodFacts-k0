@@ -657,6 +657,7 @@
 <script>
 // Nutrition goals presets
 function setPreset(type) {
+  console.log('[v0] Setting preset:', type);
   const presets = {
     weight_loss: { calories: 1800, protein: 120, fat: 60, carbs: 180 },
     maintenance: { calories: 2200, protein: 80, fat: 75, carbs: 275 },
@@ -665,66 +666,154 @@ function setPreset(type) {
   
   const preset = presets[type];
   if (preset) {
-    document.querySelector('input[name="calories_target"]').value = preset.calories;
-    document.querySelector('input[name="protein_target"]').value = preset.protein;
-    document.querySelector('input[name="fat_target"]').value = preset.fat;
-    document.querySelector('input[name="carbs_target"]').value = preset.carbs;
+    // Update form fields with animation
+    const fields = [
+      { name: 'calories_target', value: preset.calories },
+      { name: 'protein_target', value: preset.protein },
+      { name: 'fat_target', value: preset.fat },
+      { name: 'carbs_target', value: preset.carbs }
+    ];
+    
+    fields.forEach((field, index) => {
+      setTimeout(() => {
+        const input = document.querySelector(`input[name="${field.name}"]`);
+        if (input) {
+          input.style.transform = 'scale(1.05)';
+          input.value = field.value;
+          setTimeout(() => {
+            input.style.transform = 'scale(1)';
+          }, 200);
+        }
+      }, index * 100);
+    });
+    
+    // Visual feedback for preset button
+    const presetButtons = document.querySelectorAll('[onclick*="setPreset"]');
+    presetButtons.forEach(btn => btn.classList.remove('btn-primary'));
+    event.target.classList.add('btn-primary');
+    setTimeout(() => {
+      event.target.classList.remove('btn-primary');
+      event.target.classList.add('btn-outline-primary');
+    }, 2000);
   }
 }
 
-// Reset daily goals function
 function resetDailyGoals() {
-  if (confirm('Are you sure you want to reset today\'s nutrition tracking?')) {
+  if (confirm('Are you sure you want to reset today\'s nutrition tracking? This will set all consumed values to zero.')) {
+    console.log('[v0] Resetting daily goals');
+    
+    const resetBtn = event.target;
+    const originalText = resetBtn.innerHTML;
+    resetBtn.disabled = true;
+    resetBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Resetting...';
+    
     fetch('{% url "accounts:reset_daily_goals" %}', {
       method: 'POST',
       headers: {
         'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
         'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
       },
     })
-    .then(response => response.json())
+    .then(response => {
+      console.log('[v0] Reset response status:', response.status);
+      return response.json();
+    })
     .then(data => {
+      console.log('[v0] Reset response data:', data);
       if (data.success) {
-        location.reload();
+        // Show success message
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-info alert-dismissible fade show';
+        alertDiv.innerHTML = `
+          <i class="bi bi-arrow-clockwise me-2"></i>Daily nutrition tracking has been reset!
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.container').firstChild);
+        
+        // Reload page to show updated progress bars
+        setTimeout(() => {
+          location.reload();
+        }, 1500);
       } else {
-        alert('Error resetting goals. Please try again.');
+        console.error('[v0] Error resetting goals:', data.error);
+        alert('Error resetting goals: ' + (data.error || 'Please try again.'));
+        resetBtn.disabled = false;
+        resetBtn.innerHTML = originalText;
       }
     })
     .catch(error => {
-      console.error('Error:', error);
-      alert('Error resetting goals. Please try again.');
+      console.error('[v0] Reset fetch error:', error);
+      alert('Error resetting goals. Please check your connection and try again.');
+      resetBtn.disabled = false;
+      resetBtn.innerHTML = originalText;
     });
   }
 }
 
-// Enhanced form submission
+document.querySelectorAll('.interactive-card').forEach(card => {
+  card.addEventListener('mouseenter', function() {
+    this.style.transform = 'translateY(-4px)';
+  });
+  
+  card.addEventListener('mouseleave', function() {
+    this.style.transform = 'translateY(0)';
+  });
+});
+
 document.getElementById('nutritionGoalsForm').addEventListener('submit', function(e) {
   e.preventDefault();
+  console.log('[v0] Nutrition goals form submitted');
   
   const formData = new FormData(this);
   const submitBtn = this.querySelector('button[type="submit"]');
   const originalText = submitBtn.innerHTML;
   
+  // Show loading state
   submitBtn.disabled = true;
   submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving...';
   
   fetch(this.action, {
     method: 'POST',
     body: formData,
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
+    }
   })
-  .then(response => response.json())
+  .then(response => {
+    console.log('[v0] Response status:', response.status);
+    return response.json();
+  })
   .then(data => {
+    console.log('[v0] Response data:', data);
     if (data.success) {
-      location.reload();
+      // Close modal and reload page to show updated progress bars
+      const modal = bootstrap.Modal.getInstance(document.getElementById('nutritionGoalsModal'));
+      modal.hide();
+      
+      // Show success message
+      const alertDiv = document.createElement('div');
+      alertDiv.className = 'alert alert-success alert-dismissible fade show';
+      alertDiv.innerHTML = `
+        <i class="bi bi-check-circle me-2"></i>Your nutrition goals have been updated successfully!
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      `;
+      document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.container').firstChild);
+      
+      // Reload page after short delay to show updated progress bars
+      setTimeout(() => {
+        location.reload();
+      }, 1500);
     } else {
-      alert('Error saving goals. Please try again.');
+      console.error('[v0] Error saving goals:', data.error);
+      alert('Error saving goals: ' + (data.error || 'Please try again.'));
       submitBtn.disabled = false;
       submitBtn.innerHTML = originalText;
     }
   })
   .catch(error => {
-    console.error('Error:', error);
-    alert('Error saving goals. Please try again.');
+    console.error('[v0] Fetch error:', error);
+    alert('Error saving goals. Please check your connection and try again.');
     submitBtn.disabled = false;
     submitBtn.innerHTML = originalText;
   });
