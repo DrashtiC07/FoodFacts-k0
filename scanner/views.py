@@ -415,34 +415,22 @@ def search_products(request):
     })
 
 @login_required
-def scan_history(request):
-    """Display user's scan history with proper user filtering and pagination"""
-    scans = ScanHistory.objects.filter(
-        user=request.user  # This ensures only current user's scans
-    ).select_related('product').order_by('-scanned_at')
-    
-    logger.info(f"[v0] Scan history for user {request.user.username}: {scans.count()} scans found")
-    
-    paginator = Paginator(scans, 20)  # Show 20 scans per page
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    
-    return render(request, 'scanner/history.html', {
-        'page_obj': page_obj,
-        'total_scans': scans.count(),
-        'user_scans_only': True  # Flag to indicate user-specific filtering
-    })
-
-@login_required
 def save_product(request):
     """Enhanced save product functionality with comprehensive error handling"""
+    import logging
+    logger = logging.getLogger(__name__)
+    
     if request.method == 'POST':
         try:
+            logger.info(f"[v0] Save product request from user: {request.user.username}")
             data = json.loads(request.body)
             barcode = data.get('barcode')
             
             if not barcode:
+                logger.error("[v0] Save product failed: No barcode provided")
                 return JsonResponse({'success': False, 'error': 'Barcode is required'})
+            
+            logger.info(f"[v0] Processing product with barcode: {barcode}")
             
             # Get or create the product
             product, created = Product.objects.get_or_create(
@@ -456,21 +444,28 @@ def save_product(request):
                 }
             )
             
+            logger.info(f"[v0] Product {'created' if created else 'found'}: {product.name}")
+            
             # Update product information if provided
             if not created:
+                updated_fields = []
                 for field in ['name', 'brand', 'category', 'ingredients', 'image_url']:
                     if data.get(field):
                         setattr(product, field, data[field])
+                        updated_fields.append(field)
                 
                 # Update nutrition info if provided
                 if data.get('nutrition_info'):
                     product.nutrition_info = data['nutrition_info']
+                    updated_fields.append('nutrition_info')
                 
-                product.save()
+                if updated_fields:
+                    product.save()
+                    logger.info(f"[v0] Updated product fields: {updated_fields}")
             
-            # Create scan history entry
+            # Create scan history entry for the current user only
             scan_history, scan_created = ScanHistory.objects.get_or_create(
-                user=request.user,
+                user=request.user,  # Ensure it's tied to current user
                 product=product,
                 defaults={'scanned_at': timezone.now()}
             )
@@ -479,26 +474,51 @@ def save_product(request):
             if not scan_created:
                 scan_history.scanned_at = timezone.now()
                 scan_history.save()
+                logger.info(f"[v0] Updated existing scan history for user {request.user.username}")
+            else:
+                logger.info(f"[v0] Created new scan history for user {request.user.username}")
             
             # Calculate health score if nutrition info is available
-            if product.nutrition_info:
-                health_score = product.calculate_health_score()
-                if health_score is not None:
-                    product.health_score = health_score
-                    product.save()
+            try:
+                if product.nutrition_info:
+                    health_score = product.calculate_health_score()
+                    if health_score is not None:
+                        product.health_score = health_score
+                        product.save()
+                        logger.info(f"[v0] Health score calculated: {health_score}")
+            except Exception as health_error:
+                logger.warning(f"[v0] Health score calculation failed: {str(health_error)}")
+            
+            # Save nutrition facts to database if provided
+            try:
+                if data.get('nutrition_facts'):
+                    nutrition_fact, nf_created = NutritionFact.objects.get_or_create(
+                        product=product,
+                        defaults=data['nutrition_facts']
+                    )
+                    if not nf_created:
+                        # Update existing nutrition facts
+                        for key, value in data['nutrition_facts'].items():
+                            setattr(nutrition_fact, key, value)
+                        nutrition_fact.save()
+                    logger.info(f"[v0] Nutrition facts {'created' if nf_created else 'updated'}")
+            except Exception as nf_error:
+                logger.warning(f"[v0] Nutrition facts save failed: {str(nf_error)}")
             
             return JsonResponse({
                 'success': True,
                 'message': 'Product saved successfully!',
                 'product_id': product.id,
-                'created': created
+                'created': created,
+                'scan_recorded': True
             })
             
         except json.JSONDecodeError:
+            logger.error("[v0] Save product failed: Invalid JSON data")
             return JsonResponse({'success': False, 'error': 'Invalid JSON data'})
         except Exception as e:
             logger.error(f"[v0] Save product error: {str(e)}")
-            return JsonResponse({'success': False, 'error': f'Error saving product: {str(e)}'})
+            return JsonResponse({'success': False, 'error': f'Server error: {str(e)}'})
     
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
@@ -1306,3 +1326,32 @@ def calculate_health_score(nutriments):
         return max(0, min(100, score))
     except:
         return 50
+
+@login_required
+def scan_history(request):
+    """Display user's scan history with proper user filtering and pagination"""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    logger.info(f"[v0] Loading scan history for user: {request.user.username} (ID: {request.user.id})")
+    
+    scans = ScanHistory.objects.filter(
+        user=request.user  # This ensures only current user's scans
+    ).select_related('product').order_by('-scanned_at')
+    
+    logger.info(f"[v0] Scan history for user {request.user.username}: {scans.count()} scans found")
+    
+    # Debug: Log first few scan entries
+    for i, scan in enumerate(scans[:3]):
+        logger.info(f"[v0] Scan {i+1}: {scan.product.name} by user {scan.user.username} at {scan.scanned_at}")
+    
+    paginator = Paginator(scans, 20)  # Show 20 scans per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, 'scanner/history.html', {
+        'page_obj': page_obj,
+        'total_scans': scans.count(),
+        'user_scans_only': True,  # Flag to indicate user-specific filtering
+        'current_user': request.user.username  # For debugging in template
+    })
