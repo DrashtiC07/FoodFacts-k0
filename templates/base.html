@@ -283,23 +283,13 @@
             display: inline-block;
         }
         
-        /* Enhanced footer styling */
-        footer {
-            background-color: var(--bg-secondary) !important;
-            border-top: 1px solid var(--border-color) !important;
-            color: var(--text-secondary) !important;
-        }
-        
-        footer h5 {
-            color: var(--text-primary) !important;
-        }
-        
         /* Fix tag wrapping for proper alignment */
         .tag-container {
             display: flex !important;
             flex-wrap: wrap !important;
             gap: 0.5rem !important;
             align-items: flex-start !important;
+            max-width: 100% !important;
         }
         
         .tag-item {
@@ -307,8 +297,9 @@
             word-break: break-word !important;
             max-width: 100% !important;
             white-space: normal !important;
+            overflow-wrap: break-word !important;
         }
-        
+
         /* Progress bar styling for nutrition goals */
         .progress {
             background-color: var(--bg-secondary) !important;
@@ -505,16 +496,19 @@
                 
                 console.log('[v0] Switching from', currentTheme, 'to', newTheme);
                 
+                // Visual feedback
                 this.style.transform = 'scale(0.9)';
                 this.style.opacity = '0.7';
                 
-                // Apply theme changes
+                // Apply theme changes immediately
                 html.setAttribute('data-theme', newTheme);
                 localStorage.setItem('theme', newTheme);
                 updateThemeIcon(newTheme);
                 
+                // Force immediate reflow for CSS variables
                 document.body.offsetHeight;
                 
+                // Apply transitions to all elements
                 const allElements = document.querySelectorAll('*');
                 allElements.forEach(el => {
                     el.style.transition = 'all 0.3s ease';
@@ -528,6 +522,7 @@
                 
                 console.log('[v0] Theme switched successfully to:', newTheme);
                 
+                // Show success feedback
                 const originalIcon = icon.className;
                 icon.className = 'bi bi-check-circle-fill';
                 setTimeout(() => {
@@ -590,3 +585,4 @@
     {% block extra_js %}{% endblock %}
 </body>
 </html>
+</merged_code>
