@@ -311,7 +311,7 @@ def manual_entry(request):
 
 @login_required
 def submit_review(request, barcode):
-    """Handle product review submission"""
+    """Handle product review submission with enhanced error handling"""
     if request.method == 'POST':
         product = get_object_or_404(Product, barcode=barcode)
         rating = request.POST.get('rating')
@@ -329,19 +329,26 @@ def submit_review(request, barcode):
             messages.error(request, 'Invalid rating value')
             return redirect('scanner:product_detail', barcode=barcode)
         
-        # Update or create review
-        ProductReview.objects.update_or_create(
-            user=request.user,
-            product=product,
-            defaults={
-                'rating': rating,
-                'review_text': review_text
-            }
-        )
-        
-        # Update product rating stats
-        product.update_rating_stats()
-        messages.success(request, 'Thank you for your review!')
+        try:
+            review, created = ProductReview.objects.update_or_create(
+                user=request.user,
+                product=product,
+                defaults={
+                    'rating': rating,
+                    'review_text': review_text
+                }
+            )
+            
+            if created:
+                messages.success(request, 'Thank you for your review!')
+            else:
+                messages.success(request, 'Your review has been updated!')
+                
+            logger.info(f"[v0] Review saved successfully for user {request.user.username} on product {barcode}")
+            
+        except Exception as e:
+            logger.error(f"[v0] Error saving review: {str(e)}")
+            messages.error(request, 'Failed to save your review. Please try again.')
     
     return redirect('scanner:product_detail', barcode=barcode)
 
@@ -873,63 +880,90 @@ def parse_barcodelookup_nutrition(product):
 
 def save_product(barcode, product_info, source):
     """Save product to database with enhanced fields and ML predictions"""
-    ingredients = product_info.get('ingredients', '')
-    
-    ecoscore = product_info.get('ecoscore', '')
-    if not ecoscore:
-        # Use ML to predict eco-score
-        ecoscore = eco_predictor.predict_ecoscore({
-            'ingredients': ingredients,
-            'nutrition_info': product_info.get('nutrition', {}),
-            'nova_group': product_info.get('nova_group'),
-            'category': product_info.get('category', '')
-        })
-    
-    nova_group = product_info.get('nova_group')
-    if not nova_group:
-        nova_group = nova_analyzer.predict_nova_group(ingredients, product_info.get('category', ''))
-    
-    product = Product(
-        barcode=barcode,
-        name=product_info['name'],
-        brand=product_info.get('brand', ''),
-        category=product_info.get('category', ''),
-        ingredients=ingredients,
-        nutrition_info=product_info.get('nutrition', {}),
-        image_url=product_info.get('image_url', ''),
-        ecoscore=ecoscore,
-        nova_group=nova_group,
-        fssai=product_info.get('fssai', ''),
-        vegan=analyze_if_vegan(ingredients),
-        vegetarian=analyze_if_vegetarian(ingredients),
-        palm_oil_free=analyze_if_palm_oil_free(ingredients),
-        source=source
-    )
-    
-    # Calculate health score
-    product.health_score = product.calculate_health_score()
-    product.save()
-    
-    # Save nutrition facts to separate model if available
-    if product_info.get('nutrition'):
-        try:
-            NutritionFact.objects.update_or_create(
-                product=product,
-                defaults={
-                    'energy_kcal': product_info['nutrition'].get('energy-kcal_100g'),
-                    'fat': product_info['nutrition'].get('fat_100g'),
-                    'saturated_fat': product_info['nutrition'].get('saturated-fat_100g'),
-                    'carbohydrates': product_info['nutrition'].get('carbohydrates_100g'),
-                    'sugars': product_info['nutrition'].get('sugars_100g'),
-                    'proteins': product_info['nutrition'].get('proteins_100g'),
-                    'salt': product_info['nutrition'].get('salt_100g'),
-                    'fiber': product_info['nutrition'].get('fiber_100g'),
+    try:
+        ingredients = product_info.get('ingredients', '')
+        
+        ecoscore = product_info.get('ecoscore', '')
+        if not ecoscore:
+            # Use ML to predict eco-score
+            ecoscore = eco_predictor.predict_ecoscore({
+                'ingredients': ingredients,
+                'nutrition_info': product_info.get('nutrition', {}),
+                'nova_group': product_info.get('nova_group'),
+                'category': product_info.get('category', '')
+            })
+        
+        nova_group = product_info.get('nova_group')
+        if not nova_group:
+            nova_group = nova_analyzer.predict_nova_group(ingredients, product_info.get('category', ''))
+        
+        product = Product.objects.create(
+            barcode=barcode,
+            name=product_info['name'][:255],  # Ensure name fits in field
+            brand=product_info.get('brand', '')[:255],
+            category=product_info.get('category', '')[:255],
+            ingredients=ingredients,
+            nutrition_info=product_info.get('nutrition', {}),
+            image_url=product_info.get('image_url', '')[:500],  # Ensure URL fits
+            ecoscore=ecoscore[:1] if ecoscore else '',  # Ensure single character
+            nova_group=nova_group,
+            vegan=analyze_if_vegan(ingredients),
+            vegetarian=analyze_if_vegetarian(ingredients),
+            palm_oil_free=analyze_if_palm_oil_free(ingredients),
+        )
+        
+        # Calculate health score
+        product.health_score = product.calculate_health_score()
+        product.save()
+        
+        nutrition_data = product_info.get('nutrition', {})
+        if nutrition_data:
+            try:
+                # Extract nutrition values with proper key mapping
+                nutrition_fields = {
+                    'energy_kcal': nutrition_data.get('energy-kcal_100g') or nutrition_data.get('energy-kcal') or nutrition_data.get('energy_kcal'),
+                    'fat': nutrition_data.get('fat_100g') or nutrition_data.get('fat'),
+                    'saturated_fat': nutrition_data.get('saturated-fat_100g') or nutrition_data.get('saturated_fat'),
+                    'carbohydrates': nutrition_data.get('carbohydrates_100g') or nutrition_data.get('carbohydrates'),
+                    'sugars': nutrition_data.get('sugars_100g') or nutrition_data.get('sugars'),
+                    'proteins': nutrition_data.get('proteins_100g') or nutrition_data.get('proteins'),
+                    'salt': nutrition_data.get('salt_100g') or nutrition_data.get('salt'),
+                    'fiber': nutrition_data.get('fiber_100g') or nutrition_data.get('fiber'),
                 }
-            )
-        except Exception as e:
-            logger.error(f"Error saving nutrition facts: {e}")
-    
-    return product
+                
+                # Clean and validate nutrition values
+                cleaned_nutrition = {}
+                for key, value in nutrition_fields.items():
+                    if value is not None:
+                        try:
+                            # Convert to float and validate
+                            float_value = float(value)
+                            if 0 <= float_value <= 1000:  # Reasonable range for nutrition values
+                                cleaned_nutrition[key] = float_value
+                        except (ValueError, TypeError):
+                            logger.warning(f"[v0] Invalid nutrition value for {key}: {value}")
+                            continue
+                
+                # Only create nutrition facts if we have valid data
+                if cleaned_nutrition:
+                    nutrition_fact, created = NutritionFact.objects.update_or_create(
+                        product=product,
+                        defaults=cleaned_nutrition
+                    )
+                    logger.info(f"[v0] Nutrition facts {'created' if created else 'updated'} for product {barcode}")
+                else:
+                    logger.warning(f"[v0] No valid nutrition data found for product {barcode}")
+                    
+            except Exception as nutrition_error:
+                logger.error(f"[v0] Error saving nutrition facts for product {barcode}: {str(nutrition_error)}")
+                # Don't fail the entire product save if nutrition facts fail
+        
+        logger.info(f"[v0] Product {barcode} saved successfully with health score {product.health_score}")
+        return product
+        
+    except Exception as e:
+        logger.error(f"[v0] Error saving product {barcode}: {str(e)}")
+        raise
 
 def parse_nutrition_facts(nutrition_info):
     """Parse nutrition information"""

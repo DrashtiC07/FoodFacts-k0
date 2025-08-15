@@ -118,23 +118,60 @@ def dashboard(request):
 @login_required
 @require_POST
 def update_nutrition_goals(request):
-    """Update user's nutrition goals via AJAX"""
+    """Update user's nutrition goals via AJAX with enhanced error handling"""
     try:
         dietary_goals, created = DietaryGoal.objects.get_or_create(user=request.user)
         
-        # Update goals from form data
-        dietary_goals.calories_target = int(request.POST.get('calories_target', 2000))
-        dietary_goals.protein_target = int(request.POST.get('protein_target', 50))
-        dietary_goals.fat_target = int(request.POST.get('fat_target', 70))
-        dietary_goals.carbs_target = int(request.POST.get('carbs_target', 300))
+        # Validate and update goals from form data with proper bounds checking
+        calories_target = int(request.POST.get('calories_target', 2000))
+        protein_target = int(request.POST.get('protein_target', 50))
+        fat_target = int(request.POST.get('fat_target', 70))
+        carbs_target = int(request.POST.get('carbs_target', 300))
+        
+        # Validate ranges
+        if not (500 <= calories_target <= 5000):
+            return JsonResponse({'success': False, 'error': 'Calories target must be between 500 and 5000'})
+        if not (10 <= protein_target <= 300):
+            return JsonResponse({'success': False, 'error': 'Protein target must be between 10 and 300g'})
+        if not (10 <= fat_target <= 200):
+            return JsonResponse({'success': False, 'error': 'Fat target must be between 10 and 200g'})
+        if not (50 <= carbs_target <= 800):
+            return JsonResponse({'success': False, 'error': 'Carbs target must be between 50 and 800g'})
+        
+        # Update goals
+        dietary_goals.calories_target = calories_target
+        dietary_goals.protein_target = protein_target
+        dietary_goals.fat_target = fat_target
+        dietary_goals.carbs_target = carbs_target
         dietary_goals.save()
         
-        messages.success(request, 'Your nutrition goals have been updated successfully!')
-        return JsonResponse({'success': True})
+        # Calculate new progress percentages for response
+        calories_progress = min((dietary_goals.calories_consumed / dietary_goals.calories_target * 100), 100) if dietary_goals.calories_target > 0 else 0
+        protein_progress = min((dietary_goals.protein_consumed / dietary_goals.protein_target * 100), 100) if dietary_goals.protein_target > 0 else 0
+        fat_progress = min((dietary_goals.fat_consumed / dietary_goals.fat_target * 100), 100) if dietary_goals.fat_target > 0 else 0
+        carbs_progress = min((dietary_goals.carbs_consumed / dietary_goals.carbs_target * 100), 100) if dietary_goals.carbs_target > 0 else 0
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Your nutrition goals have been updated successfully!',
+            'progress': {
+                'calories': calories_progress,
+                'protein': protein_progress,
+                'fat': fat_progress,
+                'carbs': carbs_progress
+            },
+            'remaining': {
+                'calories': max(0, dietary_goals.calories_target - dietary_goals.calories_consumed),
+                'protein': max(0, dietary_goals.protein_target - dietary_goals.protein_consumed),
+                'fat': max(0, dietary_goals.fat_target - dietary_goals.fat_consumed),
+                'carbs': max(0, dietary_goals.carbs_target - dietary_goals.carbs_consumed)
+            }
+        })
+        
     except (ValueError, TypeError) as e:
-        return JsonResponse({'success': False, 'error': 'Invalid input values'})
+        return JsonResponse({'success': False, 'error': 'Invalid input values. Please enter valid numbers.'})
     except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)})
+        return JsonResponse({'success': False, 'error': f'An error occurred: {str(e)}'})
 
 @login_required
 @require_POST
