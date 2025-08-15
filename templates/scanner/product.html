@@ -541,7 +541,7 @@
                 <h5 class="modal-title fw-bold" style="color: var(--text-primary);">Write a Review</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="post" action="{% url 'scanner:add_review' product.barcode %}">
+            <form method="post" action="{% url 'accounts:add_review' product.barcode %}">
                 <div class="modal-body">
                     {% csrf_token %}
                     <div class="mb-3">

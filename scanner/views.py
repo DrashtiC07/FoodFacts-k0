@@ -136,6 +136,7 @@ def product_detail(request, barcode):
             'nutrition_facts': nutrition_facts,
             'dietary_flags': dietary_flags,
             'existing_review': existing_review,
+            'user_review': existing_review,  # Added user_review alias for template compatibility
             'is_favorite': is_favorite,
             'nova_info': nova_info,
             'additives_analysis': additives_analysis,
@@ -152,7 +153,7 @@ def product_detail(request, barcode):
         logger.error(f"[v0] Error type: {type(e).__name__}")
         import traceback
         logger.error(f"[v0] Traceback: {traceback.format_exc()}")
-        messages.error(request, f'An error occurred while loading the product: {str(e)}')
+        messages.error(request, f'An error occurred while loading product details: {str(e)}. Please try again.')
         return redirect('scanner:search')
 
 @login_required
