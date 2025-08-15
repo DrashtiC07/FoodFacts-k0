@@ -22,6 +22,7 @@ from scanner.models import Product, ScanHistory, NutritionFact
 from accounts.models import FavoriteProduct, ProductReview
 from .ml_utils import eco_predictor, nova_analyzer
 from .additives_analyzer import analyze_additives  # Import additives analyzer
+from django.utils import timezone
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -232,59 +233,79 @@ def manual_entry(request):
         barcode = request.POST.get('barcode', '').strip()
         
         if not barcode:
-            messages.error(request, 'Please enter a barcode number')
-            return render(request, 'scanner/search.html')
-        
-        if not barcode.isdigit():
-            messages.error(request, 'Barcode must contain only numbers')
-            return render(request, 'scanner/search.html')
-        
-        if not (8 <= len(barcode) <= 14):
-            messages.error(request, 'Barcode must be 8-14 digits long')
-            return render(request, 'scanner/search.html')
-        
-        # Validate barcode format
-        barcode_result = validate_barcode_enhanced(barcode)
-        if not barcode_result:
-            messages.error(request, 'Invalid barcode format. Please check the number and try again.')
+            messages.error(request, 'Please enter a barcode.')
             return render(request, 'scanner/search.html', {'barcode_error': barcode})
         
-        validated_barcode = barcode_result['code']
-        barcode_type = barcode_result['type']
+        if not barcode.isdigit() or len(barcode) < 8 or len(barcode) > 14:
+            messages.error(request, 'Please enter a valid barcode (8-14 digits).')
+            return render(request, 'scanner/search.html', {'barcode_error': barcode})
         
         try:
-            product = Product.objects.get(barcode=validated_barcode)
-            if request.user.is_authenticated:
-                ScanHistory.objects.get_or_create(user=request.user, product=product)
-            messages.success(request, f'Found product: {product.name}')
-            return redirect('scanner:product_detail', barcode=validated_barcode)
-        except Product.DoesNotExist:
-            pass
-        
-        try:
-            messages.info(request, 'Searching external databases...')
-            product_info = fetch_product_info_enhanced(validated_barcode, barcode_type)
+            # First check if product exists in database
+            product = Product.objects.get(barcode=barcode)
             
-            if product_info:
-                product = save_product(validated_barcode, product_info, barcode_type)
-                if request.user.is_authenticated:
-                    ScanHistory.objects.create(user=request.user, product=product)
-                messages.success(request, f'Product found and added: {product.name}')
-                return redirect('scanner:product_detail', barcode=validated_barcode)
-            else:
-                messages.warning(request, f'Product with barcode {validated_barcode} not found in our database or external sources.')
+            # Add to scan history if user is authenticated
+            if request.user.is_authenticated:
+                ScanHistory.objects.get_or_create(
+                    user=request.user,
+                    product=product,
+                    defaults={'scanned_at': timezone.now()}
+                )
+            
+            # Redirect to product detail page
+            return redirect('scanner:product_detail', barcode=barcode)
+            
+        except Product.DoesNotExist:
+            try:
+                import requests
+                
+                # Try OpenFoodFacts API
+                response = requests.get(f'https://world.openfoodfacts.org/api/v0/product/{barcode}.json', timeout=10)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    
+                    if data.get('status') == 1 and 'product' in data:
+                        product_data = data['product']
+                        
+                        # Create new product from API data
+                        product = Product.objects.create(
+                            barcode=barcode,
+                            name=product_data.get('product_name', f'Product {barcode}'),
+                            brand=product_data.get('brands', ''),
+                            category=product_data.get('categories', ''),
+                            ingredients=product_data.get('ingredients_text', ''),
+                            image_url=product_data.get('image_url', ''),
+                            nutrition_info=product_data.get('nutriments', {}),
+                            ecoscore=product_data.get('ecoscore_grade', '').upper(),
+                            health_score=calculate_health_score(product_data.get('nutriments', {}))
+                        )
+                        
+                        # Add to scan history if user is authenticated
+                        if request.user.is_authenticated:
+                            ScanHistory.objects.get_or_create(
+                                user=request.user,
+                                product=product,
+                                defaults={'scanned_at': timezone.now()}
+                            )
+                        
+                        messages.success(request, f'Product found and added to database!')
+                        return redirect('scanner:product_detail', barcode=barcode)
+                
+                # If not found in OpenFoodFacts, show error with suggestions
+                suggest_urls = [
+                    f'https://world.openfoodfacts.org/product/{barcode}',
+                    f'https://www.barcodelookup.com/{barcode}',
+                ]
+                
                 return render(request, 'scanner/search.html', {
-                    'barcode_not_found': validated_barcode,
-                    'suggest_urls': [
-                        f'https://world.openfoodfacts.org/product/{validated_barcode}',
-                        f'https://in.openfoodfacts.org/product/{validated_barcode}'
-                    ]
+                    'barcode_not_found': barcode,
+                    'suggest_urls': suggest_urls
                 })
                 
-        except Exception as e:
-            logger.error(f"Manual entry error for barcode {validated_barcode}: {str(e)}")
-            messages.error(request, 'An error occurred while searching for the product. Please try again.')
-            return render(request, 'scanner/search.html', {'barcode_error': validated_barcode})
+            except Exception as e:
+                messages.error(request, 'An error occurred while searching for the product. Please try again.')
+                return render(request, 'scanner/search.html', {'barcode_error': barcode})
     
     return redirect('scanner:search')
 
@@ -393,7 +414,7 @@ def scan_history(request):
         user=request.user
     ).select_related('product').order_by('-scanned_at')
     
-    paginator = Paginator(scans, 10)  # Show 10 scans per page
+    paginator = Paginator(scans, 20)  # Show 20 scans per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
@@ -1156,3 +1177,26 @@ def calculate_environmental_impact(product):
         },
         'recommendations': recommendations
     }
+
+def calculate_health_score(nutriments):
+    """Calculate a simple health score based on nutrition data"""
+    try:
+        score = 50  # Base score
+        
+        # Positive factors
+        if nutriments.get('fiber_100g', 0) > 3:
+            score += 10
+        if nutriments.get('proteins_100g', 0) > 10:
+            score += 10
+        
+        # Negative factors
+        if nutriments.get('saturated-fat_100g', 0) > 5:
+            score -= 15
+        if nutriments.get('sugars_100g', 0) > 15:
+            score -= 15
+        if nutriments.get('sodium_100g', 0) > 1:
+            score -= 10
+        
+        return max(0, min(100, score))
+    except:
+        return 50

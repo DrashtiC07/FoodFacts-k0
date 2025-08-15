@@ -4,7 +4,8 @@
 {% block title %}Scan History - Food Facts Scanner{% endblock %}
 
 {% block content %}
-<div class="container">
+<!-- Added padding-top to avoid navbar collision -->
+<div class="container" style="padding-top: 100px;">
     <div class="row mb-4">
         <div class="col-12">
             <h2 class="fw-bold">Your Scan History</h2>
@@ -12,9 +13,10 @@
         </div>
     </div>
     
-    {% if history %}
+    <!-- Updated to use page_obj instead of history and show all scanned products -->
+    {% if page_obj %}
     <div class="row g-4">
-        {% for scan in history %}
+        {% for scan in page_obj %}
         <div class="col-lg-6">
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
@@ -60,6 +62,30 @@
         </div>
         {% endfor %}
     </div>
+    
+    <!-- Added pagination for history -->
+    {% if page_obj.has_other_pages %}
+    <nav aria-label="History pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                </li>
+            {% endif %}
+            
+            <li class="page-item active">
+                <span class="page-link">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            </li>
+            
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    
     {% else %}
     <div class="text-center py-5">
         <i class="bi bi-clock-history display-1 text-muted mb-3"></i>

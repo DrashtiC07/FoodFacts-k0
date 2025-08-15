@@ -242,7 +242,7 @@
         <div class="card-body p-4">
           {% if scan_history %}
             {% for scan in scan_history %}
-            <div class="d-flex align-items-center mb-3 p-3 rounded-3 bg-light bg-opacity-50 {% if not forloop.last %}mb-3{% endif %}">
+            <div class="d-flex align-items-center mb-3 p-3 rounded-3 bg-light bg-opacity-50 {% if not forloop.last %}mb-3{% endif %}" style="padding-top: 20px;">
               <div class="product-image me-3">
                 {% if scan.product.image_url %}
                 <img
@@ -261,7 +261,7 @@
               </div>
               <div class="flex-grow-1">
                 <h6 class="mb-1 fw-semibold">
-                  <a href="{% url 'scanner:product_detail' scan.product.barcode %}" class="text-decoration-none text-dark">
+                  <a href="{% url 'scanner:product_detail' scan.product.barcode %}" class="text-decoration-none text-dark" style="padding-top: 10px; display: inline-block;">
                     {{ scan.product.name|truncatechars:35 }}
                   </a>
                 </h6>
@@ -304,7 +304,7 @@
         <div class="card-body p-4">
           {% if favorite_products %}
             {% for favorite in favorite_products %}
-            <div class="d-flex align-items-center mb-3 p-3 rounded-3 bg-light bg-opacity-50">
+            <div class="d-flex align-items-center mb-3 p-3 rounded-3 bg-light bg-opacity-50" style="padding-top: 20px;">
               <div class="product-image me-3">
                 {% if favorite.product.image_url %}
                 <img
@@ -323,7 +323,7 @@
               </div>
               <div class="flex-grow-1">
                 <h6 class="mb-1 fw-semibold">
-                  <a href="{% url 'scanner:product_detail' favorite.product.barcode %}" class="text-decoration-none text-dark">
+                  <a href="{% url 'scanner:product_detail' favorite.product.barcode %}" class="text-decoration-none text-dark" style="padding-top: 10px; display: inline-block;">
                     {{ favorite.product.name|truncatechars:35 }}
                   </a>
                 </h6>
@@ -368,7 +368,7 @@
         </div>
         <div class="card-body p-4">
           {% for review in user_reviews %}
-          <div class="mb-4 p-3 rounded-3 bg-light bg-opacity-50 {% if not forloop.last %}mb-4{% endif %}">
+          <div class="mb-4 p-3 rounded-3 bg-light bg-opacity-50 {% if not forloop.last %}mb-4{% endif %}" style="padding-top: 20px;">
             <div class="d-flex align-items-start">
               <div class="product-image me-3">
                 {% if review.product.image_url %}
@@ -388,7 +388,7 @@
               </div>
               <div class="flex-grow-1">
                 <h6 class="mb-2 fw-semibold">
-                  <a href="{% url 'scanner:product_detail' review.product.barcode %}" class="text-decoration-none text-dark">
+                  <a href="{% url 'scanner:product_detail' review.product.barcode %}" class="text-decoration-none text-dark" style="padding-top: 10px; display: inline-block;">
                     {{ review.product.name }}
                   </a>
                 </h6>
