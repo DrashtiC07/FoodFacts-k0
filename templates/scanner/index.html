@@ -449,38 +449,75 @@
 </style>
 {% endblock %}
 
+{% block extra_js %}
 <script>
 function toggleFAQ(element) {
+    console.log("[v0] FAQ toggle clicked");
     const faqItem = element.parentElement;
     const answer = faqItem.querySelector('.faq-answer');
     const toggle = element.querySelector('.faq-toggle');
+    const answerContent = answer.querySelector('.answer-content');
     
-    // Close all other FAQ items
+    console.log("[v0] FAQ item:", faqItem.classList.contains('active'));
+    
+    // Close all other FAQ items first
     document.querySelectorAll('.faq-item').forEach(item => {
-        if (item !== faqItem) {
+        if (item !== faqItem && item.classList.contains('active')) {
+            console.log("[v0] Closing other FAQ item");
             item.classList.remove('active');
             const otherAnswer = item.querySelector('.faq-answer');
             const otherToggle = item.querySelector('.faq-toggle');
+            
+            // Smooth close animation
             otherAnswer.style.maxHeight = '0';
-            otherAnswer.style.display = 'none';
             otherToggle.textContent = '+';
+            
+            setTimeout(() => {
+                otherAnswer.style.display = 'none';
+            }, 400);
         }
     });
     
-    // Toggle current FAQ item with smooth dropdown animation
+    // Toggle current FAQ item
     if (faqItem.classList.contains('active')) {
+        console.log("[v0] Closing current FAQ");
+        // Close current item
         faqItem.classList.remove('active');
         answer.style.maxHeight = '0';
+        toggle.textContent = '+';
+        
         setTimeout(() => {
             answer.style.display = 'none';
         }, 400);
-        toggle.textContent = '+';
     } else {
+        console.log("[v0] Opening current FAQ");
+        // Open current item
         faqItem.classList.add('active');
         answer.style.display = 'block';
-        const scrollHeight = answer.scrollHeight;
-        answer.style.maxHeight = scrollHeight + 'px';
+        
+        // Force reflow to ensure display:block is applied
+        answer.offsetHeight;
+        
+        // Calculate the actual height needed
+        const contentHeight = answerContent.offsetHeight;
+        answer.style.maxHeight = contentHeight + 'px';
         toggle.textContent = '−';
     }
 }
+
+// Initialize FAQ items on page load
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("[v0] FAQ initialized");
+    // Ensure all FAQ items start closed
+    document.querySelectorAll('.faq-item').forEach(item => {
+        const answer = item.querySelector('.faq-answer');
+        const toggle = item.querySelector('.faq-toggle');
+        
+        answer.style.display = 'none';
+        answer.style.maxHeight = '0';
+        toggle.textContent = '+';
+        item.classList.remove('active');
+    });
+});
 </script>
+{% endblock %}
