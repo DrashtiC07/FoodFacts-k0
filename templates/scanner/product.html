@@ -322,3 +322,277 @@
                                 <div class="safety-breakdown mt-3">
                                     {% if additives_analysis.safety_summary.safe > 0 %}
                                     <div class="d-flex justify-content-between mb-1">
+                                        <small style="color: var(--health-excellent);">
+                                            <i class="bi bi-check-circle-fill me-1"></i>Safe: {{ additives_analysis.safety_summary.safe }}
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                    {% if additives_analysis.safety_summary.moderate > 0 %}
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <small style="color: var(--health-fair);">
+                                            <i class="bi bi-exclamation-triangle-fill me-1"></i>Moderate: {{ additives_analysis.safety_summary.moderate }}
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                    {% if additives_analysis.safety_summary.avoid > 0 %}
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <small style="color: var(--health-poor);">
+                                            <i class="bi bi-x-circle-fill me-1"></i>Avoid: {{ additives_analysis.safety_summary.avoid }}
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="health-impact p-3 rounded" style="background: var(--bg-secondary);">
+                                <h6 class="fw-semibold mb-3" style="color: var(--text-primary);">Health Impact</h6>
+                                <p class="mb-2" style="color: var(--text-secondary); font-size: 0.9rem;">{{ additives_analysis.overall_assessment }}</p>
+                                {% if additives_analysis.main_concerns %}
+                                <div class="concerns mt-3">
+                                    <small class="fw-semibold" style="color: var(--text-primary);">Main Concerns:</small>
+                                    {% for concern in additives_analysis.main_concerns %}
+                                    <div class="mt-1">
+                                        <small style="color: var(--health-poor);">
+                                            <i class="bi bi-exclamation-circle me-1"></i>{{ concern }}
+                                        </small>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Additives List -->
+                    {% if additives_analysis.detailed_additives %}
+                    <div class="additives-details">
+                        <h6 class="fw-semibold mb-3" style="color: var(--text-primary);">
+                            <i class="bi bi-list-ul me-2"></i>Detailed Analysis
+                        </h6>
+                        <div class="accordion" id="additivesAccordion">
+                            {% for additive in additives_analysis.detailed_additives %}
+                            <div class="accordion-item border-0 mb-2" style="background: var(--bg-secondary); border-radius: var(--border-radius) !important;">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                            data-bs-target="#additive{{ forloop.counter }}" style="background: var(--bg-secondary); color: var(--text-primary); border: none; border-radius: var(--border-radius) !important;">
+                                        <div class="d-flex align-items-center w-100">
+                                            <div class="me-3">
+                                                <span class="badge" style="background: {% if additive.safety_level == 'safe' %}var(--health-excellent){% elif additive.safety_level == 'moderate' %}var(--health-fair){% else %}var(--health-poor){% endif %}; color: var(--text-primary);">
+                                                    {{ additive.code }}
+                                                </span>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <div class="fw-semibold">{{ additive.name }}</div>
+                                                <small style="color: var(--text-muted);">{{ additive.function }}</small>
+                                            </div>
+                                        </div>
+                                    </button>
+                                </h2>
+                                <div id="additive{{ forloop.counter }}" class="accordion-collapse collapse" data-bs-parent="#additivesAccordion">
+                                    <div class="accordion-body">
+                                        <div class="row">
+                                            <div class="col-md-8">
+                                                <p class="mb-3" style="color: var(--text-secondary);">{{ additive.description }}</p>
+                                                {% if additive.health_effects %}
+                                                <div class="mb-3">
+                                                    <h6 class="fw-semibold mb-2" style="color: var(--text-primary);">Health Effects:</h6>
+                                                    <p class="mb-0" style="color: var(--text-secondary); font-size: 0.9rem;">{{ additive.health_effects }}</p>
+                                                </div>
+                                                {% endif %}
+                                                {% if additive.sources %}
+                                                <div class="mb-3">
+                                                    <h6 class="fw-semibold mb-2" style="color: var(--text-primary);">Common Sources:</h6>
+                                                    <p class="mb-0" style="color: var(--text-secondary); font-size: 0.9rem;">{{ additive.sources }}</p>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="safety-info p-3 rounded" style="background: var(--card-bg); border: 1px solid var(--border-color);">
+                                                    <div class="text-center mb-2">
+                                                        <div class="safety-badge mb-2" style="background: {% if additive.safety_level == 'safe' %}var(--health-excellent){% elif additive.safety_level == 'moderate' %}var(--health-fair){% else %}var(--health-poor){% endif %}; color: var(--text-primary); padding: 0.5rem; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                                            <i class="bi bi-{% if additive.safety_level == 'safe' %}check-circle{% elif additive.safety_level == 'moderate' %}exclamation-triangle{% else %}x-circle{% endif %}"></i>
+                                                        </div>
+                                                        <div class="fw-semibold" style="color: var(--text-primary);">{{ additive.safety_level|title }}</div>
+                                                    </div>
+                                                    {% if additive.recommendation %}
+                                                    <small style="color: var(--text-secondary);">{{ additive.recommendation }}</small>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-check-circle" style="font-size: 3rem; color: var(--health-excellent);"></i>
+                        <h5 class="mt-3 mb-2" style="color: var(--text-primary);">No Additives Detected</h5>
+                        <p class="mb-0" style="color: var(--text-muted);">This product appears to contain no artificial additives or preservatives.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Nutrition Facts -->
+            {% if product.nutrition_facts %}
+            <div class="card border-0 shadow-sm mb-4" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
+                <div class="card-header bg-transparent border-0 p-4">
+                    <h4 class="fw-bold mb-0" style="font-family: 'Work Sans', sans-serif; color: var(--text-primary);">
+                        <i class="bi bi-bar-chart me-2" style="color: var(--primary-color);"></i>Nutrition Facts
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="nutrition-grid">
+                        {% for key, value in product.nutrition_facts.items %}
+                        {% if value and value != "0" and value != "0g" and value != "0mg" %}
+                        <div class="nutrition-item d-flex justify-content-between align-items-center py-2 border-bottom" style="border-color: var(--border-color) !important;">
+                            <span class="fw-medium" style="color: var(--text-primary);">{{ key|title }}</span>
+                            <span class="fw-semibold" style="color: var(--text-secondary);">{{ value }}</span>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Ingredients -->
+            {% if product.ingredients %}
+            <div class="card border-0 shadow-sm mb-4" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
+                <div class="card-header bg-transparent border-0 p-4">
+                    <h4 class="fw-bold mb-0" style="font-family: 'Work Sans', sans-serif; color: var(--text-primary);">
+                        <i class="bi bi-list-check me-2" style="color: var(--accent-color);"></i>Ingredients
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="ingredients-text p-3 rounded" style="background: var(--bg-secondary); border-left: 4px solid var(--primary-color);">
+                        <p class="mb-0" style="color: var(--text-secondary); line-height: 1.6;">{{ product.ingredients }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Reviews Section -->
+            <div class="card border-0 shadow-sm mb-4" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
+                <div class="card-header bg-transparent border-0 p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="fw-bold mb-0" style="font-family: 'Work Sans', sans-serif; color: var(--text-primary);">
+                            <i class="bi bi-chat-dots me-2" style="color: var(--primary-color);"></i>Reviews
+                        </h4>
+                        {% if user.is_authenticated %}
+                        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#reviewModal">
+                            <i class="bi bi-plus me-1"></i>Write Review
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    {% if reviews %}
+                        {% for review in reviews %}
+                        <div class="review-item mb-4 pb-4 {% if not forloop.last %}border-bottom{% endif %}" style="border-color: var(--border-color) !important;">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="user-avatar me-3" style="background: var(--primary-light); color: var(--primary-color); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                                        {{ review.user.username|first|upper }}
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold" style="color: var(--text-primary);">{{ review.user.username }}</div>
+                                        <div class="text-warning">
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= review.rating %}
+                                                    <i class="bi bi-star-fill"></i>
+                                                {% else %}
+                                                    <i class="bi bi-star"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <small style="color: var(--text-muted);">{{ review.created_at|date:"M d, Y" }}</small>
+                            </div>
+                            <p class="mb-0" style="color: var(--text-secondary);">{{ review.comment }}</p>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-chat" style="font-size: 3rem; color: var(--text-muted);"></i>
+                        <h5 class="mt-3 mb-2" style="color: var(--text-primary);">No Reviews Yet</h5>
+                        <p class="mb-0" style="color: var(--text-muted);">Be the first to review this product!</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Review Modal -->
+{% if user.is_authenticated %}
+<div class="modal fade" id="reviewModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" style="background: var(--card-bg); border: 1px solid var(--border-color);">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold" style="color: var(--text-primary);">Write a Review</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'scanner:add_review' product.barcode %}">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" style="color: var(--text-primary);">Rating</label>
+                        <div class="rating-input">
+                            {% for i in "12345" %}
+                            <input type="radio" name="rating" value="{{ forloop.counter }}" id="star{{ forloop.counter }}" class="d-none">
+                            <label for="star{{ forloop.counter }}" class="star-label" style="color: var(--text-muted); cursor: pointer; font-size: 1.5rem;">
+                                <i class="bi bi-star"></i>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="comment" class="form-label fw-semibold" style="color: var(--text-primary);">Comment</label>
+                        <textarea name="comment" id="comment" class="form-control" rows="4" 
+                                  style="background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary);"
+                                  placeholder="Share your thoughts about this product..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit Review</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+// Rating stars interaction
+document.querySelectorAll('.star-label').forEach((star, index) => {
+    star.addEventListener('click', function() {
+        const rating = index + 1;
+        document.querySelectorAll('.star-label').forEach((s, i) => {
+            if (i < rating) {
+                s.innerHTML = '<i class="bi bi-star-fill"></i>';
+                s.style.color = 'var(--accent-color)';
+            } else {
+                s.innerHTML = '<i class="bi bi-star"></i>';
+                s.style.color = 'var(--text-muted)';
+            }
+        });
+    });
+});
+
+// Add to nutrition tracker function
+function addToNutritionTracker() {
+    // Implementation for adding to nutrition tracker
+    alert('Added to nutrition tracker!');
+}
+</script>
+{% endblock %}
