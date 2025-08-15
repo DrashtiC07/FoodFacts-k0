@@ -8,3 +8,15 @@ Product detail error: 'Product' object has no attribute 'productreview_set'
 Product detail error: 'Product' object has no attribute 'productreview_set'
 Product detail error: 'Product' object has no attribute 'productreview_set'
 Product detail error: 'Product' object has no attribute 'productreview_set'
+Product detail error: Reverse for 'add_review' not found. 'add_review' is not a valid view function or pattern name.
+Product detail error: Reverse for 'add_review' not found. 'add_review' is not a valid view function or pattern name.
+Manual entry error for barcode 12345678: Product() got unexpected keyword arguments: 'fssai', 'source'
+Manual entry error for barcode 12345678: Product() got unexpected keyword arguments: 'fssai', 'source'
+Product detail error: Reverse for 'add_review' not found. 'add_review' is not a valid view function or pattern name.
+Product detail error: Reverse for 'add_review' not found. 'add_review' is not a valid view function or pattern name.
+Product detail error: Reverse for 'add_review' not found. 'add_review' is not a valid view function or pattern name.
+API <lambda> failed: 404 Client Error: Not Found for url: https://in.openfoodfacts.org/api/v2/product/2345678901234.json
+API <lambda> failed: 404 Client Error: Not Found for url: https://world.openfoodfacts.org/api/v2/product/2345678901234.json
+Manual entry error for barcode 2345678901234: Product() got unexpected keyword arguments: 'fssai', 'source'
+Scan error: Product() got unexpected keyword arguments: 'fssai', 'source'
+Product detail error: Reverse for 'add_review' not found. 'add_review' is not a valid view function or pattern name.

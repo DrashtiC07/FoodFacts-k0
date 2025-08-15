@@ -141,7 +141,7 @@ API_CONFIG = {
     },
     'barcodelookup': {
         'url': 'https://api.barcodelookup.com/v3/products',
-        'key': os.getenv('BARCODE_LOOKUP_API_KEY', '')  # Get free key at barcodelookup.com
+        'key': os.getenv('dq22lpvwv62x91s1w9yqa8r5phflfk', '')  # Get free key at barcodelookup.com
     },
     'upcitemdb': {
         'url': 'https://api.upcitemdb.com/prod/trial/lookup',
