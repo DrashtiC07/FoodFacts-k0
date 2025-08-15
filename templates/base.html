@@ -366,39 +366,58 @@
         
         themeToggle.addEventListener('click', function(e) {
             e.preventDefault();
+            e.stopPropagation();
             console.log('[v0] Theme toggle clicked');
             
-            const currentTheme = html.getAttribute('data-theme');
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            
-            console.log('[v0] Switching from', currentTheme, 'to', newTheme);
-            
-            // Add smooth transition
-            html.style.transition = 'all 0.3s ease';
-            html.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            updateThemeIcon(newTheme);
-            
-            // Add visual feedback
-            themeToggle.style.transform = 'scale(0.9)';
-            setTimeout(() => {
-                themeToggle.style.transform = 'scale(1)';
-                html.style.transition = '';
-            }, 150);
-            
-            console.log('[v0] Theme switched successfully to:', newTheme);
+            try {
+                const currentTheme = html.getAttribute('data-theme') || 'light';
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                
+                console.log('[v0] Switching from', currentTheme, 'to', newTheme);
+                
+                // Add smooth transition with proper timing
+                html.style.transition = 'background-color 0.3s ease, color 0.3s ease';
+                html.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                updateThemeIcon(newTheme);
+                
+                // Add visual feedback with proper timing
+                this.style.transform = 'scale(0.9)';
+                this.style.transition = 'transform 0.15s ease';
+                
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                    setTimeout(() => {
+                        html.style.transition = '';
+                        this.style.transition = '';
+                    }, 150);
+                }, 150);
+                
+                // Force CSS variables update
+                document.body.style.display = 'none';
+                document.body.offsetHeight; // Trigger reflow
+                document.body.style.display = '';
+                
+                console.log('[v0] Theme switched successfully to:', newTheme);
+            } catch (error) {
+                console.error('[v0] Error switching theme:', error);
+            }
         });
         
         function updateThemeIcon(theme) {
             console.log('[v0] Updating theme icon for:', theme);
-            if (theme === 'dark') {
-                icon.className = 'bi bi-sun-fill';
-                themeToggle.setAttribute('aria-label', 'Switch to light theme');
-                themeToggle.title = 'Switch to light theme';
-            } else {
-                icon.className = 'bi bi-moon-fill';
-                themeToggle.setAttribute('aria-label', 'Switch to dark theme');
-                themeToggle.title = 'Switch to dark theme';
+            try {
+                if (theme === 'dark') {
+                    icon.className = 'bi bi-sun-fill';
+                    themeToggle.setAttribute('aria-label', 'Switch to light theme');
+                    themeToggle.title = 'Switch to light theme';
+                } else {
+                    icon.className = 'bi bi-moon-fill';
+                    themeToggle.setAttribute('aria-label', 'Switch to dark theme');
+                    themeToggle.title = 'Switch to dark theme';
+                }
+            } catch (error) {
+                console.error('[v0] Error updating theme icon:', error);
             }
         }
         
@@ -407,20 +426,26 @@
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 console.log('[v0] Theme toggle activated via keyboard');
-                themeToggle.click();
+                this.click();
             }
         });
         
-        // Ensure theme is applied on page load
+        // Ensure theme is applied on page load with better error handling
         document.addEventListener('DOMContentLoaded', function() {
             console.log('[v0] DOM loaded, ensuring theme is applied');
-            const currentTheme = html.getAttribute('data-theme');
-            updateThemeIcon(currentTheme);
-            
-            // Force a repaint to ensure CSS variables are applied
-            document.body.style.display = 'none';
-            document.body.offsetHeight; // Trigger reflow
-            document.body.style.display = '';
+            try {
+                const currentTheme = html.getAttribute('data-theme') || 'light';
+                updateThemeIcon(currentTheme);
+                
+                // Force a repaint to ensure CSS variables are applied
+                setTimeout(() => {
+                    document.body.style.display = 'none';
+                    document.body.offsetHeight; // Trigger reflow
+                    document.body.style.display = '';
+                }, 100);
+            } catch (error) {
+                console.error('[v0] Error applying theme on load:', error);
+            }
         });
     </script>
     

@@ -118,8 +118,9 @@
                     {{ dietary_goals.calories_consumed }}/{{ dietary_goals.calories_target }}
                   </span>
                 </div>
+                <!-- Fixed progress bar width calculation and added smooth animation -->
                 <div class="nutrition-bar mb-2">
-                  <div class="progress-fill" style="width: {{ calories_progress }}%"></div>
+                  <div class="progress-fill" style="width: {{ calories_progress|floatformat:1 }}%; transition: width 0.8s ease-in-out;"></div>
                 </div>
                 <div class="d-flex justify-content-between">
                   <small class="text-muted">{{ calories_progress|floatformat:0 }}% of goal</small>
@@ -139,8 +140,9 @@
                     {{ dietary_goals.protein_consumed }}/{{ dietary_goals.protein_target }}g
                   </span>
                 </div>
+                <!-- Fixed progress bar width calculation and added smooth animation -->
                 <div class="nutrition-bar mb-2">
-                  <div class="progress-fill bg-info" style="width: {{ protein_progress }}%"></div>
+                  <div class="progress-fill bg-info" style="width: {{ protein_progress|floatformat:1 }}%; transition: width 0.8s ease-in-out;"></div>
                 </div>
                 <div class="d-flex justify-content-between">
                   <small class="text-muted">{{ protein_progress|floatformat:0 }}% of goal</small>
@@ -160,8 +162,9 @@
                     {{ dietary_goals.fat_consumed }}/{{ dietary_goals.fat_target }}g
                   </span>
                 </div>
+                <!-- Fixed progress bar width calculation and added smooth animation -->
                 <div class="nutrition-bar mb-2">
-                  <div class="progress-fill bg-warning" style="width: {{ fat_progress }}%"></div>
+                  <div class="progress-fill bg-warning" style="width: {{ fat_progress|floatformat:1 }}%; transition: width 0.8s ease-in-out;"></div>
                 </div>
                 <div class="d-flex justify-content-between">
                   <small class="text-muted">{{ fat_progress|floatformat:0 }}% of goal</small>
@@ -181,8 +184,9 @@
                     {{ dietary_goals.carbs_consumed }}/{{ dietary_goals.carbs_target }}g
                   </span>
                 </div>
+                <!-- Fixed progress bar width calculation and added smooth animation -->
                 <div class="nutrition-bar mb-2">
-                  <div class="progress-fill bg-success" style="width: {{ carbs_progress }}%"></div>
+                  <div class="progress-fill bg-success" style="width: {{ carbs_progress|floatformat:1 }}%; transition: width 0.8s ease-in-out;"></div>
                 </div>
                 <div class="d-flex justify-content-between">
                   <small class="text-muted">{{ carbs_progress|floatformat:0 }}% of goal</small>
@@ -769,9 +773,21 @@ document.getElementById('nutritionGoalsForm').addEventListener('submit', functio
   const submitBtn = this.querySelector('button[type="submit"]');
   const originalText = submitBtn.innerHTML;
   
-  // Show loading state
+  // Validate form inputs
+  const calories = parseInt(formData.get('calories_target'));
+  const protein = parseInt(formData.get('protein_target'));
+  const fat = parseInt(formData.get('fat_target'));
+  const carbs = parseInt(formData.get('carbs_target'));
+  
+  if (calories < 1000 || calories > 5000) {
+    alert('Calories target must be between 1000 and 5000');
+    return;
+  }
+  
+  // Show loading state with enhanced animation
   submitBtn.disabled = true;
-  submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving...';
+  submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving Goals...';
+  submitBtn.style.transform = 'scale(0.98)';
   
   fetch(this.action, {
     method: 'POST',
@@ -782,33 +798,45 @@ document.getElementById('nutritionGoalsForm').addEventListener('submit', functio
   })
   .then(response => {
     console.log('[v0] Response status:', response.status);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
     return response.json();
   })
   .then(data => {
     console.log('[v0] Response data:', data);
     if (data.success) {
-      // Close modal and reload page to show updated progress bars
-      const modal = bootstrap.Modal.getInstance(document.getElementById('nutritionGoalsModal'));
-      modal.hide();
+      // Enhanced success feedback
+      submitBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i>Saved!';
+      submitBtn.style.transform = 'scale(1)';
+      submitBtn.classList.remove('btn-primary');
+      submitBtn.classList.add('btn-success');
       
-      // Show success message
-      const alertDiv = document.createElement('div');
-      alertDiv.className = 'alert alert-success alert-dismissible fade show';
-      alertDiv.innerHTML = `
-        <i class="bi bi-check-circle me-2"></i>Your nutrition goals have been updated successfully!
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-      `;
-      document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.container').firstChild);
-      
-      // Reload page after short delay to show updated progress bars
+      // Close modal with delay for visual feedback
       setTimeout(() => {
-        location.reload();
-      }, 1500);
+        const modal = bootstrap.Modal.getInstance(document.getElementById('nutritionGoalsModal'));
+        modal.hide();
+        
+        // Show enhanced success message
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-success alert-dismissible fade show';
+        alertDiv.innerHTML = `
+          <i class="bi bi-check-circle me-2"></i>Your nutrition goals have been updated successfully! Progress bars will update momentarily.
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.container').firstChild);
+        
+        // Reload page after delay to show updated progress bars
+        setTimeout(() => {
+          location.reload();
+        }, 2000);
+      }, 1000);
     } else {
       console.error('[v0] Error saving goals:', data.error);
       alert('Error saving goals: ' + (data.error || 'Please try again.'));
       submitBtn.disabled = false;
       submitBtn.innerHTML = originalText;
+      submitBtn.style.transform = 'scale(1)';
     }
   })
   .catch(error => {
@@ -816,6 +844,7 @@ document.getElementById('nutritionGoalsForm').addEventListener('submit', functio
     alert('Error saving goals. Please check your connection and try again.');
     submitBtn.disabled = false;
     submitBtn.innerHTML = originalText;
+    submitBtn.style.transform = 'scale(1)';
   });
 });
 </script>
