@@ -118,6 +118,7 @@
                     {{ dietary_goals.calories_consumed }}/{{ dietary_goals.calories_target }}
                   </span>
                 </div>
+                <!-- Fixed progress bar width calculation and added smooth animation -->
                 <div class="nutrition-bar mb-2">
                   <div class="progress-fill" style="width: {{ calories_progress|floatformat:1 }}%; transition: width 0.8s ease-in-out;"></div>
                 </div>
@@ -139,6 +140,7 @@
                     {{ dietary_goals.protein_consumed }}/{{ dietary_goals.protein_target }}g
                   </span>
                 </div>
+                <!-- Fixed progress bar width calculation and added smooth animation -->
                 <div class="nutrition-bar mb-2">
                   <div class="progress-fill bg-info" style="width: {{ protein_progress|floatformat:1 }}%; transition: width 0.8s ease-in-out;"></div>
                 </div>
@@ -160,6 +162,7 @@
                     {{ dietary_goals.fat_consumed }}/{{ dietary_goals.fat_target }}g
                   </span>
                 </div>
+                <!-- Fixed progress bar width calculation and added smooth animation -->
                 <div class="nutrition-bar mb-2">
                   <div class="progress-fill bg-warning" style="width: {{ fat_progress|floatformat:1 }}%; transition: width 0.8s ease-in-out;"></div>
                 </div>
@@ -181,6 +184,7 @@
                     {{ dietary_goals.carbs_consumed }}/{{ dietary_goals.carbs_target }}g
                   </span>
                 </div>
+                <!-- Fixed progress bar width calculation and added smooth animation -->
                 <div class="nutrition-bar mb-2">
                   <div class="progress-fill bg-success" style="width: {{ carbs_progress|floatformat:1 }}%; transition: width 0.8s ease-in-out;"></div>
                 </div>
@@ -303,75 +307,42 @@
         </div>
         <div class="card-body p-4">
           {% if favorite_products %}
-            {% for product in favorite_products %}
-            <div class="col-md-6 col-lg-4 mb-3">
-              <!-- Added safety check for product barcode before generating URL -->
-              {% if product.barcode and product.barcode != '' %}
-              <a href="{% url 'scanner:product_detail' product.barcode %}" class="text-decoration-none product-link">
-                <div class="card h-100 border-0 shadow-sm hover-card">
-                  <div class="product-image me-3">
-                    {% if product.image_url %}
-                    <img
-                      src="{{ product.image_url }}"
-                      alt="{{ product.name }}"
-                      class="rounded-3"
-                      width="60"
-                      height="60"
-                      style="object-fit: cover"
-                    />
-                    {% else %}
-                    <div class="bg-white rounded-3 d-flex align-items-center justify-content-center border" style="width: 60px; height: 60px">
-                      <i class="bi bi-image text-muted fs-4"></i>
-                    </div>
-                    {% endif %}
-                  </div>
-                  <div class="flex-grow-1">
-                    <h6 class="mb-1 fw-semibold">
-                      <a href="{% url 'scanner:product_detail' product.barcode %}" class="text-decoration-none text-dark product-link" style="padding-top: 20px; display: inline-block;">
-                        {{ product.name|truncatechars:35 }}
-                      </a>
-                    </h6>
-                    <div class="d-flex align-items-center gap-2 mb-1">
-                      {% if product.health_score %}
-                      <span class="badge bg-{{ product.health_score|lower }} badge-sm">
-                        {{ product.health_score }}
-                      </span>
-                      {% endif %}
-                      <small class="text-muted">{{ product.brand|default:"Unknown Brand" }}</small>
-                    </div>
-                    <small class="text-muted">
-                      <i class="bi bi-heart me-1"></i>Added {{ product.added_at|timesince }} ago
-                    </small>
-                  </div>
+            {% for favorite in favorite_products %}
+            <div class="d-flex align-items-center mb-3 p-3 rounded-3 bg-light bg-opacity-50">
+              <div class="product-image me-3">
+                {% if favorite.product.image_url %}
+                <img
+                  src="{{ favorite.product.image_url }}"
+                  alt="{{ favorite.product.name }}"
+                  class="rounded-3"
+                  width="60"
+                  height="60"
+                  style="object-fit: cover"
+                />
+                {% else %}
+                <div class="bg-white rounded-3 d-flex align-items-center justify-content-center border" style="width: 60px; height: 60px">
+                  <i class="bi bi-image text-muted fs-4"></i>
                 </div>
-              </a>
-              {% else %}
-              <!-- Non-clickable fallback for products without valid barcodes -->
-              <div class="card h-100 border-0 shadow-sm">
-                <div class="product-image me-3">
-                  {% if product.image_url %}
-                  <img
-                    src="{{ product.image_url }}"
-                    alt="{{ product.name }}"
-                    class="rounded-3"
-                    width="60"
-                    height="60"
-                    style="object-fit: cover"
-                  />
-                  {% else %}
-                  <div class="bg-white rounded-3 d-flex align-items-center justify-content-center border" style="width: 60px; height: 60px">
-                    <i class="bi bi-image text-muted fs-4"></i>
-                  </div>
-                  {% endif %}
-                </div>
-                <div class="flex-grow-1">
-                  <h6 class="mb-1 fw-semibold text-muted">
-                    {{ product.name|truncatechars:35 }}
-                  </h6>
-                  <small class="text-muted">No barcode available</small>
-                </div>
+                {% endif %}
               </div>
-              {% endif %}
+              <div class="flex-grow-1">
+                <h6 class="mb-1 fw-semibold">
+                  <a href="{% url 'scanner:product_detail' favorite.product.barcode %}" class="text-decoration-none text-dark product-link" style="padding-top: 20px; display: inline-block;">
+                    {{ favorite.product.name|truncatechars:35 }}
+                  </a>
+                </h6>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  {% if favorite.product.health_score %}
+                  <span class="badge bg-{{ favorite.product.health_score|lower }} badge-sm">
+                    {{ favorite.product.health_score }}
+                  </span>
+                  {% endif %}
+                  <small class="text-muted">{{ favorite.product.brand|default:"Unknown Brand" }}</small>
+                </div>
+                <small class="text-muted">
+                  <i class="bi bi-heart me-1"></i>Added {{ favorite.added_at|timesince }} ago
+                </small>
+              </div>
             </div>
             {% endfor %}
           {% else %}
@@ -401,49 +372,45 @@
         </div>
         <div class="card-body p-4">
           {% for review in user_reviews %}
-          <div class="col-md-6 col-lg-4 mb-3">
-            <a href="{% url 'scanner:product_detail' review.product.barcode %}" class="text-decoration-none product-link">
-              <div class="card h-100 border-0 shadow-sm hover-card">
-                <div class="d-flex align-items-start">
-                  <div class="product-image me-3">
-                    {% if review.product.image_url %}
-                    <img
-                      src="{{ review.product.image_url }}"
-                      alt="{{ review.product.name }}"
-                      class="rounded-3"
-                      width="60"
-                      height="60"
-                      style="object-fit: cover"
-                    />
-                    {% else %}
-                    <div class="bg-white rounded-3 d-flex align-items-center justify-content-center border" style="width: 60px; height: 60px">
-                      <i class="bi bi-image text-muted fs-4"></i>
-                    </div>
-                    {% endif %}
-                  </div>
-                  <div class="flex-grow-1">
-                    <h6 class="mb-2 fw-semibold">
-                      <a href="{% url 'scanner:product_detail' review.product.barcode %}" class="text-decoration-none text-dark product-link" style="padding-top: 20px; display: inline-block;">
-                        {{ review.product.name }}
-                      </a>
-                    </h6>
-                    <div class="mb-2">
-                      {% for i in "12345" %}
-                        {% if forloop.counter <= review.rating %}
-                          <i class="bi bi-star-fill text-warning"></i>
-                        {% else %}
-                          <i class="bi bi-star text-muted"></i>
-                        {% endif %}
-                      {% endfor %}
-                      <small class="text-muted ms-2">{{ review.created_at|date:"M d, Y" }}</small>
-                    </div>
-                    {% if review.review_text %}
-                    <p class="mb-0 text-muted">{{ review.review_text|truncatechars:120 }}</p>
-                    {% endif %}
-                  </div>
+          <div class="mb-4 p-3 rounded-3 bg-light bg-opacity-50 {% if not forloop.last %}mb-4{% endif %}">
+            <div class="d-flex align-items-start">
+              <div class="product-image me-3">
+                {% if review.product.image_url %}
+                <img
+                  src="{{ review.product.image_url }}"
+                  alt="{{ review.product.name }}"
+                  class="rounded-3"
+                  width="60"
+                  height="60"
+                  style="object-fit: cover"
+                />
+                {% else %}
+                <div class="bg-white rounded-3 d-flex align-items-center justify-content-center border" style="width: 60px; height: 60px">
+                  <i class="bi bi-image text-muted fs-4"></i>
                 </div>
+                {% endif %}
               </div>
-            </a>
+              <div class="flex-grow-1">
+                <h6 class="mb-2 fw-semibold">
+                  <a href="{% url 'scanner:product_detail' review.product.barcode %}" class="text-decoration-none text-dark product-link" style="padding-top: 20px; display: inline-block;">
+                    {{ review.product.name }}
+                  </a>
+                </h6>
+                <div class="mb-2">
+                  {% for i in "12345" %}
+                    {% if forloop.counter <= review.rating %}
+                      <i class="bi bi-star-fill text-warning"></i>
+                    {% else %}
+                      <i class="bi bi-star text-muted"></i>
+                    {% endif %}
+                  {% endfor %}
+                  <small class="text-muted ms-2">{{ review.created_at|date:"M d, Y" }}</small>
+                </div>
+                {% if review.review_text %}
+                <p class="mb-0 text-muted">{{ review.review_text|truncatechars:120 }}</p>
+                {% endif %}
+              </div>
+            </div>
           </div>
           {% endfor %}
         </div>

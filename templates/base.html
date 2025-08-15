@@ -59,16 +59,12 @@
             --border-color: #374151;
         }
         
-        /* Apply theme variables to ALL elements for complete theme switching */
-        * {
-            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
-        }
-        
         /* Apply fonts globally for better visibility */
         body {
             font-family: var(--font-primary) !important;
             background-color: var(--bg-primary) !important;
             color: var(--text-primary) !important;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
         
         h1, h2, h3, h4, h5, h6 {
@@ -76,103 +72,12 @@
             color: var(--text-primary) !important;
         }
         
-        /* Override ALL Bootstrap components with theme variables */
-        .card {
-            background-color: var(--card-bg) !important;
-            border-color: var(--border-color) !important;
-            color: var(--text-primary) !important;
-        }
-        
-        .card-header {
-            background-color: var(--bg-secondary) !important;
-            border-color: var(--border-color) !important;
-            color: var(--text-primary) !important;
-        }
-        
-        .card-body {
-            background-color: var(--card-bg) !important;
-            color: var(--text-primary) !important;
-        }
-        
-        .form-control {
-            background-color: var(--card-bg) !important;
-            border-color: var(--border-color) !important;
-            color: var(--text-primary) !important;
-        }
-        
-        .form-control:focus {
-            background-color: var(--card-bg) !important;
-            border-color: var(--primary-color) !important;
-            color: var(--text-primary) !important;
-            box-shadow: 0 0 0 0.2rem var(--primary-light) !important;
-        }
-        
-        .form-select {
-            background-color: var(--card-bg) !important;
-            border-color: var(--border-color) !important;
-            color: var(--text-primary) !important;
-        }
-        
-        .form-label {
-            color: var(--text-primary) !important;
-        }
-        
-        .modal-content {
-            background-color: var(--card-bg) !important;
-            border-color: var(--border-color) !important;
-        }
-        
-        .modal-header {
-            background-color: var(--bg-secondary) !important;
-            border-color: var(--border-color) !important;
-        }
-        
-        .modal-title {
-            color: var(--text-primary) !important;
-        }
-        
-        .modal-body {
-            background-color: var(--card-bg) !important;
-            color: var(--text-primary) !important;
-        }
-        
-        .modal-footer {
-            background-color: var(--bg-secondary) !important;
-            border-color: var(--border-color) !important;
-        }
-        
-        .table {
-            color: var(--text-primary) !important;
-        }
-        
-        .table-striped > tbody > tr:nth-of-type(odd) > td,
-        .table-striped > tbody > tr:nth-of-type(odd) > th {
-            background-color: var(--bg-secondary) !important;
-        }
-        
-        .list-group-item {
-            background-color: var(--card-bg) !important;
-            border-color: var(--border-color) !important;
-            color: var(--text-primary) !important;
-        }
-        
-        .badge {
-            color: white !important;
-        }
-        
-        .text-muted {
-            color: var(--text-muted) !important;
-        }
-        
-        .text-secondary {
-            color: var(--text-secondary) !important;
-        }
-        
         /* Enhanced navbar styling for theme compatibility */
         .navbar {
             background-color: var(--card-bg) !important;
-            border-bottom: 1px solid var(--border-color) !important;
+            border-bottom: 1px solid var(--border-color);
             backdrop-filter: blur(10px);
+            /* Added z-index to ensure navbar stays above all content */
             z-index: 1050 !important;
         }
         
@@ -192,27 +97,20 @@
         
         /* Enhanced button styling */
         .btn-primary {
-            background-color: var(--primary-color) !important;
-            border-color: var(--primary-color) !important;
-            color: white !important;
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
         }
         
         .btn-outline-primary {
-            border-color: var(--primary-color) !important;
-            color: var(--primary-color) !important;
-            background-color: transparent !important;
+            border-color: var(--primary-color);
+            color: var(--primary-color);
         }
         
         .btn-outline-primary:hover {
-            background-color: var(--primary-color) !important;
-            border-color: var(--primary-color) !important;
-            color: white !important;
-        }
-        
-        .btn-secondary {
-            background-color: var(--text-muted) !important;
-            border-color: var(--text-muted) !important;
-            color: var(--bg-primary) !important;
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
         }
         
         /* Enhanced dropdown styling */
@@ -231,19 +129,11 @@
             color: var(--primary-color) !important;
         }
         
-        .dropdown-header {
-            color: var(--text-primary) !important;
-        }
-        
-        .dropdown-divider {
-            border-color: var(--border-color) !important;
-        }
-        
         /* Enhanced alert styling */
         .alert {
-            border: 1px solid var(--border-color) !important;
-            background-color: var(--card-bg) !important;
-            color: var(--text-primary) !important;
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg);
+            color: var(--text-primary);
         }
         
         /* Enhanced theme toggle button */
@@ -255,8 +145,8 @@
             height: 3.5rem;
             border-radius: 50%;
             border: none;
-            background: var(--primary-color) !important;
-            color: white !important;
+            background: var(--primary-color);
+            color: white;
             font-size: 1.2rem;
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -269,6 +159,7 @@
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
         }
         
+        /* Added active state for theme toggle button */
         .theme-toggle:active {
             transform: scale(0.95);
         }
@@ -278,37 +169,25 @@
             padding-top: 2rem !important;
         }
         
+        /* Specific padding for product links to avoid navbar collision */
         .product-link {
             padding-top: 1rem !important;
             display: inline-block;
         }
         
-        /* Fix tag wrapping for proper alignment */
-        .tag-container {
-            display: flex !important;
-            flex-wrap: wrap !important;
-            gap: 0.5rem !important;
-            align-items: flex-start !important;
-            max-width: 100% !important;
-        }
-        
-        .tag-item {
-            flex-shrink: 0 !important;
-            word-break: break-word !important;
-            max-width: 100% !important;
-            white-space: normal !important;
-            overflow-wrap: break-word !important;
-        }
-
-        /* Progress bar styling for nutrition goals */
-        .progress {
+        /* Enhanced footer styling */
+        footer {
             background-color: var(--bg-secondary) !important;
-            border: 1px solid var(--border-color) !important;
+            border-top: 1px solid var(--border-color) !important;
+            color: var(--text-secondary) !important;
         }
         
-        .progress-bar {
-            background-color: var(--primary-color) !important;
-            transition: width 0.6s ease !important;
+        footer h5 {
+            color: var(--text-primary) !important;
+        }
+        
+        .text-muted {
+            color: var(--text-muted) !important;
         }
     </style>
     
@@ -496,23 +375,35 @@
                 
                 console.log('[v0] Switching from', currentTheme, 'to', newTheme);
                 
-                // Visual feedback
+                // Apply theme immediately with visual feedback
                 this.style.transform = 'scale(0.9)';
                 this.style.opacity = '0.7';
                 
-                // Apply theme changes immediately
+                // Apply theme changes
                 html.setAttribute('data-theme', newTheme);
                 localStorage.setItem('theme', newTheme);
                 updateThemeIcon(newTheme);
                 
-                // Force immediate reflow for CSS variables
+                // Force CSS update by triggering reflow
                 document.body.offsetHeight;
                 
-                // Apply transitions to all elements
-                const allElements = document.querySelectorAll('*');
-                allElements.forEach(el => {
-                    el.style.transition = 'all 0.3s ease';
-                });
+                // Update CSS custom properties immediately
+                const root = document.documentElement;
+                if (newTheme === 'dark') {
+                    root.style.setProperty('--text-primary', '#f9fafb');
+                    root.style.setProperty('--text-secondary', '#d1d5db');
+                    root.style.setProperty('--bg-primary', '#111827');
+                    root.style.setProperty('--bg-secondary', '#1f2937');
+                    root.style.setProperty('--card-bg', '#1f2937');
+                    root.style.setProperty('--border-color', '#374151');
+                } else {
+                    root.style.setProperty('--text-primary', '#1f2937');
+                    root.style.setProperty('--text-secondary', '#4b5563');
+                    root.style.setProperty('--bg-primary', '#ffffff');
+                    root.style.setProperty('--bg-secondary', '#f8fafc');
+                    root.style.setProperty('--card-bg', '#ffffff');
+                    root.style.setProperty('--border-color', '#e5e7eb');
+                }
                 
                 // Reset button appearance
                 setTimeout(() => {
@@ -522,7 +413,7 @@
                 
                 console.log('[v0] Theme switched successfully to:', newTheme);
                 
-                // Show success feedback
+                // Show brief success indicator
                 const originalIcon = icon.className;
                 icon.className = 'bi bi-check-circle-fill';
                 setTimeout(() => {
@@ -531,6 +422,7 @@
                 
             } catch (error) {
                 console.error('[v0] Error switching theme:', error);
+                // Reset button on error
                 this.style.transform = 'scale(1)';
                 this.style.opacity = '1';
             }
@@ -568,10 +460,9 @@
                 const currentTheme = html.getAttribute('data-theme') || 'light';
                 updateThemeIcon(currentTheme);
                 
-                // Force immediate theme application
+                // Ensure theme variables are applied
                 setTimeout(() => {
-                    document.body.offsetHeight;
-                    console.log('[v0] Theme fully applied');
+                    document.body.offsetHeight; // Trigger reflow
                 }, 50);
             } catch (error) {
                 console.error('[v0] Error applying theme on load:', error);
@@ -585,4 +476,3 @@
     {% block extra_js %}{% endblock %}
 </body>
 </html>
-</merged_code>
