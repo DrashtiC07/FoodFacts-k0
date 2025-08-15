@@ -261,7 +261,7 @@
               </div>
               <div class="flex-grow-1">
                 <h6 class="mb-1 fw-semibold">
-                  <a href="{% url 'scanner:product_detail' scan.product.barcode %}" class="text-decoration-none text-dark" style="padding-top: 10px; display: inline-block;">
+                  <a href="{% url 'scanner:product_detail' scan.product.barcode %}" class="text-decoration-none text-dark product-link" style="padding-top: 10px; display: inline-block;">
                     {{ scan.product.name|truncatechars:35 }}
                   </a>
                 </h6>
@@ -323,7 +323,7 @@
               </div>
               <div class="flex-grow-1">
                 <h6 class="mb-1 fw-semibold">
-                  <a href="{% url 'scanner:product_detail' favorite.product.barcode %}" class="text-decoration-none text-dark" style="padding-top: 10px; display: inline-block;">
+                  <a href="{% url 'scanner:product_detail' favorite.product.barcode %}" class="text-decoration-none text-dark product-link" style="padding-top: 10px; display: inline-block;">
                     {{ favorite.product.name|truncatechars:35 }}
                   </a>
                 </h6>
@@ -388,7 +388,7 @@
               </div>
               <div class="flex-grow-1">
                 <h6 class="mb-2 fw-semibold">
-                  <a href="{% url 'scanner:product_detail' review.product.barcode %}" class="text-decoration-none text-dark" style="padding-top: 10px; display: inline-block;">
+                  <a href="{% url 'scanner:product_detail' review.product.barcode %}" class="text-decoration-none text-dark product-link" style="padding-top: 10px; display: inline-block;">
                     {{ review.product.name }}
                   </a>
                 </h6>
@@ -630,6 +630,15 @@
   background-color: var(--bg-secondary);
   border-color: var(--border-color);
   color: var(--text-muted);
+}
+
+.product-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.product-link:hover {
+  text-decoration: underline;
 }
 
 @media (max-width: 768px) {

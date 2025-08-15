@@ -77,6 +77,8 @@
             background-color: var(--card-bg) !important;
             border-bottom: 1px solid var(--border-color);
             backdrop-filter: blur(10px);
+            /* Added z-index to ensure navbar stays above all content */
+            z-index: 1050 !important;
         }
         
         .navbar-brand {
@@ -155,6 +157,22 @@
         .theme-toggle:hover {
             transform: scale(1.1);
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Added active state for theme toggle button */
+        .theme-toggle:active {
+            transform: scale(0.95);
+        }
+
+        /* Added padding to prevent navbar collision for product cards */
+        .card-body.p-4 {
+            padding-top: 2rem !important;
+        }
+        
+        /* Specific padding for product links to avoid navbar collision */
+        .product-link {
+            padding-top: 1rem !important;
+            display: inline-block;
         }
         
         /* Enhanced footer styling */
@@ -336,7 +354,6 @@
 
     <!-- Enhanced theme toggle script for better functionality -->
     <script>
-        // Theme toggle functionality
         const themeToggle = document.getElementById('theme-toggle');
         const html = document.documentElement;
         const icon = themeToggle.querySelector('i');
@@ -346,22 +363,37 @@
         html.setAttribute('data-theme', savedTheme);
         updateThemeIcon(savedTheme);
         
-        themeToggle.addEventListener('click', () => {
+        themeToggle.addEventListener('click', (e) => {
+            e.preventDefault();
             const currentTheme = html.getAttribute('data-theme');
             const newTheme = currentTheme === 'light' ? 'dark' : 'light';
             
+            html.style.transition = 'all 0.3s ease';
             html.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
             updateThemeIcon(newTheme);
+            
+            setTimeout(() => {
+                html.style.transition = '';
+            }, 300);
         });
         
         function updateThemeIcon(theme) {
             if (theme === 'dark') {
                 icon.className = 'bi bi-sun-fill';
+                themeToggle.setAttribute('aria-label', 'Switch to light theme');
             } else {
                 icon.className = 'bi bi-moon-fill';
+                themeToggle.setAttribute('aria-label', 'Switch to dark theme');
             }
         }
+        
+        themeToggle.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                themeToggle.click();
+            }
+        });
     </script>
     
     <!-- Scripts -->
