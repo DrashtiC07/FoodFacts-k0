@@ -60,8 +60,11 @@ def dashboard(request):
     # Fetch scan history (last 10 scans)
     scan_history = ScanHistory.objects.filter(user=user).select_related('product').order_by('-scanned_at')[:10]
 
-    # Fetch favorite products
-    favorite_products = FavoriteProduct.objects.filter(user=user).select_related('product')[:10]
+    favorite_products = FavoriteProduct.objects.filter(
+        user=user, 
+        product__barcode__isnull=False,
+        product__barcode__gt=''
+    ).select_related('product')[:10]
 
     # Fetch user's reviews
     user_reviews = ProductReview.objects.filter(user=user).select_related('product').order_by('-created_at')[:5]
