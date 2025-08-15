@@ -34,12 +34,11 @@ def index(request):
     recent_products = Product.objects.all().order_by('-created_at')[:6]
     return render(request, 'scanner/index.html', {'recent_products': recent_products})
 
-@login_required
 def product_detail(request, barcode):
     try:
         product = get_object_or_404(Product, barcode=barcode)
         
-        # Record scan history if not already exists
+        # Record scan history only for authenticated users
         if request.user.is_authenticated:
             ScanHistory.objects.get_or_create(user=request.user, product=product)
         
@@ -48,22 +47,41 @@ def product_detail(request, barcode):
             product.health_score = product.calculate_health_score()
             product.save()
         
-        # Get nutrition facts
+        # Get nutrition facts with better error handling
+        nutrition_facts = []
         try:
-            nutrition_facts = NutritionFact.objects.filter(product=product).first()
-            if not nutrition_facts:
-                nutrition_facts = parse_nutrition_facts(product.nutrition_info) if product.nutrition_info else []
-        except:
+            nutrition_fact_obj = NutritionFact.objects.filter(product=product).first()
+            if nutrition_fact_obj:
+                nutrition_facts = nutrition_fact_obj
+            elif product.nutrition_info:
+                nutrition_facts = parse_nutrition_facts(product.nutrition_info)
+        except Exception as nf_error:
+            logger.warning(f"Nutrition facts error for product {barcode}: {str(nf_error)}")
             nutrition_facts = parse_nutrition_facts(product.nutrition_info) if product.nutrition_info else []
         
-        nova_info = get_nova_group_info(product.nova_group) if product.nova_group else None
+        # Get NOVA group info with error handling
+        nova_info = None
+        try:
+            nova_info = get_nova_group_info(product.nova_group) if product.nova_group else None
+        except Exception as nova_error:
+            logger.warning(f"NOVA info error for product {barcode}: {str(nova_error)}")
         
+        # Get additives analysis with error handling
         additives_analysis = None
-        if product.ingredients:
-            additives_analysis = analyze_additives(product.ingredients)
+        try:
+            if product.ingredients:
+                additives_analysis = analyze_additives(product.ingredients)
+        except Exception as additives_error:
+            logger.warning(f"Additives analysis error for product {barcode}: {str(additives_error)}")
         
-        environmental_impact = calculate_environmental_impact(product)
+        # Get environmental impact with error handling
+        environmental_impact = None
+        try:
+            environmental_impact = calculate_environmental_impact(product)
+        except Exception as env_error:
+            logger.warning(f"Environmental impact error for product {barcode}: {str(env_error)}")
         
+        # Get reviews
         reviews = ProductReview.objects.filter(product=product).select_related('user').order_by('-created_at')[:10]
         
         dietary_flags = [
@@ -87,7 +105,7 @@ def product_detail(request, barcode):
             }
         ]
         
-        # Check if product is favorite and get existing review
+        # Check if product is favorite and get existing review (only for authenticated users)
         existing_review = None
         is_favorite = False
         if request.user.is_authenticated:
@@ -100,16 +118,20 @@ def product_detail(request, barcode):
             'dietary_flags': dietary_flags,
             'existing_review': existing_review,
             'is_favorite': is_favorite,
-            'nova_info': nova_info,  # Added nova_info
-            'additives_analysis': additives_analysis,  # Added additives_analysis
-            'environmental_impact': environmental_impact,  # Added environmental_impact
-            'reviews': reviews,  # Added reviews
+            'nova_info': nova_info,
+            'additives_analysis': additives_analysis,
+            'environmental_impact': environmental_impact,
+            'reviews': reviews,
         })
         
+    except Product.DoesNotExist:
+        logger.error(f"Product with barcode {barcode} not found")
+        messages.error(request, f'Product with barcode {barcode} not found.')
+        return redirect('scanner:search')
     except Exception as e:
-        logger.error(f"Product detail error: {str(e)}")
-        messages.error(request, 'Error loading product details.')
-        return redirect('scanner:index')
+        logger.error(f"Unexpected error in product_detail for barcode {barcode}: {str(e)}")
+        messages.error(request, 'An unexpected error occurred while loading product details. Please try again.')
+        return redirect('scanner:search')
 
 @login_required
 def scan_barcode(request):
