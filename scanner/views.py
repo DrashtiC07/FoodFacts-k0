@@ -21,6 +21,7 @@ from pyzbar.pyzbar import decode
 from scanner.models import Product, ScanHistory, NutritionFact
 from accounts.models import FavoriteProduct, ProductReview
 from .ml_utils import eco_predictor, nova_analyzer
+from .additives_analyzer import analyze_additives  # Import additives analyzer
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -47,13 +48,23 @@ def product_detail(request, barcode):
             product.health_score = product.calculate_health_score()
             product.save()
         
-        # Get nutrition facts (using NutritionFact model if available)
+        # Get nutrition facts
         try:
             nutrition_facts = NutritionFact.objects.filter(product=product).first()
             if not nutrition_facts:
                 nutrition_facts = parse_nutrition_facts(product.nutrition_info) if product.nutrition_info else []
         except:
             nutrition_facts = parse_nutrition_facts(product.nutrition_info) if product.nutrition_info else []
+        
+        nova_info = get_nova_group_info(product.nova_group) if product.nova_group else None
+        
+        additives_analysis = None
+        if product.ingredients:
+            additives_analysis = analyze_additives(product.ingredients)
+        
+        environmental_impact = calculate_environmental_impact(product)
+        
+        reviews = ProductReview.objects.filter(product=product).select_related('user').order_by('-created_at')[:10]
         
         dietary_flags = [
             {
@@ -89,6 +100,10 @@ def product_detail(request, barcode):
             'dietary_flags': dietary_flags,
             'existing_review': existing_review,
             'is_favorite': is_favorite,
+            'nova_info': nova_info,  # Added nova_info
+            'additives_analysis': additives_analysis,  # Added additives_analysis
+            'environmental_impact': environmental_impact,  # Added environmental_impact
+            'reviews': reviews,  # Added reviews
         })
         
     except Exception as e:
@@ -964,3 +979,135 @@ def clean_text(text):
             text = text[len(prefix):].strip()
     
     return text
+
+def get_nova_group_info(nova_group):
+    """Get detailed NOVA group information"""
+    nova_groups = {
+        1: {
+            'name': 'Unprocessed or minimally processed foods',
+            'description': 'Natural foods obtained directly from plants or animals and do not undergo any alteration following their removal from nature.',
+            'health_impact': 'These foods are the basis of nutritionally balanced, delicious, culturally appropriate diets.',
+            'recommendation': 'Make these foods the basis of your diet.',
+            'icon': 'check-circle'
+        },
+        2: {
+            'name': 'Processed culinary ingredients',
+            'description': 'Substances derived from Group 1 foods or from nature by processes such as pressing, grinding, crushing, pulverizing, and refining.',
+            'health_impact': 'Used in small amounts to season and cook Group 1 foods and to make varied and enjoyable culinary preparations.',
+            'recommendation': 'Use in small amounts for cooking and seasoning.',
+            'icon': 'droplet'
+        },
+        3: {
+            'name': 'Processed foods',
+            'description': 'Products made by adding salt, oil, sugar or other Group 2 substances to Group 1 foods.',
+            'health_impact': 'Most processed foods have two or three ingredients, and are recognizable as modified versions of Group 1 foods.',
+            'recommendation': 'Consume in moderation as part of meals based on Group 1 foods.',
+            'icon': 'exclamation-triangle'
+        },
+        4: {
+            'name': 'Ultra-processed foods',
+            'description': 'Industrial formulations made entirely or mostly from substances extracted from foods, derived from food constituents, or synthesized in laboratories.',
+            'health_impact': 'Typically energy-dense, high in unhealthy types of fat, refined starches, free sugars and salt, and poor sources of protein, dietary fiber and micronutrients.',
+            'recommendation': 'Avoid or consume very occasionally as treats.',
+            'icon': 'x-circle'
+        }
+    }
+    
+    try:
+        group_num = int(nova_group)
+        return nova_groups.get(group_num, None)
+    except (ValueError, TypeError):
+        return None
+
+def calculate_environmental_impact(product):
+    """Calculate environmental impact based on product data"""
+    if not product.ingredients:
+        return None
+    
+    # Simple environmental impact calculation
+    ingredients_lower = product.ingredients.lower()
+    
+    # High impact ingredients
+    high_impact_ingredients = [
+        'palm oil', 'beef', 'lamb', 'cheese', 'butter', 'cream',
+        'cocoa', 'chocolate', 'coffee', 'almonds', 'avocado'
+    ]
+    
+    # Medium impact ingredients
+    medium_impact_ingredients = [
+        'chicken', 'pork', 'fish', 'eggs', 'milk', 'rice',
+        'wheat', 'sugar', 'soy', 'corn'
+    ]
+    
+    # Low impact ingredients
+    low_impact_ingredients = [
+        'vegetables', 'fruits', 'beans', 'lentils', 'peas',
+        'oats', 'barley', 'quinoa', 'herbs', 'spices'
+    ]
+    
+    high_impact_count = sum(1 for ingredient in high_impact_ingredients if ingredient in ingredients_lower)
+    medium_impact_count = sum(1 for ingredient in medium_impact_ingredients if ingredient in ingredients_lower)
+    low_impact_count = sum(1 for ingredient in low_impact_ingredients if ingredient in ingredients_lower)
+    
+    # Calculate scores
+    ingredient_score = max(0, 100 - (high_impact_count * 30) - (medium_impact_count * 15))
+    
+    # Processing impact based on NOVA group
+    processing_score = {
+        1: 90,  # Minimal processing
+        2: 75,  # Processed ingredients
+        3: 60,  # Processed foods
+        4: 30   # Ultra-processed
+    }.get(product.nova_group or 4, 50)
+    
+    # Overall score
+    overall_score = (ingredient_score + processing_score) // 2
+    
+    # Determine grade
+    if overall_score >= 80:
+        grade = 'A'
+    elif overall_score >= 65:
+        grade = 'B'
+    elif overall_score >= 50:
+        grade = 'C'
+    elif overall_score >= 35:
+        grade = 'D'
+    else:
+        grade = 'E'
+    
+    # Carbon footprint estimate
+    if overall_score >= 75:
+        carbon_footprint = 'Very Low'
+    elif overall_score >= 60:
+        carbon_footprint = 'Low'
+    elif overall_score >= 45:
+        carbon_footprint = 'Moderate'
+    elif overall_score >= 30:
+        carbon_footprint = 'High'
+    else:
+        carbon_footprint = 'Very High'
+    
+    recommendations = []
+    if high_impact_count > 0:
+        recommendations.append("Look for products with fewer high-impact ingredients")
+    if product.nova_group and product.nova_group >= 3:
+        recommendations.append("Choose less processed alternatives when possible")
+    if 'palm oil' in ingredients_lower:
+        recommendations.append("Consider palm oil-free alternatives")
+    
+    return {
+        'overall_score': overall_score,
+        'grade': grade,
+        'carbon_footprint_estimate': carbon_footprint,
+        'ingredient_impact': {
+            'score': ingredient_score,
+            'high_impact_count': high_impact_count,
+            'medium_impact_count': medium_impact_count,
+            'low_impact_count': low_impact_count
+        },
+        'processing_impact': {
+            'score': processing_score,
+            'description': f"NOVA Group {product.nova_group or 'Unknown'} processing level"
+        },
+        'recommendations': recommendations
+    }

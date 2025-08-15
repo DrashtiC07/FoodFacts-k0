@@ -54,15 +54,16 @@
                 
                 <ul class="navbar-nav">
                     {% if user.is_authenticated %}
-                    <!-- Updated user dropdown with modern styling and simplified options -->
+                    <!-- Updated user dropdown with clean styling and no duplicate dropdown icons -->
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle d-flex align-items-center px-3 py-2 rounded-pill" 
+                        <a class="nav-link d-flex align-items-center px-3 py-2 rounded-pill" 
                            href="#" role="button" data-bs-toggle="dropdown" 
                            style="background: var(--bg-secondary); border: 1px solid var(--border-color);">
                             <div class="user-avatar me-2">
                                 <i class="bi bi-person-circle fs-5" style="color: var(--primary-color);"></i>
                             </div>
                             <span class="d-none d-md-inline fw-medium">{{ user.username }}</span>
+                            <!-- Single chevron icon, no duplicate dropdown arrows -->
                             <i class="bi bi-chevron-down ms-2 small"></i>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2" 

@@ -6,30 +6,30 @@
 /* CSS Custom Properties for Modern Pastel Theming */
 :root {
   /* Light Theme - Beautiful Pastel Colors */
-  --primary-color: #ffabab; /* Soft Pink */
-  --primary-hover: #ff9999; /* Slightly deeper pink */
-  --primary-light: #ffe6e6; /* Light Pink */
-  --accent-color: #ffc3a0; /* Peach */
-  --accent-hover: #ffb088; /* Deeper peach */
-  --secondary-color: #b9fbc0; /* Mint Green */
-  --secondary-hover: #a8f5b0; /* Deeper mint */
+  --primary-color: #a78bfa; /* Soft Purple */
+  --primary-hover: #9333ea; /* Deeper purple */
+  --primary-light: #f3f4f6; /* Light gray background */
+  --accent-color: #06b6d4; /* Soft Cyan */
+  --accent-hover: #0891b2; /* Deeper cyan */
+  --secondary-color: #10b981; /* Emerald Green */
+  --secondary-hover: #059669; /* Deeper emerald */
 
   /* Light Theme Background & Text */
   --bg-primary: #ffffff; /* Pure white */
-  --bg-secondary: #ffe6e6; /* Light pink background */
-  --bg-tertiary: #fff5f5; /* Very light pink */
-  --text-primary: #374151; /* Dark gray for readability */
-  --text-secondary: #4b5563; /* Medium gray */
-  --text-muted: #6b7280; /* Light gray */
-  --border-color: #f3e8ff; /* Very light lavender */
-  --shadow-color: rgba(255, 171, 171, 0.15); /* Soft pink shadow */
+  --bg-secondary: #f8fafc; /* Very light gray */
+  --bg-tertiary: #f1f5f9; /* Light gray */
+  --text-primary: #1e293b; /* Dark slate */
+  --text-secondary: #475569; /* Medium slate */
+  --text-muted: #64748b; /* Light slate */
+  --border-color: #e2e8f0; /* Very light slate */
+  --shadow-color: rgba(167, 139, 250, 0.15); /* Soft purple shadow */
   --card-bg: #ffffff;
 
   /* Health Score Colors - Pastel Friendly */
-  --health-excellent: #b9fbc0; /* Mint green */
-  --health-good: #c7f59b; /* Light lime */
-  --health-fair: #ffc3a0; /* Peach */
-  --health-poor: #ffabab; /* Soft pink */
+  --health-excellent: #10b981; /* Emerald green */
+  --health-good: #22c55e; /* Green */
+  --health-fair: #f59e0b; /* Amber */
+  --health-poor: #ef4444; /* Red */
 
   /* Spacing & Borders - Modern Approach */
   --border-radius: 16px;
@@ -52,30 +52,30 @@
 /* Dark Theme - Sophisticated Dark Colors */
 [data-theme="dark"] {
   /* Dark Theme - Sophisticated Colors */
-  --primary-color: #d6b8b8; /* Dusty Rose */
-  --primary-hover: #c4a4a4; /* Deeper dusty rose */
-  --primary-light: #3c3a47; /* Slate gray for backgrounds */
-  --accent-color: #b8a9c9; /* Soft lavender */
-  --accent-hover: #a695b8; /* Deeper lavender */
-  --secondary-color: #9bb8a9; /* Sage green */
-  --secondary-hover: #8aa898; /* Deeper sage */
+  --primary-color: #c4b5fd; /* Light Purple */
+  --primary-hover: #a78bfa; /* Deeper light purple */
+  --primary-light: #1e1b4b; /* Dark indigo for backgrounds */
+  --accent-color: #67e8f9; /* Light Cyan */
+  --accent-hover: #22d3ee; /* Deeper light cyan */
+  --secondary-color: #6ee7b7; /* Light Emerald */
+  --secondary-hover: #34d399; /* Deeper light emerald */
 
   /* Dark Theme Background & Text */
-  --bg-primary: #2e2a47; /* Deep charcoal */
-  --bg-secondary: #1c1b29; /* Dark slate */
-  --bg-tertiary: #3c3a47; /* Slate gray */
-  --text-primary: #f1f5f9; /* Light text */
-  --text-secondary: #cbd5e1; /* Medium light text */
+  --bg-primary: #0f172a; /* Dark slate */
+  --bg-secondary: #1e293b; /* Slate */
+  --bg-tertiary: #334155; /* Light slate */
+  --text-primary: #f8fafc; /* Very light text */
+  --text-secondary: #cbd5e1; /* Light text */
   --text-muted: #94a3b8; /* Muted text */
-  --border-color: #4a4a4a; /* Dark borders */
-  --shadow-color: rgba(214, 184, 184, 0.2); /* Dusty rose shadow */
-  --card-bg: #1c1b29; /* Dark slate for cards */
+  --border-color: #475569; /* Dark borders */
+  --shadow-color: rgba(196, 181, 253, 0.2); /* Light purple shadow */
+  --card-bg: #1e293b; /* Slate for cards */
 
   /* Health Score Colors - Dark Theme */
-  --health-excellent: #9bb8a9; /* Sage green */
-  --health-good: #b8c99b; /* Light sage */
-  --health-fair: #d6b8b8; /* Dusty rose */
-  --health-poor: #c4a4a4; /* Deeper dusty rose */
+  --health-excellent: #6ee7b7; /* Light emerald */
+  --health-good: #86efac; /* Light green */
+  --health-fair: #fbbf24; /* Light amber */
+  --health-poor: #f87171; /* Light red */
 
   /* Shadows - Layered Design */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
@@ -90,7 +90,6 @@
 }
 
 body {
-  /* Updated to use Work Sans and Open Sans fonts */
   font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background-color: var(--bg-primary);
   color: var(--text-primary);
@@ -106,7 +105,6 @@ h3,
 h4,
 h5,
 h6 {
-  /* Updated to use Work Sans for headings */
   font-family: "Work Sans", sans-serif;
   font-weight: 600;
   line-height: 1.2;
@@ -138,9 +136,9 @@ h6 {
 }
 
 .btn-primary {
-  /* Updated to soft pink gradient */
+  /* Updated to purple to cyan gradient */
   background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-  color: var(--text-primary);
+  color: white;
   box-shadow: var(--shadow-md);
 }
 
@@ -148,7 +146,7 @@ h6 {
   background: linear-gradient(135deg, var(--primary-hover), var(--accent-hover));
   transform: translateY(-1px);
   box-shadow: var(--shadow-lg);
-  color: var(--text-primary);
+  color: white;
 }
 
 .btn-outline-primary {
@@ -160,20 +158,19 @@ h6 {
 .btn-outline-primary:hover {
   background: var(--primary-color);
   border-color: var(--primary-color);
-  color: var(--text-primary);
+  color: white;
   transform: translateY(-1px);
 }
 
 .btn-secondary {
-  /* Updated to mint green */
   background: var(--secondary-color);
-  color: var(--text-primary);
+  color: white;
   border: 1px solid var(--border-color);
 }
 
 .btn-secondary:hover {
   background: var(--secondary-hover);
-  color: var(--text-primary);
+  color: white;
   transform: translateY(-1px);
 }
 
@@ -190,8 +187,7 @@ h6 {
 .card:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-lg);
-  /* Updated hover border to soft pink */
-  border-color: rgba(255, 171, 171, 0.3);
+  border-color: rgba(167, 139, 250, 0.3);
 }
 
 .card-header {
@@ -208,7 +204,6 @@ h6 {
 
 /* Modern Navigation */
 .navbar {
-  /* Updated navbar background with soft pink tint */
   background-color: rgba(255, 255, 255, 0.95) !important;
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border-color);
@@ -217,8 +212,7 @@ h6 {
 }
 
 [data-theme="dark"] .navbar {
-  /* Updated dark navbar with charcoal background */
-  background-color: rgba(46, 42, 71, 0.95) !important;
+  background-color: rgba(15, 23, 42, 0.95) !important;
 }
 
 .navbar-brand {
@@ -249,6 +243,11 @@ h6 {
   font-weight: 600;
 }
 
+/* Updated dropdown styling to remove duplicate icons */
+.dropdown-toggle::after {
+  display: none !important; /* Remove Bootstrap's default dropdown arrow */
+}
+
 /* Modern Health Score System */
 .health-score-circle {
   width: 120px;
@@ -260,7 +259,7 @@ h6 {
   font-size: 2rem;
   font-weight: 700;
   font-family: "Work Sans", sans-serif;
-  color: var(--text-primary);
+  color: white;
   position: relative;
   box-shadow: var(--shadow-lg);
   transition: transform var(--transition-normal);
@@ -271,20 +270,16 @@ h6 {
 }
 
 .health-score-excellent {
-  /* Updated to mint green gradient */
   background: linear-gradient(135deg, var(--health-excellent), var(--secondary-color));
 }
 .health-score-good {
-  /* Updated to light lime gradient */
-  background: linear-gradient(135deg, var(--health-good), #b8e6b8);
+  background: linear-gradient(135deg, var(--health-good), #86efac);
 }
 .health-score-fair {
-  /* Updated to peach gradient */
-  background: linear-gradient(135deg, var(--health-fair), var(--accent-color));
+  background: linear-gradient(135deg, var(--health-fair), #fbbf24);
 }
 .health-score-poor {
-  /* Updated to soft pink gradient */
-  background: linear-gradient(135deg, var(--health-poor), var(--primary-color));
+  background: linear-gradient(135deg, var(--health-poor), #f87171);
 }
 
 /* Modern Progress Bars */
@@ -298,7 +293,6 @@ h6 {
 
 .nutrition-bar .progress-fill {
   height: 100%;
-  /* Updated to soft pink to peach gradient */
   background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
   border-radius: 6px;
   transition: width var(--transition-slow);
@@ -339,9 +333,8 @@ h6 {
 }
 
 .form-control:focus {
-  /* Updated focus color to soft pink */
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(255, 171, 171, 0.2);
+  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.2);
   background-color: var(--bg-primary);
   color: var(--text-primary);
   outline: none;
@@ -399,29 +392,25 @@ h6 {
 }
 
 .alert-success {
-  /* Updated to mint green theme */
-  background-color: rgba(185, 251, 192, 0.2);
+  background-color: rgba(16, 185, 129, 0.1);
   color: var(--health-excellent);
   border-left-color: var(--health-excellent);
 }
 
 .alert-warning {
-  /* Updated to peach theme */
-  background-color: rgba(255, 195, 160, 0.2);
+  background-color: rgba(245, 158, 11, 0.1);
   color: var(--health-fair);
   border-left-color: var(--health-fair);
 }
 
 .alert-danger {
-  /* Updated to soft pink theme */
-  background-color: rgba(255, 171, 171, 0.2);
+  background-color: rgba(239, 68, 68, 0.1);
   color: var(--health-poor);
   border-left-color: var(--health-poor);
 }
 
 .alert-info {
-  /* Updated to soft pink theme */
-  background-color: rgba(255, 171, 171, 0.2);
+  background-color: rgba(167, 139, 250, 0.1);
   color: var(--primary-color);
   border-left-color: var(--primary-color);
 }
@@ -445,7 +434,6 @@ h6 {
 
 /* Modern Utility Classes */
 .text-gradient {
-  /* Updated gradient to soft pink to peach */
   background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -460,9 +448,34 @@ h6 {
 .border-gradient {
   border: 2px solid transparent;
   background: linear-gradient(var(--bg-primary), var(--bg-primary)) padding-box,
-    /* Updated border gradient to pastel colors */
     linear-gradient(135deg, var(--primary-color), var(--accent-color)) border-box;
   border-radius: var(--border-radius);
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  color: white;
+  font-size: 1.25rem;
+  cursor: pointer;
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition-normal);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-xl);
 }
 
 /* Responsive Design */
