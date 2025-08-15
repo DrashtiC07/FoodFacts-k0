@@ -5,11 +5,11 @@
 
 {% block content %}
 <!-- Hero Section -->
-<div class="hero-section bg-gradient text-white py-5 mb-5 rounded">
+<div class="hero-section text-white py-5 mb-5 rounded" style="background: linear-gradient(135deg, var(--primary-color), var(--accent-color));">
     <div class="container">
         <div class="row align-items-center">
             <div class="col-lg-6">
-                <h1 class="display-4 fw-bold mb-4">
+                <h1 class="display-4 fw-bold mb-4" style="font-family: 'Work Sans', sans-serif;">
                     Scan. Discover. Track.
                 </h1>
                 <p class="lead mb-4">
@@ -34,24 +34,169 @@
     </div>
 </div>
 
+<!-- NOVA Group Educational Section -->
+<div class="container mb-5">
+    <div class="row text-center mb-5">
+        <div class="col-12">
+            <h2 class="display-5 fw-bold mb-3" style="font-family: 'Work Sans', sans-serif; color: var(--text-primary);">Understanding Food Processing</h2>
+            <p class="lead" style="color: var(--text-muted);">Learn about the NOVA classification system and make better food choices</p>
+        </div>
+    </div>
+    
+    <div class="row g-4 mb-5">
+        <!-- NOVA Group 1 -->
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
+                <div class="card-body p-4 text-center">
+                    <div class="nova-icon mb-3" style="background: rgba(185, 251, 192, 0.2); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                        <i class="bi bi-leaf fs-1" style="color: var(--health-excellent);"></i>
+                    </div>
+                    <div class="nova-badge mb-3">
+                        <span class="badge fs-6 px-3 py-2" style="background: var(--health-excellent); color: var(--text-primary);">NOVA 1</span>
+                    </div>
+                    <h5 class="fw-bold mb-3" style="color: var(--text-primary);">Unprocessed</h5>
+                    <p class="text-muted small mb-3">Fresh fruits, vegetables, grains, meat, milk - foods in their natural state</p>
+                    <div class="recommendation p-2 rounded" style="background: var(--bg-secondary);">
+                        <small class="fw-medium" style="color: var(--health-excellent);">✓ Make these 70% of your diet</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- NOVA Group 2 -->
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
+                <div class="card-body p-4 text-center">
+                    <div class="nova-icon mb-3" style="background: rgba(255, 195, 160, 0.2); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                        <i class="bi bi-droplet fs-1" style="color: var(--accent-color);"></i>
+                    </div>
+                    <div class="nova-badge mb-3">
+                        <span class="badge fs-6 px-3 py-2" style="background: var(--accent-color); color: var(--text-primary);">NOVA 2</span>
+                    </div>
+                    <h5 class="fw-bold mb-3" style="color: var(--text-primary);">Culinary Ingredients</h5>
+                    <p class="text-muted small mb-3">Oils, butter, sugar, salt, flour - used to prepare Group 1 foods</p>
+                    <div class="recommendation p-2 rounded" style="background: var(--bg-secondary);">
+                        <small class="fw-medium" style="color: var(--accent-color);">✓ Use in moderation</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- NOVA Group 3 -->
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
+                <div class="card-body p-4 text-center">
+                    <div class="nova-icon mb-3" style="background: rgba(255, 195, 160, 0.3); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                        <i class="bi bi-archive fs-1" style="color: var(--health-fair);"></i>
+                    </div>
+                    <div class="nova-badge mb-3">
+                        <span class="badge fs-6 px-3 py-2" style="background: var(--health-fair); color: var(--text-primary);">NOVA 3</span>
+                    </div>
+                    <h5 class="fw-bold mb-3" style="color: var(--text-primary);">Processed</h5>
+                    <p class="text-muted small mb-3">Canned vegetables, cheese, bread - Group 1 foods with added ingredients</p>
+                    <div class="recommendation p-2 rounded" style="background: var(--bg-secondary);">
+                        <small class="fw-medium" style="color: var(--health-fair);">⚠ Consume occasionally</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- NOVA Group 4 -->
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
+                <div class="card-body p-4 text-center">
+                    <div class="nova-icon mb-3" style="background: rgba(255, 171, 171, 0.3); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                        <i class="bi bi-exclamation-triangle fs-1" style="color: var(--health-poor);"></i>
+                    </div>
+                    <div class="nova-badge mb-3">
+                        <span class="badge fs-6 px-3 py-2" style="background: var(--health-poor); color: var(--text-primary);">NOVA 4</span>
+                    </div>
+                    <h5 class="fw-bold mb-3" style="color: var(--text-primary);">Ultra-processed</h5>
+                    <p class="text-muted small mb-3">Soft drinks, snacks, instant foods - industrial formulations</p>
+                    <div class="recommendation p-2 rounded" style="background: var(--bg-secondary);">
+                        <small class="fw-medium" style="color: var(--health-poor);">✗ Avoid or limit severely</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- NOVA Information Card -->
+    <div class="card border-0 shadow-sm" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
+        <div class="card-body p-4">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h4 class="fw-bold mb-3" style="color: var(--text-primary);">
+                        <i class="bi bi-info-circle me-2" style="color: var(--primary-color);"></i>
+                        What is the NOVA Classification?
+                    </h4>
+                    <p class="mb-3" style="color: var(--text-secondary);">
+                        NOVA is a food classification system developed by researchers at the University of São Paulo, Brazil. 
+                        It groups foods according to the extent and purpose of industrial processing they undergo.
+                    </p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="fw-semibold mb-2" style="color: var(--text-primary);">Why it matters:</h6>
+                            <ul class="list-unstyled">
+                                <li class="mb-1"><i class="bi bi-check-circle me-2" style="color: var(--health-excellent);"></i>Helps identify healthy foods</li>
+                                <li class="mb-1"><i class="bi bi-check-circle me-2" style="color: var(--health-excellent);"></i>Links processing to health outcomes</li>
+                                <li class="mb-1"><i class="bi bi-check-circle me-2" style="color: var(--health-excellent);"></i>Guides better food choices</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-semibold mb-2" style="color: var(--text-primary);">Health impact:</h6>
+                            <ul class="list-unstyled">
+                                <li class="mb-1"><i class="bi bi-heart me-2" style="color: var(--health-poor);"></i>Ultra-processed foods linked to obesity</li>
+                                <li class="mb-1"><i class="bi bi-heart me-2" style="color: var(--health-poor);"></i>Associated with diabetes risk</li>
+                                <li class="mb-1"><i class="bi bi-heart me-2" style="color: var(--health-poor);"></i>May increase cancer risk</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="nova-chart" style="background: var(--bg-secondary); border-radius: var(--border-radius); padding: 2rem;">
+                        <h6 class="fw-semibold mb-3" style="color: var(--text-primary);">Ideal Diet Composition</h6>
+                        <div class="chart-item mb-2">
+                            <span class="badge me-2" style="background: var(--health-excellent);">70%</span>
+                            <small>NOVA 1</small>
+                        </div>
+                        <div class="chart-item mb-2">
+                            <span class="badge me-2" style="background: var(--accent-color);">20%</span>
+                            <small>NOVA 2</small>
+                        </div>
+                        <div class="chart-item mb-2">
+                            <span class="badge me-2" style="background: var(--health-fair);">8%</span>
+                            <small>NOVA 3</small>
+                        </div>
+                        <div class="chart-item">
+                            <span class="badge me-2" style="background: var(--health-poor);">2%</span>
+                            <small>NOVA 4</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Features Section -->
 <div class="container mb-5">
     <div class="row text-center mb-5">
         <div class="col-12">
-            <h2 class="display-5 fw-bold mb-3">Why Choose Food Facts Scanner?</h2>
-            <p class="lead text-muted">Everything you need to make informed food choices</p>
+            <h2 class="display-5 fw-bold mb-3" style="font-family: 'Work Sans', sans-serif; color: var(--text-primary);">Why Choose Food Facts Scanner?</h2>
+            <p class="lead" style="color: var(--text-muted);">Everything you need to make informed food choices</p>
         </div>
     </div>
     
     <div class="row g-4">
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100 text-center">
+            <div class="card border-0 shadow-sm h-100 text-center" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
                 <div class="card-body p-4">
                     <div class="feature-icon mb-3">
-                        <i class="bi bi-upc-scan display-1 text-primary"></i>
+                        <i class="bi bi-upc-scan display-1" style="color: var(--primary-color);"></i>
                     </div>
-                    <h4 class="fw-bold mb-3">Easy Scanning</h4>
-                    <p class="text-muted">
+                    <h4 class="fw-bold mb-3" style="color: var(--text-primary);">Easy Scanning</h4>
+                    <p style="color: var(--text-muted);">
                         Simply point your camera at any barcode and get instant nutritional information 
                         from our comprehensive database.
                     </p>
@@ -60,13 +205,13 @@
         </div>
         
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100 text-center">
+            <div class="card border-0 shadow-sm h-100 text-center" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
                 <div class="card-body p-4">
                     <div class="feature-icon mb-3">
-                        <i class="bi bi-graph-up display-1 text-success"></i>
+                        <i class="bi bi-graph-up display-1" style="color: var(--health-excellent);"></i>
                     </div>
-                    <h4 class="fw-bold mb-3">Nutrition Tracking</h4>
-                    <p class="text-muted">
+                    <h4 class="fw-bold mb-3" style="color: var(--text-primary);">Nutrition Tracking</h4>
+                    <p style="color: var(--text-muted);">
                         Track your daily nutrition intake with detailed charts and progress monitoring 
                         to reach your health goals.
                     </p>
@@ -75,13 +220,13 @@
         </div>
         
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100 text-center">
+            <div class="card border-0 shadow-sm h-100 text-center" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
                 <div class="card-body p-4">
                     <div class="feature-icon mb-3">
-                        <i class="bi bi-heart-fill display-1 text-danger"></i>
+                        <i class="bi bi-heart-fill display-1" style="color: var(--health-poor);"></i>
                     </div>
-                    <h4 class="fw-bold mb-3">Personal Favorites</h4>
-                    <p class="text-muted">
+                    <h4 class="fw-bold mb-3" style="color: var(--text-primary);">Personal Favorites</h4>
+                    <p style="color: var(--text-muted);">
                         Save your favorite products and write reviews to help others make 
                         better food choices.
                     </p>
@@ -96,15 +241,15 @@
 <div class="container mb-5">
     <div class="row mb-4">
         <div class="col-12">
-            <h2 class="display-6 fw-bold mb-3">Recently Added Products</h2>
-            <p class="text-muted">Discover the latest products in our database</p>
+            <h2 class="display-6 fw-bold mb-3" style="color: var(--text-primary);">Recently Added Products</h2>
+            <p style="color: var(--text-muted);">Discover the latest products in our database</p>
         </div>
     </div>
     
     <div class="row g-4">
         {% for product in recent_products %}
         <div class="col-lg-4 col-md-6">
-            <div class="card product-card border-0 shadow-sm h-100">
+            <div class="card product-card border-0 shadow-sm h-100" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
                 <div class="card-body">
                     <div class="d-flex align-items-start mb-3">
                         <div class="product-image me-3">
@@ -112,25 +257,32 @@
                                 <img src="{{ product.image_url }}" alt="{{ product.name }}" 
                                      class="rounded" width="60" height="60" style="object-fit: cover;">
                             {% else %}
-                                <div class="bg-light rounded d-flex align-items-center justify-content-center" 
-                                     style="width: 60px; height: 60px;">
-                                    <i class="bi bi-image text-muted"></i>
+                                <div class="rounded d-flex align-items-center justify-content-center" 
+                                     style="width: 60px; height: 60px; background: var(--bg-secondary);">
+                                    <i class="bi bi-image" style="color: var(--text-muted);"></i>
                                 </div>
                             {% endif %}
                         </div>
                         <div class="flex-grow-1">
                             <h5 class="card-title mb-1">
                                 <a href="{% url 'scanner:product_detail' product.barcode %}" 
-                                   class="text-decoration-none">
+                                   class="text-decoration-none" style="color: var(--text-primary);">
                                     {{ product.name|truncatechars:50 }}
                                 </a>
                             </h5>
-                            <p class="text-muted small mb-2">{{ product.brand|default:"Unknown Brand" }}</p>
-                            {% if product.ecoscore %}
-                                <span class="badge bg-{{ product.ecoscore|lower }}">
-                                    Eco-Score {{ product.ecoscore }}
-                                </span>
-                            {% endif %}
+                            <p class="small mb-2" style="color: var(--text-muted);">{{ product.brand|default:"Unknown Brand" }}</p>
+                            <div class="d-flex gap-2 flex-wrap">
+                                {% if product.ecoscore %}
+                                    <span class="badge" style="background: {% if product.ecoscore == 'A' %}var(--health-excellent){% elif product.ecoscore == 'B' %}var(--health-good){% elif product.ecoscore == 'C' %}var(--health-fair){% elif product.ecoscore == 'D' %}var(--accent-color){% else %}var(--health-poor){% endif %}; color: var(--text-primary);">
+                                        Eco-Score {{ product.ecoscore }}
+                                    </span>
+                                {% endif %}
+                                {% if product.nova_group %}
+                                    <span class="badge" style="background: {% if product.nova_group == 1 %}var(--health-excellent){% elif product.nova_group == 2 %}var(--accent-color){% elif product.nova_group == 3 %}var(--health-fair){% else %}var(--health-poor){% endif %}; color: var(--text-primary);">
+                                        NOVA {{ product.nova_group }}
+                                    </span>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -142,10 +294,10 @@
 {% endif %}
 
 <!-- CTA Section -->
-<div class="bg-light py-5 rounded">
+<div class="py-5 rounded" style="background: var(--bg-secondary);">
     <div class="container text-center">
-        <h2 class="display-6 fw-bold mb-3">Ready to Start Your Health Journey?</h2>
-        <p class="lead mb-4">Join thousands of users who are making better food choices every day.</p>
+        <h2 class="display-6 fw-bold mb-3" style="color: var(--text-primary);">Ready to Start Your Health Journey?</h2>
+        <p class="lead mb-4" style="color: var(--text-muted);">Join thousands of users who are making better food choices every day.</p>
         <div class="d-flex justify-content-center gap-3 flex-wrap">
             {% if not user.is_authenticated %}
                 <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-lg">
@@ -162,16 +314,14 @@
 
 {% block extra_css %}
 <style>
-.hero-section {
-    background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-info) 100%);
-}
-
 .product-card {
-    transition: transform 0.2s ease-in-out;
+    transition: transform var(--transition-normal);
+    cursor: pointer;
 }
 
 .product-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
 }
 
 .feature-icon {
@@ -181,10 +331,27 @@
     justify-content: center;
 }
 
-.badge.bg-a { background-color: #2e7d32 !important; }
-.badge.bg-b { background-color: #66bb6a !important; }
-.badge.bg-c { background-color: #ffeb3b !important; color: #000 !important; }
-.badge.bg-d { background-color: #ff9800 !important; }
-.badge.bg-e { background-color: #f44336 !important; }
+.nova-icon {
+    transition: transform var(--transition-normal);
+}
+
+.card:hover .nova-icon {
+    transform: scale(1.1);
+}
+
+.chart-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.recommendation {
+    border-left: 3px solid;
+}
+
+.recommendation:nth-child(1) { border-left-color: var(--health-excellent); }
+.recommendation:nth-child(2) { border-left-color: var(--accent-color); }
+.recommendation:nth-child(3) { border-left-color: var(--health-fair); }
+.recommendation:nth-child(4) { border-left-color: var(--health-poor); }
 </style>
 {% endblock %}

@@ -20,6 +20,7 @@ from django.db.models import Q
 from pyzbar.pyzbar import decode
 from scanner.models import Product, ScanHistory, NutritionFact
 from accounts.models import FavoriteProduct, ProductReview
+from .ml_utils import eco_predictor, nova_analyzer
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -790,8 +791,22 @@ def parse_barcodelookup_nutrition(product):
     return nutrition
 
 def save_product(barcode, product_info, source):
-    """Save product to database with enhanced fields"""
+    """Save product to database with enhanced fields and ML predictions"""
     ingredients = product_info.get('ingredients', '')
+    
+    ecoscore = product_info.get('ecoscore', '')
+    if not ecoscore:
+        # Use ML to predict eco-score
+        ecoscore = eco_predictor.predict_ecoscore({
+            'ingredients': ingredients,
+            'nutrition_info': product_info.get('nutrition', {}),
+            'nova_group': product_info.get('nova_group'),
+            'category': product_info.get('category', '')
+        })
+    
+    nova_group = product_info.get('nova_group')
+    if not nova_group:
+        nova_group = nova_analyzer.predict_nova_group(ingredients, product_info.get('category', ''))
     
     product = Product(
         barcode=barcode,
@@ -801,8 +816,8 @@ def save_product(barcode, product_info, source):
         ingredients=ingredients,
         nutrition_info=product_info.get('nutrition', {}),
         image_url=product_info.get('image_url', ''),
-        ecoscore=product_info.get('ecoscore', ''),
-        nova_group=product_info.get('nova_group', ''),
+        ecoscore=ecoscore,
+        nova_group=nova_group,
         fssai=product_info.get('fssai', ''),
         vegan=analyze_if_vegan(ingredients),
         vegetarian=analyze_if_vegetarian(ingredients),
