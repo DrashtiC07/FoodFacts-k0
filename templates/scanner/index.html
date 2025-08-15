@@ -236,62 +236,111 @@
     </div>
 </div>
 
-<!-- Recent Products Section -->
-{% if recent_products %}
+<!-- FAQ Section -->
 <div class="container mb-5">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h2 class="display-6 fw-bold mb-3" style="color: var(--text-primary);">Recently Added Products</h2>
-            <p style="color: var(--text-muted);">Discover the latest products in our database</p>
+    <div class="row">
+        <div class="col-lg-5 col-md-6 mb-4">
+            <div class="faq-intro">
+                <h2 class="display-6 fw-bold mb-4" style="color: var(--text-primary); font-family: 'Work Sans', sans-serif;">
+                    Any questions?<br>
+                    We got you.
+                </h2>
+                <p class="mb-4" style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.6;">
+                    Get instant answers about our food scanner app. From barcode scanning to nutrition tracking, 
+                    we've covered everything you need to know to make informed food choices.
+                </p>
+                <a href="#" class="text-decoration-none fw-semibold" style="color: var(--primary-color);">
+                    More FAQs →
+                </a>
+            </div>
         </div>
-    </div>
-    
-    <div class="row g-4">
-        {% for product in recent_products %}
-        <div class="col-lg-4 col-md-6">
-            <div class="card product-card border-0 shadow-sm h-100" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
-                <div class="card-body">
-                    <div class="d-flex align-items-start mb-3">
-                        <div class="product-image me-3">
-                            {% if product.image_url %}
-                                <img src="{{ product.image_url }}" alt="{{ product.name }}" 
-                                     class="rounded" width="60" height="60" style="object-fit: cover;">
-                            {% else %}
-                                <div class="rounded d-flex align-items-center justify-content-center" 
-                                     style="width: 60px; height: 60px; background: var(--bg-secondary);">
-                                    <i class="bi bi-image" style="color: var(--text-muted);"></i>
-                                </div>
-                            {% endif %}
-                        </div>
-                        <div class="flex-grow-1">
-                            <h5 class="card-title mb-1">
-                                <a href="{% url 'scanner:product_detail' product.barcode %}" 
-                                   class="text-decoration-none" style="color: var(--text-primary);">
-                                    {{ product.name|truncatechars:50 }}
-                                </a>
-                            </h5>
-                            <p class="small mb-2" style="color: var(--text-muted);">{{ product.brand|default:"Unknown Brand" }}</p>
-                            <div class="d-flex gap-2 flex-wrap">
-                                {% if product.ecoscore %}
-                                    <span class="badge" style="background: {% if product.ecoscore == 'A' %}var(--health-excellent){% elif product.ecoscore == 'B' %}var(--health-good){% elif product.ecoscore == 'C' %}var(--health-fair){% elif product.ecoscore == 'D' %}var(--accent-color){% else %}var(--health-poor){% endif %}; color: var(--text-primary);">
-                                        Eco-Score {{ product.ecoscore }}
-                                    </span>
-                                {% endif %}
-                                {% if product.nova_group %}
-                                    <span class="badge" style="background: {% if product.nova_group == 1 %}var(--health-excellent){% elif product.nova_group == 2 %}var(--accent-color){% elif product.nova_group == 3 %}var(--health-fair){% else %}var(--health-poor){% endif %}; color: var(--text-primary);">
-                                        NOVA {{ product.nova_group }}
-                                    </span>
-                                {% endif %}
-                            </div>
-                        </div>
+        
+        <div class="col-lg-7 col-md-6">
+            <div class="faq-list">
+                <!-- FAQ Item 1 -->
+                <div class="faq-item border-bottom" style="border-color: var(--border-color) !important;">
+                    <div class="faq-question d-flex justify-content-between align-items-center py-4 cursor-pointer" 
+                         onclick="toggleFAQ(this)" style="cursor: pointer;">
+                        <h5 class="mb-0 fw-semibold" style="color: var(--text-primary);">How does this work?</h5>
+                        <span class="faq-toggle fs-4 fw-bold" style="color: var(--text-muted);">+</span>
+                    </div>
+                    <div class="faq-answer" style="display: none; padding-bottom: 1.5rem;">
+                        <p style="color: var(--text-muted); line-height: 1.6;">
+                            Simply scan any product barcode with your camera or upload a barcode image. Our app instantly 
+                            retrieves comprehensive nutritional information, NOVA classification, additives analysis, and 
+                            environmental impact data from trusted databases like OpenFoodFacts.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- FAQ Item 2 -->
+                <div class="faq-item border-bottom" style="border-color: var(--border-color) !important;">
+                    <div class="faq-question d-flex justify-content-between align-items-center py-4 cursor-pointer" 
+                         onclick="toggleFAQ(this)" style="cursor: pointer;">
+                        <h5 class="mb-0 fw-semibold" style="color: var(--text-primary);">Are there any additional fees?</h5>
+                        <span class="faq-toggle fs-4 fw-bold" style="color: var(--text-muted);">+</span>
+                    </div>
+                    <div class="faq-answer" style="display: none; padding-bottom: 1.5rem;">
+                        <p style="color: var(--text-muted); line-height: 1.6;">
+                            No, our Food Facts Scanner is completely free to use! You can scan unlimited products, 
+                            track your nutrition goals, save favorites, and write reviews without any hidden costs 
+                            or subscription fees.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- FAQ Item 3 -->
+                <div class="faq-item border-bottom" style="border-color: var(--border-color) !important;">
+                    <div class="faq-question d-flex justify-content-between align-items-center py-4 cursor-pointer" 
+                         onclick="toggleFAQ(this)" style="cursor: pointer;">
+                        <h5 class="mb-0 fw-semibold" style="color: var(--text-primary);">How can I get the app?</h5>
+                        <span class="faq-toggle fs-4 fw-bold" style="color: var(--text-muted);">+</span>
+                    </div>
+                    <div class="faq-answer" style="display: none; padding-bottom: 1.5rem;">
+                        <p style="color: var(--text-muted); line-height: 1.6;">
+                            Food Facts Scanner is a web-based application that works directly in your browser. 
+                            No download required! Simply visit our website, create a free account, and start 
+                            scanning products immediately from any device.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- FAQ Item 4 -->
+                <div class="faq-item border-bottom" style="border-color: var(--border-color) !important;">
+                    <div class="faq-question d-flex justify-content-between align-items-center py-4 cursor-pointer" 
+                         onclick="toggleFAQ(this)" style="cursor: pointer;">
+                        <h5 class="mb-0 fw-semibold" style="color: var(--text-primary);">What features do you offer and others not?</h5>
+                        <span class="faq-toggle fs-4 fw-bold" style="color: var(--text-muted);">+</span>
+                    </div>
+                    <div class="faq-answer" style="display: none; padding-bottom: 1.5rem;">
+                        <p style="color: var(--text-muted); line-height: 1.6;">
+                            Our app uniquely combines NOVA food classification, detailed additives analysis, 
+                            environmental impact scoring, personalized nutrition tracking, and community reviews. 
+                            We also provide educational content about food processing and health recommendations 
+                            based on scientific research.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- FAQ Item 5 -->
+                <div class="faq-item">
+                    <div class="faq-question d-flex justify-content-between align-items-center py-4 cursor-pointer" 
+                         onclick="toggleFAQ(this)" style="cursor: pointer;">
+                        <h5 class="mb-0 fw-semibold" style="color: var(--text-primary);">Is my data secure and private?</h5>
+                        <span class="faq-toggle fs-4 fw-bold" style="color: var(--text-muted);">+</span>
+                    </div>
+                    <div class="faq-answer" style="display: none; padding-bottom: 1.5rem;">
+                        <p style="color: var(--text-muted); line-height: 1.6;">
+                            Yes, we take your privacy seriously. Your scan history, nutrition goals, and personal 
+                            data are encrypted and stored securely. We never share your information with third 
+                            parties, and you can delete your account and data at any time.
+                        </p>
                     </div>
                 </div>
             </div>
         </div>
-        {% endfor %}
     </div>
 </div>
-{% endif %}
 
 <!-- CTA Section -->
 <div class="py-5 rounded" style="background: var(--bg-secondary);">
@@ -353,5 +402,78 @@
 .recommendation:nth-child(2) { border-left-color: var(--accent-color); }
 .recommendation:nth-child(3) { border-left-color: var(--health-fair); }
 .recommendation:nth-child(4) { border-left-color: var(--health-poor); }
+
+/* FAQ section styling */
+.faq-intro {
+    padding-right: 2rem;
+}
+
+.faq-question {
+    transition: all 0.3s ease;
+}
+
+.faq-question:hover {
+    background-color: var(--bg-secondary);
+    margin: 0 -1rem;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    border-radius: var(--border-radius);
+}
+
+.faq-answer {
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.faq-toggle {
+    transition: transform 0.3s ease;
+    min-width: 24px;
+    text-align: center;
+}
+
+.faq-item.active .faq-toggle {
+    transform: rotate(45deg);
+}
+
+@media (max-width: 768px) {
+    .faq-intro {
+        padding-right: 0;
+        margin-bottom: 2rem;
+    }
+    
+    .faq-question h5 {
+        font-size: 1.1rem;
+        line-height: 1.4;
+        padding-right: 1rem;
+    }
+}
 </style>
 {% endblock %}
+
+<script>
+function toggleFAQ(element) {
+    const faqItem = element.parentElement;
+    const answer = faqItem.querySelector('.faq-answer');
+    const toggle = element.querySelector('.faq-toggle');
+    
+    // Close all other FAQ items
+    document.querySelectorAll('.faq-item').forEach(item => {
+        if (item !== faqItem) {
+            item.classList.remove('active');
+            item.querySelector('.faq-answer').style.display = 'none';
+            item.querySelector('.faq-toggle').textContent = '+';
+        }
+    });
+    
+    // Toggle current FAQ item
+    if (faqItem.classList.contains('active')) {
+        faqItem.classList.remove('active');
+        answer.style.display = 'none';
+        toggle.textContent = '+';
+    } else {
+        faqItem.classList.add('active');
+        answer.style.display = 'block';
+        toggle.textContent = '−';
+    }
+}
+</script>
