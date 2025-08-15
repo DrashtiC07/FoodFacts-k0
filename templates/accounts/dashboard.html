@@ -4,308 +4,351 @@
 {% block title %}Dashboard - Food Facts Scanner{% endblock %}
 
 {% block content %}
-<div class="container">
-  <div class="row">
+<div class="container py-4">
+  <!-- Modern Dashboard Header -->
+  <div class="row mb-5">
     <div class="col-12">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="display-6">
-          <i class="bi bi-speedometer2 me-3"></i>Dashboard
-        </h1>
-        <div class="text-muted">
-          Welcome back, <strong>{{ user.username }}</strong>!
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+        <div class="mb-3 mb-md-0">
+          <h1 class="display-5 fw-bold mb-2" style="font-family: 'Manrope', sans-serif;">
+            <i class="bi bi-speedometer2 me-3 text-primary"></i>Dashboard
+          </h1>
+          <p class="text-muted fs-5 mb-0">Welcome back, <strong>{{ user.get_full_name|default:user.username }}</strong>!</p>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#nutritionGoalsModal">
+            <i class="bi bi-gear me-1"></i>Set Goals
+          </button>
+          <a href="{% url 'scanner:scan' %}" class="btn btn-primary">
+            <i class="bi bi-camera me-1"></i>Scan Product
+          </a>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Account Overview -->
-  <div class="row mb-4">
-    <div class="col-md-4">
-      <div class="card border-0 shadow-sm">
-        <div class="card-body text-center">
-          <div class="avatar-circle mx-auto mb-3">
-            {% if user.profile_picture %}
-            <img
-              src="{{ user.profile_picture.url }}"
-              alt="Profile"
-              class="rounded-circle"
-              width="80"
-              height="80"
-            />
-            {% else %}
-            <i class="bi bi-person-circle display-1 text-primary"></i>
-            {% endif %}
+  <!-- Enhanced Stats Cards -->
+  <div class="row mb-5">
+    <div class="col-md-3 mb-4">
+      <div class="card border-0 shadow-sm h-100 interactive-card">
+        <div class="card-body text-center p-4">
+          <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary bg-opacity-10 p-3 mb-3">
+            <i class="bi bi-upc-scan fs-2 text-primary"></i>
           </div>
-          <h5 class="card-title">
-            {{ user.get_full_name|default:user.username }}
-          </h5>
-          <p class="text-muted">{{ user.email }}</p>
-          <small class="text-muted"
-            >Member since {{ user.date_joined|date:"M Y" }}</small
-          >
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-8">
-      <div class="card border-0 shadow-sm">
-        <div class="card-header bg-transparent">
-          <h5 class="mb-0">
-            <i class="bi bi-bullseye me-2"></i>Daily Nutrition Goals
-          </h5>
-        </div>
-        <div class="card-body">
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <div
-                class="d-flex justify-content-between align-items-center mb-1"
-              >
-                <span class="fw-medium">Calories</span>
-                <span class="text-muted"
-                  >{{ dietary_goals.calories_consumed }}/{{
-                  dietary_goals.calories_target }} kcal</span
-                >
-              </div>
-              <div class="progress" style="height: 8px">
-                <div
-                  class="progress-bar bg-success"
-                  style="width: {{ calories_progress }}%"
-                ></div>
-              </div>
-            </div>
-            <div class="col-md-6 mb-3">
-              <div
-                class="d-flex justify-content-between align-items-center mb-1"
-              >
-                <span class="fw-medium">Protein</span>
-                <span class="text-muted"
-                  >{{ dietary_goals.protein_consumed }}/{{
-                  dietary_goals.protein_target }}g</span
-                >
-              </div>
-              <div class="progress" style="height: 8px">
-                <div
-                  class="progress-bar bg-info"
-                  style="width: {{ protein_progress }}%"
-                ></div>
-              </div>
-            </div>
-            <div class="col-md-6 mb-3">
-              <div
-                class="d-flex justify-content-between align-items-center mb-1"
-              >
-                <span class="fw-medium">Fat</span>
-                <span class="text-muted"
-                  >{{ dietary_goals.fat_consumed }}/{{ dietary_goals.fat_target
-                  }}g</span
-                >
-              </div>
-              <div class="progress" style="height: 8px">
-                <div
-                  class="progress-bar bg-warning"
-                  style="width: {{ fat_progress }}%"
-                ></div>
-              </div>
-            </div>
-            <div class="col-md-6 mb-3">
-              <div
-                class="d-flex justify-content-between align-items-center mb-1"
-              >
-                <span class="fw-medium">Carbs</span>
-                <span class="text-muted"
-                  >{{ dietary_goals.carbs_consumed }}/{{
-                  dietary_goals.carbs_target }}g</span
-                >
-              </div>
-              <div class="progress" style="height: 8px">
-                <div
-                  class="progress-bar bg-primary"
-                  style="width: {{ carbs_progress }}%"
-                ></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Stats Cards -->
-  <div class="row mb-4">
-    <div class="col-md-3 mb-3">
-      <div class="card border-0 shadow-sm text-center">
-        <div class="card-body">
-          <div class="display-6 text-primary mb-2">
-            <i class="bi bi-upc-scan"></i>
-          </div>
-          <h3 class="mb-1">{{ scan_history|length }}</h3>
+          <h3 class="fw-bold mb-1">{{ scan_history|length }}</h3>
           <p class="text-muted mb-0">Products Scanned</p>
+          <small class="text-success">
+            <i class="bi bi-arrow-up"></i> +{{ recent_scans_count }} this week
+          </small>
         </div>
       </div>
     </div>
-    <div class="col-md-3 mb-3">
-      <div class="card border-0 shadow-sm text-center">
-        <div class="card-body">
-          <div class="display-6 text-danger mb-2">
-            <i class="bi bi-heart-fill"></i>
+    <div class="col-md-3 mb-4">
+      <div class="card border-0 shadow-sm h-100 interactive-card">
+        <div class="card-body text-center p-4">
+          <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-danger bg-opacity-10 p-3 mb-3">
+            <i class="bi bi-heart-fill fs-2 text-danger"></i>
           </div>
-          <h3 class="mb-1">{{ favorite_products|length }}</h3>
+          <h3 class="fw-bold mb-1">{{ favorite_products|length }}</h3>
           <p class="text-muted mb-0">Favorite Products</p>
+          <small class="text-info">
+            <i class="bi bi-star"></i> Top rated items
+          </small>
         </div>
       </div>
     </div>
-    <div class="col-md-3 mb-3">
-      <div class="card border-0 shadow-sm text-center">
-        <div class="card-body">
-          <div class="display-6 text-warning mb-2">
-            <i class="bi bi-star-fill"></i>
+    <div class="col-md-3 mb-4">
+      <div class="card border-0 shadow-sm h-100 interactive-card">
+        <div class="card-body text-center p-4">
+          <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-warning bg-opacity-10 p-3 mb-3">
+            <i class="bi bi-star-fill fs-2 text-warning"></i>
           </div>
-          <h3 class="mb-1">{{ user_reviews|length }}</h3>
+          <h3 class="fw-bold mb-1">{{ user_reviews|length }}</h3>
           <p class="text-muted mb-0">Reviews Written</p>
+          <small class="text-warning">
+            <i class="bi bi-chat"></i> Community contributor
+          </small>
         </div>
       </div>
     </div>
-    <div class="col-md-3 mb-3">
-      <div class="card border-0 shadow-sm text-center">
-        <div class="card-body">
-          <div class="display-6 text-success mb-2">
-            <i class="bi bi-calendar-check"></i>
+    <div class="col-md-3 mb-4">
+      <div class="card border-0 shadow-sm h-100 interactive-card">
+        <div class="card-body text-center p-4">
+          <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-success bg-opacity-10 p-3 mb-3">
+            <i class="bi bi-calendar-check fs-2 text-success"></i>
           </div>
-          <h3 class="mb-1">{{ user.date_joined|timesince|truncatewords:1 }}</h3>
+          <h3 class="fw-bold mb-1">{{ days_active }}</h3>
           <p class="text-muted mb-0">Days Active</p>
+          <small class="text-success">
+            <i class="bi bi-trophy"></i> Keep it up!
+          </small>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Recent Activity -->
-  <div class="row">
-    <div class="col-lg-6 mb-4">
+  <!-- Enhanced Nutrition Goals Section -->
+  <div class="row mb-5">
+    <div class="col-12">
       <div class="card border-0 shadow-sm">
-        <div
-          class="card-header bg-transparent d-flex justify-content-between align-items-center"
-        >
-          <h5 class="mb-0">
-            <i class="bi bi-clock-history me-2"></i>Recent Scans
-          </h5>
-          <a
-            href="{% url 'scanner:history' %}"
-            class="btn btn-sm btn-outline-primary"
-            >View All</a
-          >
+        <div class="card-header bg-transparent border-0 p-4">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h4 class="fw-bold mb-1" style="font-family: 'Manrope', sans-serif;">
+                <i class="bi bi-bullseye me-2 text-primary"></i>Daily Nutrition Goals
+              </h4>
+              <p class="text-muted mb-0">Track your daily nutrition intake and goals</p>
+            </div>
+            <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#nutritionGoalsModal">
+              <i class="bi bi-gear me-1"></i>Adjust Goals
+            </button>
+          </div>
         </div>
-        <div class="card-body">
+        <div class="card-body p-4">
+          {% if dietary_goals %}
+          <div class="row">
+            <!-- Calories -->
+            <div class="col-md-6 col-lg-3 mb-4">
+              <div class="nutrition-goal-card">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="fw-semibold text-primary">
+                    <i class="bi bi-fire me-1"></i>Calories
+                  </span>
+                  <span class="badge bg-primary bg-opacity-10 text-primary">
+                    {{ dietary_goals.calories_consumed }}/{{ dietary_goals.calories_target }}
+                  </span>
+                </div>
+                <div class="nutrition-bar mb-2">
+                  <div class="progress-fill" style="width: {{ calories_progress }}%"></div>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <small class="text-muted">{{ calories_progress|floatformat:0 }}% of goal</small>
+                  <small class="text-muted">{{ calories_remaining }} kcal left</small>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Protein -->
+            <div class="col-md-6 col-lg-3 mb-4">
+              <div class="nutrition-goal-card">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="fw-semibold text-info">
+                    <i class="bi bi-egg me-1"></i>Protein
+                  </span>
+                  <span class="badge bg-info bg-opacity-10 text-info">
+                    {{ dietary_goals.protein_consumed }}/{{ dietary_goals.protein_target }}g
+                  </span>
+                </div>
+                <div class="nutrition-bar mb-2">
+                  <div class="progress-fill bg-info" style="width: {{ protein_progress }}%"></div>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <small class="text-muted">{{ protein_progress|floatformat:0 }}% of goal</small>
+                  <small class="text-muted">{{ protein_remaining }}g left</small>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Fat -->
+            <div class="col-md-6 col-lg-3 mb-4">
+              <div class="nutrition-goal-card">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="fw-semibold text-warning">
+                    <i class="bi bi-droplet me-1"></i>Fat
+                  </span>
+                  <span class="badge bg-warning bg-opacity-10 text-warning">
+                    {{ dietary_goals.fat_consumed }}/{{ dietary_goals.fat_target }}g
+                  </span>
+                </div>
+                <div class="nutrition-bar mb-2">
+                  <div class="progress-fill bg-warning" style="width: {{ fat_progress }}%"></div>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <small class="text-muted">{{ fat_progress|floatformat:0 }}% of goal</small>
+                  <small class="text-muted">{{ fat_remaining }}g left</small>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Carbs -->
+            <div class="col-md-6 col-lg-3 mb-4">
+              <div class="nutrition-goal-card">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="fw-semibold text-success">
+                    <i class="bi bi-grain me-1"></i>Carbs
+                  </span>
+                  <span class="badge bg-success bg-opacity-10 text-success">
+                    {{ dietary_goals.carbs_consumed }}/{{ dietary_goals.carbs_target }}g
+                  </span>
+                </div>
+                <div class="nutrition-bar mb-2">
+                  <div class="progress-fill bg-success" style="width: {{ carbs_progress }}%"></div>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <small class="text-muted">{{ carbs_progress|floatformat:0 }}% of goal</small>
+                  <small class="text-muted">{{ carbs_remaining }}g left</small>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Quick Actions -->
+          <div class="row mt-4">
+            <div class="col-12">
+              <div class="d-flex flex-wrap gap-2">
+                <button class="btn btn-sm btn-outline-primary" onclick="resetDailyGoals()">
+                  <i class="bi bi-arrow-clockwise me-1"></i>Reset Today
+                </button>
+                <a href="{% url 'scanner:scan' %}" class="btn btn-sm btn-primary">
+                  <i class="bi bi-plus-circle me-1"></i>Add Food
+                </a>
+                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#nutritionTipsModal">
+                  <i class="bi bi-lightbulb me-1"></i>Tips
+                </button>
+              </div>
+            </div>
+          </div>
+          {% else %}
+          <!-- No goals set yet -->
+          <div class="text-center py-5">
+            <i class="bi bi-bullseye display-1 text-muted mb-3"></i>
+            <h5 class="fw-semibold mb-3">Set Your Nutrition Goals</h5>
+            <p class="text-muted mb-4">Start tracking your daily nutrition by setting personalized goals</p>
+            <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#nutritionGoalsModal">
+              <i class="bi bi-plus-circle me-2"></i>Set My Goals
+            </button>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Activity Sections -->
+  <div class="row">
+    <!-- Scan History (moved from navbar) -->
+    <div class="col-lg-6 mb-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-transparent border-0 p-4">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0" style="font-family: 'Manrope', sans-serif;">
+              <i class="bi bi-clock-history me-2 text-primary"></i>Recent Scans
+            </h5>
+            <a href="{% url 'scanner:history' %}" class="btn btn-sm btn-outline-primary">
+              View All History
+            </a>
+          </div>
+        </div>
+        <div class="card-body p-4">
           {% if scan_history %}
             {% for scan in scan_history %}
-            <div
-              class="d-flex align-items-center mb-3 {% if not forloop.last %}border-bottom pb-3{% endif %}"
-            >
+            <div class="d-flex align-items-center mb-3 p-3 rounded-3 bg-light bg-opacity-50 {% if not forloop.last %}mb-3{% endif %}">
               <div class="product-image me-3">
                 {% if scan.product.image_url %}
                 <img
                   src="{{ scan.product.image_url }}"
                   alt="{{ scan.product.name }}"
-                  class="rounded"
-                  width="50"
-                  height="50"
+                  class="rounded-3"
+                  width="60"
+                  height="60"
                   style="object-fit: cover"
                 />
                 {% else %}
-                <div
-                  class="bg-light rounded d-flex align-items-center justify-content-center"
-                  style="width: 50px; height: 50px"
-                >
-                  <i class="bi bi-image text-muted"></i>
+                <div class="bg-white rounded-3 d-flex align-items-center justify-content-center border" style="width: 60px; height: 60px">
+                  <i class="bi bi-image text-muted fs-4"></i>
                 </div>
                 {% endif %}
               </div>
               <div class="flex-grow-1">
-                <h6 class="mb-1">
-                  <a
-                    href="{% url 'scanner:product_detail' scan.product.barcode %}"
-                    class="text-decoration-none"
-                  >
-                    {{ scan.product.name|truncatechars:40 }}
+                <h6 class="mb-1 fw-semibold">
+                  <a href="{% url 'scanner:product_detail' scan.product.barcode %}" class="text-decoration-none text-dark">
+                    {{ scan.product.name|truncatechars:35 }}
                   </a>
                 </h6>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  {% if scan.product.health_score %}
+                  <span class="badge bg-{{ scan.product.health_score|lower }} badge-sm">
+                    {{ scan.product.health_score }}
+                  </span>
+                  {% endif %}
+                  <small class="text-muted">{{ scan.product.brand|default:"Unknown Brand" }}</small>
+                </div>
                 <small class="text-muted">
-                  <i class="bi bi-clock me-1"></i>{{ scan.scanned_at|timesince }}
-                  ago
+                  <i class="bi bi-clock me-1"></i>{{ scan.scanned_at|timesince }} ago
                 </small>
               </div>
             </div>
             {% endfor %}
           {% else %}
-            <div class="text-center py-4">
+            <div class="text-center py-5">
               <i class="bi bi-upc-scan display-1 text-muted mb-3"></i>
-              <p class="text-muted">
-                No scans yet.
-                <a href="{% url 'scanner:scan' %}">Start scanning!</a>
-              </p>
+              <h6 class="fw-semibold mb-2">No scans yet</h6>
+              <p class="text-muted mb-3">Start scanning products to see your history here</p>
+              <a href="{% url 'scanner:scan' %}" class="btn btn-primary">
+                <i class="bi bi-camera me-1"></i>Start Scanning
+              </a>
             </div>
           {% endif %}
         </div>
       </div>
     </div>
 
+    <!-- Favorite Products -->
     <div class="col-lg-6 mb-4">
-      <div class="card border-0 shadow-sm">
-        <div class="card-header bg-transparent">
-          <h5 class="mb-0">
-            <i class="bi bi-heart-fill me-2"></i>Favorite Products
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-transparent border-0 p-4">
+          <h5 class="fw-bold mb-0" style="font-family: 'Manrope', sans-serif;">
+            <i class="bi bi-heart-fill me-2 text-danger"></i>Favorite Products
           </h5>
         </div>
-        <div class="card-body">
+        <div class="card-body p-4">
           {% if favorite_products %}
             {% for favorite in favorite_products %}
-            <div
-              class="d-flex align-items-center mb-3 {% if not forloop.last %}border-bottom pb-3{% endif %}"
-            >
+            <div class="d-flex align-items-center mb-3 p-3 rounded-3 bg-light bg-opacity-50">
               <div class="product-image me-3">
                 {% if favorite.product.image_url %}
                 <img
                   src="{{ favorite.product.image_url }}"
                   alt="{{ favorite.product.name }}"
-                  class="rounded"
-                  width="50"
-                  height="50"
+                  class="rounded-3"
+                  width="60"
+                  height="60"
                   style="object-fit: cover"
                 />
                 {% else %}
-                <div
-                  class="bg-light rounded d-flex align-items-center justify-content-center"
-                  style="width: 50px; height: 50px"
-                >
-                  <i class="bi bi-image text-muted"></i>
+                <div class="bg-white rounded-3 d-flex align-items-center justify-content-center border" style="width: 60px; height: 60px">
+                  <i class="bi bi-image text-muted fs-4"></i>
                 </div>
                 {% endif %}
               </div>
               <div class="flex-grow-1">
-                <h6 class="mb-1">
-                  <a
-                    href="{% url 'scanner:product_detail' favorite.product.barcode %}"
-                    class="text-decoration-none"
-                  >
-                    {{ favorite.product.name|truncatechars:40 }}
+                <h6 class="mb-1 fw-semibold">
+                  <a href="{% url 'scanner:product_detail' favorite.product.barcode %}" class="text-decoration-none text-dark">
+                    {{ favorite.product.name|truncatechars:35 }}
                   </a>
                 </h6>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  {% if favorite.product.health_score %}
+                  <span class="badge bg-{{ favorite.product.health_score|lower }} badge-sm">
+                    {{ favorite.product.health_score }}
+                  </span>
+                  {% endif %}
+                  <small class="text-muted">{{ favorite.product.brand|default:"Unknown Brand" }}</small>
+                </div>
                 <small class="text-muted">
-                  {% if favorite.product.ecoscore %}
-                  <span
-                    class="badge bg-{{ favorite.product.ecoscore|lower }} me-1"
-                    >{{ favorite.product.ecoscore }}</span
-                  >
-                  {% endif %} {{ favorite.product.brand|default:"Unknown Brand" }}
+                  <i class="bi bi-heart me-1"></i>Added {{ favorite.added_at|timesince }} ago
                 </small>
               </div>
             </div>
             {% endfor %}
           {% else %}
-            <div class="text-center py-4">
+            <div class="text-center py-5">
               <i class="bi bi-heart display-1 text-muted mb-3"></i>
-              <p class="text-muted">
-                No favorites yet. Start adding products to your favorites!
-              </p>
+              <h6 class="fw-semibold mb-2">No favorites yet</h6>
+              <p class="text-muted mb-3">Add products to your favorites to see them here</p>
+              <a href="{% url 'scanner:search' %}" class="btn btn-outline-primary">
+                <i class="bi bi-search me-1"></i>Discover Products
+              </a>
             </div>
           {% endif %}
         </div>
@@ -318,42 +361,34 @@
   <div class="row">
     <div class="col-12">
       <div class="card border-0 shadow-sm">
-        <div class="card-header bg-transparent">
-          <h5 class="mb-0">
-            <i class="bi bi-star-fill me-2"></i>Your Recent Reviews
+        <div class="card-header bg-transparent border-0 p-4">
+          <h5 class="fw-bold mb-0" style="font-family: 'Manrope', sans-serif;">
+            <i class="bi bi-star-fill me-2 text-warning"></i>Your Recent Reviews
           </h5>
         </div>
-        <div class="card-body">
+        <div class="card-body p-4">
           {% for review in user_reviews %}
-          <div
-            class="mb-3 {% if not forloop.last %}border-bottom pb-3{% endif %}"
-          >
+          <div class="mb-4 p-3 rounded-3 bg-light bg-opacity-50 {% if not forloop.last %}mb-4{% endif %}">
             <div class="d-flex align-items-start">
               <div class="product-image me-3">
                 {% if review.product.image_url %}
                 <img
                   src="{{ review.product.image_url }}"
                   alt="{{ review.product.name }}"
-                  class="rounded"
-                  width="50"
-                  height="50"
+                  class="rounded-3"
+                  width="60"
+                  height="60"
                   style="object-fit: cover"
                 />
                 {% else %}
-                <div
-                  class="bg-light rounded d-flex align-items-center justify-content-center"
-                  style="width: 50px; height: 50px"
-                >
-                  <i class="bi bi-image text-muted"></i>
+                <div class="bg-white rounded-3 d-flex align-items-center justify-content-center border" style="width: 60px; height: 60px">
+                  <i class="bi bi-image text-muted fs-4"></i>
                 </div>
                 {% endif %}
               </div>
               <div class="flex-grow-1">
-                <h6 class="mb-1">
-                  <a
-                    href="{% url 'scanner:product_detail' review.product.barcode %}"
-                    class="text-decoration-none"
-                  >
+                <h6 class="mb-2 fw-semibold">
+                  <a href="{% url 'scanner:product_detail' review.product.barcode %}" class="text-decoration-none text-dark">
                     {{ review.product.name }}
                   </a>
                 </h6>
@@ -365,14 +400,10 @@
                       <i class="bi bi-star text-muted"></i>
                     {% endif %}
                   {% endfor %}
-                  <small class="text-muted ms-2"
-                    >{{ review.created_at|date:"M d, Y" }}</small
-                  >
+                  <small class="text-muted ms-2">{{ review.created_at|date:"M d, Y" }}</small>
                 </div>
                 {% if review.review_text %}
-                <p class="mb-0 text-muted">
-                  {{ review.review_text|truncatechars:100 }}
-                </p>
+                <p class="mb-0 text-muted">{{ review.review_text|truncatechars:120 }}</p>
                 {% endif %}
               </div>
             </div>
@@ -384,50 +415,310 @@
   </div>
   {% endif %}
 </div>
+
+<!-- Nutrition Goals Modal -->
+<div class="modal fade" id="nutritionGoalsModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header border-0 p-4">
+        <h5 class="modal-title fw-bold" style="font-family: 'Manrope', sans-serif;">
+          <i class="bi bi-bullseye me-2 text-primary"></i>Set Nutrition Goals
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <form id="nutritionGoalsForm" method="post" action="{% url 'accounts:update_nutrition_goals' %}">
+          {% csrf_token %}
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold">Daily Calories Target</label>
+              <div class="input-group">
+                <input type="number" class="form-control" name="calories_target" 
+                       value="{{ dietary_goals.calories_target|default:2000 }}" min="1000" max="5000">
+                <span class="input-group-text">kcal</span>
+              </div>
+              <small class="form-text text-muted">Recommended: 1800-2500 kcal/day</small>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold">Daily Protein Target</label>
+              <div class="input-group">
+                <input type="number" class="form-control" name="protein_target" 
+                       value="{{ dietary_goals.protein_target|default:50 }}" min="20" max="200">
+                <span class="input-group-text">g</span>
+              </div>
+              <small class="form-text text-muted">Recommended: 0.8-1.2g per kg body weight</small>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold">Daily Fat Target</label>
+              <div class="input-group">
+                <input type="number" class="form-control" name="fat_target" 
+                       value="{{ dietary_goals.fat_target|default:70 }}" min="20" max="150">
+                <span class="input-group-text">g</span>
+              </div>
+              <small class="form-text text-muted">Recommended: 20-35% of total calories</small>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold">Daily Carbs Target</label>
+              <div class="input-group">
+                <input type="number" class="form-control" name="carbs_target" 
+                       value="{{ dietary_goals.carbs_target|default:300 }}" min="50" max="500">
+                <span class="input-group-text">g</span>
+              </div>
+              <small class="form-text text-muted">Recommended: 45-65% of total calories</small>
+            </div>
+          </div>
+          
+          <!-- Quick Presets -->
+          <div class="mt-4">
+            <h6 class="fw-semibold mb-3">Quick Presets</h6>
+            <div class="row">
+              <div class="col-md-4 mb-2">
+                <button type="button" class="btn btn-outline-primary w-100" onclick="setPreset('weight_loss')">
+                  <i class="bi bi-arrow-down-circle me-1"></i>Weight Loss
+                </button>
+              </div>
+              <div class="col-md-4 mb-2">
+                <button type="button" class="btn btn-outline-primary w-100" onclick="setPreset('maintenance')">
+                  <i class="bi bi-dash-circle me-1"></i>Maintenance
+                </button>
+              </div>
+              <div class="col-md-4 mb-2">
+                <button type="button" class="btn btn-outline-primary w-100" onclick="setPreset('muscle_gain')">
+                  <i class="bi bi-arrow-up-circle me-1"></i>Muscle Gain
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer border-0 p-4">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" form="nutritionGoalsForm" class="btn btn-primary">
+          <i class="bi bi-check-circle me-1"></i>Save Goals
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Nutrition Tips Modal -->
+<div class="modal fade" id="nutritionTipsModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header border-0 p-4">
+        <h5 class="modal-title fw-bold">
+          <i class="bi bi-lightbulb me-2 text-warning"></i>Nutrition Tips
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="d-flex align-items-start mb-3">
+          <i class="bi bi-check-circle-fill text-success me-3 mt-1"></i>
+          <div>
+            <h6 class="fw-semibold">Stay Hydrated</h6>
+            <p class="text-muted mb-0">Drink at least 8 glasses of water daily for optimal health.</p>
+          </div>
+        </div>
+        <div class="d-flex align-items-start mb-3">
+          <i class="bi bi-check-circle-fill text-success me-3 mt-1"></i>
+          <div>
+            <h6 class="fw-semibold">Balanced Meals</h6>
+            <p class="text-muted mb-0">Include protein, healthy fats, and complex carbs in each meal.</p>
+          </div>
+        </div>
+        <div class="d-flex align-items-start mb-3">
+          <i class="bi bi-check-circle-fill text-success me-3 mt-1"></i>
+          <div>
+            <h6 class="fw-semibold">Portion Control</h6>
+            <p class="text-muted mb-0">Use smaller plates and listen to your hunger cues.</p>
+          </div>
+        </div>
+        <div class="d-flex align-items-start">
+          <i class="bi bi-check-circle-fill text-success me-3 mt-1"></i>
+          <div>
+            <h6 class="fw-semibold">Regular Meals</h6>
+            <p class="text-muted mb-0">Eat at consistent times to maintain stable energy levels.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block extra_css %}
 <style>
-  .avatar-circle {
-    width: 80px;
-    height: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+.nutrition-goal-card {
+  padding: 1.5rem;
+  background: var(--bg-secondary);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-fast);
+}
 
-  .progress {
-    background-color: var(--bs-gray-200);
-  }
+.nutrition-goal-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
 
-  .card {
-    transition: transform 0.2s ease-in-out;
-  }
+.nutrition-bar {
+  height: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: var(--bg-tertiary);
+  position: relative;
+}
 
-  .card:hover {
-    transform: translateY(-2px);
-  }
+.nutrition-bar .progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-color), #06b6d4);
+  border-radius: 6px;
+  transition: width var(--transition-slow);
+  position: relative;
+  overflow: hidden;
+}
 
-  .product-image img,
-  .product-image div {
-    border: 1px solid var(--bs-border-color);
-  }
+.nutrition-bar .progress-fill.bg-info {
+  background: linear-gradient(90deg, #0ea5e9, #06b6d4);
+}
 
-  .badge.bg-a {
-    background-color: #2e7d32 !important;
+.nutrition-bar .progress-fill.bg-warning {
+  background: linear-gradient(90deg, var(--accent-color), #f59e0b);
+}
+
+.nutrition-bar .progress-fill.bg-success {
+  background: linear-gradient(90deg, var(--health-excellent), #10b981);
+}
+
+.badge-sm {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.badge.bg-a { background-color: var(--health-excellent) !important; }
+.badge.bg-b { background-color: var(--health-good) !important; }
+.badge.bg-c { background-color: var(--health-fair) !important; color: #000 !important; }
+.badge.bg-d { background-color: var(--health-fair) !important; }
+.badge.bg-e { background-color: var(--health-poor) !important; }
+
+.interactive-card {
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.interactive-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.product-image img,
+.product-image div {
+  border: 1px solid var(--border-color);
+}
+
+/* Modal enhancements */
+.modal-content {
+  border-radius: var(--border-radius-lg);
+}
+
+.modal-header {
+  background: var(--bg-secondary);
+}
+
+/* Form enhancements */
+.input-group-text {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+  color: var(--text-muted);
+}
+
+@media (max-width: 768px) {
+  .nutrition-goal-card {
+    padding: 1rem;
   }
-  .badge.bg-b {
-    background-color: #66bb6a !important;
+  
+  .card-body {
+    padding: 1.5rem !important;
   }
-  .badge.bg-c {
-    background-color: #ffeb3b !important;
-    color: #000 !important;
-  }
-  .badge.bg-d {
-    background-color: #ff9800 !important;
-  }
-  .badge.bg-e {
-    background-color: #f44336 !important;
-  }
+}
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Nutrition goals presets
+function setPreset(type) {
+  const presets = {
+    weight_loss: { calories: 1800, protein: 120, fat: 60, carbs: 180 },
+    maintenance: { calories: 2200, protein: 80, fat: 75, carbs: 275 },
+    muscle_gain: { calories: 2800, protein: 140, fat: 90, carbs: 350 }
+  };
+  
+  const preset = presets[type];
+  if (preset) {
+    document.querySelector('input[name="calories_target"]').value = preset.calories;
+    document.querySelector('input[name="protein_target"]').value = preset.protein;
+    document.querySelector('input[name="fat_target"]').value = preset.fat;
+    document.querySelector('input[name="carbs_target"]').value = preset.carbs;
+  }
+}
+
+// Reset daily goals function
+function resetDailyGoals() {
+  if (confirm('Are you sure you want to reset today\'s nutrition tracking?')) {
+    fetch('{% url "accounts:reset_daily_goals" %}', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        'Content-Type': 'application/json',
+      },
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        location.reload();
+      } else {
+        alert('Error resetting goals. Please try again.');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Error resetting goals. Please try again.');
+    });
+  }
+}
+
+// Enhanced form submission
+document.getElementById('nutritionGoalsForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  const formData = new FormData(this);
+  const submitBtn = this.querySelector('button[type="submit"]');
+  const originalText = submitBtn.innerHTML;
+  
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving...';
+  
+  fetch(this.action, {
+    method: 'POST',
+    body: formData,
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      location.reload();
+    } else {
+      alert('Error saving goals. Please try again.');
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalText;
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Error saving goals. Please try again.');
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = originalText;
+  });
+});
+</script>
 {% endblock %}

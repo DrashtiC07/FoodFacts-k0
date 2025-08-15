@@ -3,6 +3,11 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from django.db.models import Avg
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.utils import timezone
+from datetime import datetime, timedelta
+import json
 
 from .forms import CustomUserCreationForm, LoginForm
 from .models import CustomUser, ProductReview, FavoriteProduct, DietaryGoal
@@ -78,6 +83,19 @@ def dashboard(request):
     fat_progress = (dietary_goals.fat_consumed / dietary_goals.fat_target * 100) if dietary_goals.fat_target > 0 else 0
     carbs_progress = (dietary_goals.carbs_consumed / dietary_goals.carbs_target * 100) if dietary_goals.carbs_target > 0 else 0
 
+    # Calculate remaining amounts
+    calories_remaining = max(0, dietary_goals.calories_target - dietary_goals.calories_consumed)
+    protein_remaining = max(0, dietary_goals.protein_target - dietary_goals.protein_consumed)
+    fat_remaining = max(0, dietary_goals.fat_target - dietary_goals.fat_consumed)
+    carbs_remaining = max(0, dietary_goals.carbs_target - dietary_goals.carbs_consumed)
+
+    # Calculate recent activity stats
+    week_ago = timezone.now() - timedelta(days=7)
+    recent_scans_count = ScanHistory.objects.filter(user=user, scanned_at__gte=week_ago).count()
+    
+    # Calculate days active
+    days_active = (timezone.now().date() - user.date_joined.date()).days
+
     context = {
         'user': user,
         'scan_history': scan_history,
@@ -88,8 +106,59 @@ def dashboard(request):
         'protein_progress': min(protein_progress, 100),
         'fat_progress': min(fat_progress, 100),
         'carbs_progress': min(carbs_progress, 100),
+        'calories_remaining': calories_remaining,
+        'protein_remaining': protein_remaining,
+        'fat_remaining': fat_remaining,
+        'carbs_remaining': carbs_remaining,
+        'recent_scans_count': recent_scans_count,
+        'days_active': days_active,
     }
     return render(request, 'accounts/dashboard.html', context)
+
+@login_required
+@require_POST
+def update_nutrition_goals(request):
+    """Update user's nutrition goals via AJAX"""
+    try:
+        dietary_goals, created = DietaryGoal.objects.get_or_create(user=request.user)
+        
+        # Update goals from form data
+        dietary_goals.calories_target = int(request.POST.get('calories_target', 2000))
+        dietary_goals.protein_target = int(request.POST.get('protein_target', 50))
+        dietary_goals.fat_target = int(request.POST.get('fat_target', 70))
+        dietary_goals.carbs_target = int(request.POST.get('carbs_target', 300))
+        dietary_goals.save()
+        
+        messages.success(request, 'Your nutrition goals have been updated successfully!')
+        return JsonResponse({'success': True})
+    except (ValueError, TypeError) as e:
+        return JsonResponse({'success': False, 'error': 'Invalid input values'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
+@require_POST
+def reset_daily_goals(request):
+    """Reset daily nutrition consumption to zero"""
+    try:
+        dietary_goals = DietaryGoal.objects.get(user=request.user)
+        dietary_goals.calories_consumed = 0
+        dietary_goals.protein_consumed = 0
+        dietary_goals.fat_consumed = 0
+        dietary_goals.carbs_consumed = 0
+        dietary_goals.save()
+        
+        messages.success(request, 'Daily nutrition tracking has been reset!')
+        return JsonResponse({'success': True})
+    except DietaryGoal.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'No dietary goals found'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
+def profile(request):
+    """User profile view"""
+    return render(request, 'accounts/profile.html', {'user': request.user})
 
 @login_required
 def add_remove_favorite(request, barcode):
@@ -130,3 +199,40 @@ def add_review(request, barcode):
         else:
             messages.error(request, 'Please provide a rating for your review.')
     return redirect('scanner:product_detail', barcode=barcode)
+
+@login_required
+@require_POST
+def add_to_nutrition_tracker(request):
+    """Add product nutrition to user's daily tracking"""
+    try:
+        data = json.loads(request.body)
+        barcode = data.get('barcode')
+        serving_size = float(data.get('serving_size', 100))
+        
+        product = get_object_or_404(Product, barcode=barcode)
+        dietary_goals, created = DietaryGoal.objects.get_or_create(user=request.user)
+        
+        # Calculate nutrition values based on serving size
+        if product.nutrition_info:
+            nutrition = product.nutrition_info
+            multiplier = serving_size / 100  # Nutrition info is per 100g
+            
+            # Add to daily consumption
+            dietary_goals.calories_consumed += int(nutrition.get('energy-kcal_100g', 0) * multiplier)
+            dietary_goals.protein_consumed += int(nutrition.get('proteins_100g', 0) * multiplier)
+            dietary_goals.fat_consumed += int(nutrition.get('fat_100g', 0) * multiplier)
+            dietary_goals.carbs_consumed += int(nutrition.get('carbohydrates_100g', 0) * multiplier)
+            dietary_goals.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Added {product.name} to your nutrition tracker!'
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'error': 'No nutrition information available for this product'
+            })
+            
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})

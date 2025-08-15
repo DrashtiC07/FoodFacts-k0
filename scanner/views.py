@@ -127,7 +127,6 @@ def scan_barcode(request):
             barcode = barcode_result['code']
             barcode_type = barcode_result['type']
             
-            # Check local database first
             product = Product.objects.filter(barcode=barcode).first()
             if product:
                 if request.user.is_authenticated:
@@ -167,55 +166,66 @@ def scan_barcode(request):
 
 @login_required
 def manual_entry(request):
+    """Enhanced manual barcode entry with better validation and API calls"""
     if request.method == 'POST':
         barcode = request.POST.get('barcode', '').strip()
         
-        # Enhanced validation
+        if not barcode:
+            messages.error(request, 'Please enter a barcode number')
+            return render(request, 'scanner/search.html')
+        
         if not barcode.isdigit():
             messages.error(request, 'Barcode must contain only numbers')
-            return render(request, 'scanner/scan.html', {'allow_manual': True})
+            return render(request, 'scanner/search.html')
         
         if not (8 <= len(barcode) <= 14):
             messages.error(request, 'Barcode must be 8-14 digits long')
-            return render(request, 'scanner/scan.html', {'allow_manual': True})
+            return render(request, 'scanner/search.html')
         
         # Validate barcode format
         barcode_result = validate_barcode_enhanced(barcode)
         if not barcode_result:
-            messages.error(request, 'Invalid barcode format or checksum')
-            return render(request, 'scanner/scan.html', {
-                'allow_manual': True,
-                'barcode': barcode
-            })
+            messages.error(request, 'Invalid barcode format. Please check the number and try again.')
+            return render(request, 'scanner/search.html', {'barcode_error': barcode})
         
         validated_barcode = barcode_result['code']
         barcode_type = barcode_result['type']
         
-        product = Product.objects.filter(barcode=validated_barcode).first()
-        if product:
+        try:
+            product = Product.objects.get(barcode=validated_barcode)
             if request.user.is_authenticated:
                 ScanHistory.objects.get_or_create(user=request.user, product=product)
+            messages.success(request, f'Found product: {product.name}')
             return redirect('scanner:product_detail', barcode=validated_barcode)
+        except Product.DoesNotExist:
+            pass
         
-        product_info = fetch_product_info_enhanced(validated_barcode, barcode_type)
-        if product_info:
-            product = save_product(validated_barcode, product_info, barcode_type)
-            if request.user.is_authenticated:
-                ScanHistory.objects.create(user=request.user, product=product)
-            messages.success(request, f'Added: {product.name}')
-            return redirect('scanner:product_detail', barcode=validated_barcode)
-        else:
-            messages.error(request, 'Product not found')
-            return render(request, 'scanner/scan.html', {
-                'barcode': validated_barcode,
-                'suggest_urls': [
-                    f'https://world.openfoodfacts.org/product/{validated_barcode}',
-                    f'https://in.openfoodfacts.org/product/{validated_barcode}'
-                ],
-                'allow_manual': True
-            })
+        try:
+            messages.info(request, 'Searching external databases...')
+            product_info = fetch_product_info_enhanced(validated_barcode, barcode_type)
+            
+            if product_info:
+                product = save_product(validated_barcode, product_info, barcode_type)
+                if request.user.is_authenticated:
+                    ScanHistory.objects.create(user=request.user, product=product)
+                messages.success(request, f'Product found and added: {product.name}')
+                return redirect('scanner:product_detail', barcode=validated_barcode)
+            else:
+                messages.warning(request, f'Product with barcode {validated_barcode} not found in our database or external sources.')
+                return render(request, 'scanner/search.html', {
+                    'barcode_not_found': validated_barcode,
+                    'suggest_urls': [
+                        f'https://world.openfoodfacts.org/product/{validated_barcode}',
+                        f'https://in.openfoodfacts.org/product/{validated_barcode}'
+                    ]
+                })
+                
+        except Exception as e:
+            logger.error(f"Manual entry error for barcode {validated_barcode}: {str(e)}")
+            messages.error(request, 'An error occurred while searching for the product. Please try again.')
+            return render(request, 'scanner/search.html', {'barcode_error': validated_barcode})
     
-    return redirect('scanner:scan')
+    return redirect('scanner:search')
 
 @login_required
 def submit_review(request, barcode):
@@ -272,17 +282,31 @@ def toggle_favorite(request, barcode):
     return redirect('scanner:product_detail', barcode=barcode)
 
 def search_products(request):
-    """Search products across name, brand and barcode"""
+    """Enhanced search products across name, brand and barcode"""
     query = request.GET.get('q', '').strip()
+    sort_by = request.GET.get('sort', 'name')
     products = []
     
     if query:
-        products = Product.objects.filter(
+        search_filter = (
             Q(name__icontains=query) | 
             Q(brand__icontains=query) |
             Q(barcode__icontains=query) |
-            Q(category__icontains=query)
-        ).order_by('name')
+            Q(category__icontains=query) |
+            Q(ingredients__icontains=query)
+        )
+        
+        products = Product.objects.filter(search_filter)
+        
+        # Apply sorting
+        if sort_by == 'name':
+            products = products.order_by('name')
+        elif sort_by == 'brand':
+            products = products.order_by('brand', 'name')
+        elif sort_by == 'recent':
+            products = products.order_by('-created_at')
+        else:
+            products = products.order_by('name')
         
         # Pagination
         paginator = Paginator(products, 20)  # Show 20 products per page
@@ -291,11 +315,14 @@ def search_products(request):
         
         if not products.exists():
             messages.info(request, f'No products found for "{query}"')
+    else:
+        page_obj = None
     
     return render(request, 'scanner/search.html', {
-        'page_obj': page_obj if query else None,
+        'page_obj': page_obj,
         'query': query,
-        'results_count': paginator.count if query else 0
+        'results_count': paginator.count if query and products.exists() else 0,
+        'sort_by': sort_by,
     })
 
 @login_required

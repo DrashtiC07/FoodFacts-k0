@@ -1,155 +1,194 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}{{ product.name }} - FoodScanner{% endblock %}
-
-{% block extra_css %}
-<style>
-    .health-score-circle {
-        width: 120px;
-        height: 120px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2rem;
-        font-weight: bold;
-        color: white;
-        position: relative;
-    }
-    .health-score-excellent { background: linear-gradient(135deg, #22c55e, #16a34a); }
-    .health-score-good { background: linear-gradient(135deg, #84cc16, #65a30d); }
-    .health-score-fair { background: linear-gradient(135deg, #f59e0b, #d97706); }
-    .health-score-poor { background: linear-gradient(135deg, #ef4444, #dc2626); }
-    
-    .nutrition-bar {
-        height: 8px;
-        border-radius: 4px;
-        overflow: hidden;
-    }
-    
-    .dietary-badge {
-        padding: 0.5rem 1rem;
-        border-radius: 25px;
-        font-weight: 600;
-        font-size: 0.875rem;
-    }
-</style>
-{% endblock %}
+{% block title %}{{ product.name }} - Food Scanner{% endblock %}
 
 {% block content %}
 <div class="container py-4">
-    <!-- Product Header -->
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{% url 'scanner:index' %}">Home</a></li>
-                    <li class="breadcrumb-item active">{{ product.name }}</li>
-                </ol>
-            </nav>
-            
-            <h1 class="display-6 fw-bold mb-2">{{ product.name }}</h1>
-            {% if product.brand %}
-            <p class="lead text-muted mb-3">by {{ product.brand }}</p>
-            {% endif %}
-            
-            <div class="d-flex gap-2 mb-3">
-                <span class="badge bg-secondary">{{ product.barcode }}</span>
-                {% if product.category %}
-                <span class="badge bg-info">{{ product.category }}</span>
-                {% endif %}
-            </div>
-        </div>
-        
-        <div class="col-md-4 text-md-end">
-            {% if user.is_authenticated %}
-            <div class="btn-group mb-3" role="group">
-                <form method="post" action="{% url 'scanner:toggle_favorite' product.barcode %}" class="d-inline">
-                    {% csrf_token %}
-                    <button type="submit" class="btn {% if is_favorite %}btn-danger{% else %}btn-outline-danger{% endif %}">
-                        <i class="bi bi-heart{% if is_favorite %}-fill{% endif %} me-1"></i>
-                        {% if is_favorite %}Remove from Favorites{% else %}Add to Favorites{% endif %}
-                    </button>
-                </form>
-            </div>
-            {% endif %}
-        </div>
-    </div>
+    <!-- Modern Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-transparent p-0">
+            <li class="breadcrumb-item">
+                <a href="{% url 'scanner:index' %}" class="text-decoration-none text-primary">
+                    <i class="bi bi-house me-1"></i>Home
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'scanner:search' %}" class="text-decoration-none text-primary">Products</a>
+            </li>
+            <li class="breadcrumb-item active text-muted">{{ product.name|truncatechars:30 }}</li>
+        </ol>
+    </nav>
 
-    <div class="row">
-        <!-- Left Column: Product Image & Basic Info -->
-        <div class="col-lg-4 mb-4">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body text-center">
-                    {% if product.image_url %}
-                    <img src="{{ product.image_url }}" alt="{{ product.name }}" class="img-fluid rounded mb-3" style="max-height: 300px;">
-                    {% else %}
-                    <div class="bg-light rounded d-flex align-items-center justify-content-center mb-3" style="height: 300px;">
-                        <i class="bi bi-image text-muted" style="font-size: 4rem;"></i>
+    <!-- Product Hero Section -->
+    <div class="row mb-5">
+        <div class="col-lg-5 mb-4">
+            <!-- Product Image Card -->
+            <div class="card border-0 shadow-sm sticky-top" style="top: 2rem;">
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        {% if product.image_url %}
+                        <img src="{{ product.image_url }}" alt="{{ product.name }}" 
+                             class="img-fluid rounded-3 shadow-sm" 
+                             style="max-height: 350px; width: 100%; object-fit: contain;">
+                        {% else %}
+                        <div class="bg-light rounded-3 d-flex align-items-center justify-content-center shadow-sm" 
+                             style="height: 350px;">
+                            <div class="text-center">
+                                <i class="bi bi-image text-muted" style="font-size: 4rem;"></i>
+                                <p class="text-muted mt-2 mb-0">No image available</p>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
-                    {% endif %}
-                    
-                    <!-- Health Score -->
+
+                    <!-- Health Score Showcase -->
                     {% if product.health_score %}
                     <div class="text-center mb-4">
-                        <div class="health-score-circle mx-auto mb-2 
+                        <div class="health-score-circle mx-auto mb-3 
                             {% if product.health_score >= 80 %}health-score-excellent
                             {% elif product.health_score >= 60 %}health-score-good
                             {% elif product.health_score >= 40 %}health-score-fair
                             {% else %}health-score-poor{% endif %}">
-                            {{ product.health_score }}
+                            <div class="text-center">
+                                <div class="fs-2 fw-bold">{{ product.health_score }}</div>
+                                <small class="opacity-75">/ 100</small>
+                            </div>
                         </div>
-                        <h5 class="fw-bold">Health Score</h5>
-                        <p class="text-muted small">
-                            {% if product.health_score >= 80 %}Excellent choice!
-                            {% elif product.health_score >= 60 %}Good option
-                            {% elif product.health_score >= 40 %}Fair choice
-                            {% else %}Consider alternatives{% endif %}
+                        <h5 class="fw-bold mb-2" style="font-family: 'Manrope', sans-serif;">Health Score</h5>
+                        <p class="text-muted mb-0">
+                            {% if product.health_score >= 80 %}
+                                <i class="bi bi-check-circle-fill text-success me-1"></i>Excellent nutritional choice
+                            {% elif product.health_score >= 60 %}
+                                <i class="bi bi-check-circle text-info me-1"></i>Good nutritional option
+                            {% elif product.health_score >= 40 %}
+                                <i class="bi bi-exclamation-circle text-warning me-1"></i>Fair nutritional value
+                            {% else %}
+                                <i class="bi bi-x-circle text-danger me-1"></i>Consider healthier alternatives
+                            {% endif %}
                         </p>
                     </div>
                     {% endif %}
-                    
-                    <!-- Eco Score & Nova Group -->
-                    <div class="row text-center">
+
+                    <!-- Quick Stats -->
+                    <div class="row g-3">
                         {% if product.ecoscore %}
                         <div class="col-6">
-                            <div class="p-3 bg-light rounded">
-                                <h3 class="fw-bold text-success mb-1">{{ product.ecoscore }}</h3>
-                                <small class="text-muted">Eco Score</small>
+                            <div class="text-center p-3 bg-success bg-opacity-10 rounded-3 border border-success border-opacity-25">
+                                <div class="fs-4 fw-bold text-success mb-1">{{ product.ecoscore|upper }}</div>
+                                <small class="text-success fw-semibold">Eco Score</small>
                             </div>
                         </div>
                         {% endif %}
                         {% if product.nova_group %}
                         <div class="col-6">
-                            <div class="p-3 bg-light rounded">
-                                <h3 class="fw-bold text-info mb-1">{{ product.nova_group }}</h3>
-                                <small class="text-muted">NOVA Group</small>
+                            <div class="text-center p-3 bg-info bg-opacity-10 rounded-3 border border-info border-opacity-25">
+                                <div class="fs-4 fw-bold text-info mb-1">{{ product.nova_group }}</div>
+                                <small class="text-info fw-semibold">NOVA Group</small>
                             </div>
                         </div>
                         {% endif %}
                     </div>
+
+                    <!-- Action Buttons -->
+                    {% if user.is_authenticated %}
+                    <div class="d-grid gap-2 mt-4">
+                        <form method="post" action="{% url 'accounts:add_remove_favorite' product.barcode %}" class="d-grid">
+                            {% csrf_token %}
+                            <button type="submit" class="btn {% if is_favorite %}btn-danger{% else %}btn-outline-danger{% endif %} btn-lg">
+                                <i class="bi bi-heart{% if is_favorite %}-fill{% endif %} me-2"></i>
+                                {% if is_favorite %}Remove from Favorites{% else %}Add to Favorites{% endif %}
+                            </button>
+                        </form>
+                        <button class="btn btn-outline-primary btn-lg" onclick="addToNutritionTracker()">
+                            <i class="bi bi-plus-circle me-2"></i>Add to Nutrition Tracker
+                        </button>
+                    </div>
+                    {% else %}
+                    <div class="text-center mt-4">
+                        <p class="text-muted mb-3">Want to save this product?</p>
+                        <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Login to Save
+                        </a>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
 
-        <!-- Right Column: Detailed Information -->
-        <div class="col-lg-8">
-            <!-- Dietary Flags -->
+        <div class="col-lg-7">
+            <!-- Product Header -->
+            <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="flex-grow-1">
+                        <h1 class="display-5 fw-bold mb-2" style="font-family: 'Manrope', sans-serif;">
+                            {{ product.name }}
+                        </h1>
+                        {% if product.brand %}
+                        <p class="fs-5 text-muted mb-3">
+                            <i class="bi bi-building me-2"></i>{{ product.brand }}
+                        </p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Rating Display -->
+                    {% if product.average_rating %}
+                    <div class="text-end">
+                        <div class="text-warning fs-5 mb-1">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= product.average_rating %}
+                                    <i class="bi bi-star-fill"></i>
+                                {% else %}
+                                    <i class="bi bi-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <small class="text-muted">
+                            {{ product.average_rating|floatformat:1 }} 
+                            ({{ product.review_count }} review{{ product.review_count|pluralize }})
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Product Meta -->
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-3 py-2">
+                        <i class="bi bi-upc-scan me-1"></i>{{ product.barcode }}
+                    </span>
+                    {% if product.category %}
+                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-2">
+                        <i class="bi bi-tag me-1"></i>{{ product.category }}
+                    </span>
+                    {% endif %}
+                    {% if product.serving_size %}
+                    <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-3 py-2">
+                        <i class="bi bi-cup me-1"></i>{{ product.serving_size }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Dietary Information -->
             {% if dietary_flags %}
             <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-transparent">
-                    <h5 class="fw-bold mb-0">
-                        <i class="bi bi-shield-check me-2"></i>Dietary Information
-                    </h5>
+                <div class="card-header bg-transparent border-0 p-4">
+                    <h4 class="fw-bold mb-0" style="font-family: 'Manrope', sans-serif;">
+                        <i class="bi bi-shield-check me-2 text-success"></i>Dietary Information
+                    </h4>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-4">
                     <div class="row g-3">
                         {% for flag in dietary_flags %}
                         <div class="col-md-6">
-                            <div class="dietary-badge bg-{{ flag.color }} bg-opacity-10 border border-{{ flag.color }} border-opacity-25 d-flex align-items-center">
-                                <span class="me-2">{{ flag.icon }}</span>
-                                <span class="text-{{ flag.color }}">{{ flag.label }}</span>
+                            <div class="dietary-badge bg-{{ flag.color }} bg-opacity-10 border border-{{ flag.color }} border-opacity-25 d-flex align-items-center p-3 rounded-3">
+                                <span class="fs-5 me-3">{{ flag.icon }}</span>
+                                <div>
+                                    <div class="fw-semibold text-{{ flag.color }}">{{ flag.label }}</div>
+                                    {% if flag.description %}
+                                    <small class="text-muted">{{ flag.description }}</small>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                         {% endfor %}
@@ -161,26 +200,39 @@
             <!-- Nutrition Facts -->
             {% if nutrition_facts %}
             <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-transparent">
-                    <h5 class="fw-bold mb-0">
-                        <i class="bi bi-bar-chart me-2"></i>Nutrition Facts
-                        <small class="text-muted">(per 100g)</small>
-                    </h5>
+                <div class="card-header bg-transparent border-0 p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="fw-bold mb-0" style="font-family: 'Manrope', sans-serif;">
+                            <i class="bi bi-bar-chart me-2 text-primary"></i>Nutrition Facts
+                        </h4>
+                        <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2">
+                            Per 100g serving
+                        </span>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="row g-3">
+                <div class="card-body p-4">
+                    <div class="row g-4">
                         {% for fact in nutrition_facts %}
                         <div class="col-md-6">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="fw-medium">{{ fact.name }}</span>
-                                <span class="text-muted">{{ fact.value }}{{ fact.unit }}</span>
+                            <div class="nutrition-item p-3 bg-light bg-opacity-50 rounded-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="fw-semibold text-dark">{{ fact.name }}</span>
+                                    <span class="fw-bold text-primary">{{ fact.value }}{{ fact.unit }}</span>
+                                </div>
+                                {% if fact.percentage %}
+                                <div class="nutrition-bar mb-2">
+                                    <div class="progress-fill" style="width: {{ fact.percentage }}%"></div>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <small class="text-muted">{{ fact.percentage }}% daily value</small>
+                                    {% if fact.status %}
+                                    <small class="text-{{ fact.status_color }}">
+                                        <i class="bi bi-{{ fact.status_icon }} me-1"></i>{{ fact.status }}
+                                    </small>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
                             </div>
-                            {% if fact.percentage %}
-                            <div class="nutrition-bar bg-light">
-                                <div class="h-100 bg-primary" style="width: {{ fact.percentage }}%"></div>
-                            </div>
-                            <small class="text-muted">{{ fact.percentage }}% of daily value</small>
-                            {% endif %}
                         </div>
                         {% endfor %}
                     </div>
@@ -191,13 +243,19 @@
             <!-- Ingredients -->
             {% if product.ingredients %}
             <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-transparent">
-                    <h5 class="fw-bold mb-0">
-                        <i class="bi bi-list-ul me-2"></i>Ingredients
-                    </h5>
+                <div class="card-header bg-transparent border-0 p-4">
+                    <h4 class="fw-bold mb-0" style="font-family: 'Manrope', sans-serif;">
+                        <i class="bi bi-list-ul me-2 text-info"></i>Ingredients
+                    </h4>
                 </div>
-                <div class="card-body">
-                    <p class="mb-0">{{ product.ingredients }}</p>
+                <div class="card-body p-4">
+                    <div class="ingredients-text p-3 bg-light bg-opacity-50 rounded-3">
+                        <p class="mb-0 lh-lg">{{ product.ingredients }}</p>
+                    </div>
+                    <small class="text-muted mt-2 d-block">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Ingredients are listed in order of quantity (highest to lowest)
+                    </small>
                 </div>
             </div>
             {% endif %}
@@ -205,117 +263,159 @@
             <!-- Allergens -->
             {% if product.allergens %}
             <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-transparent">
-                    <h5 class="fw-bold mb-0 text-warning">
+                <div class="card-header bg-transparent border-0 p-4">
+                    <h4 class="fw-bold mb-0 text-warning" style="font-family: 'Manrope', sans-serif;">
                         <i class="bi bi-exclamation-triangle me-2"></i>Allergen Information
-                    </h5>
+                    </h4>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-4">
+                    <div class="alert alert-warning border-0 bg-warning bg-opacity-10 mb-3">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>Contains:</strong> This product contains the following allergens
+                    </div>
                     <div class="d-flex flex-wrap gap-2">
                         {% for allergen in product.allergens %}
-                        <span class="badge bg-warning text-dark">{{ allergen|title }}</span>
+                        <span class="badge bg-warning text-dark fs-6 px-3 py-2">
+                            <i class="bi bi-exclamation-circle me-1"></i>{{ allergen|title }}
+                        </span>
                         {% endfor %}
                     </div>
                 </div>
             </div>
             {% endif %}
+        </div>
+    </div>
 
-            <!-- Reviews Section -->
+    <!-- Reviews Section -->
+    <div class="row">
+        <div class="col-12">
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
-                    <h5 class="fw-bold mb-0">
-                        <i class="bi bi-star me-2"></i>Reviews
-                        {% if product.review_count %}
-                        <span class="badge bg-secondary">{{ product.review_count }}</span>
-                        {% endif %}
-                    </h5>
-                    {% if product.average_rating %}
-                    <div class="text-warning">
-                        {% for i in "12345" %}
-                            {% if forloop.counter <= product.average_rating %}
-                                <i class="bi bi-star-fill"></i>
-                            {% else %}
-                                <i class="bi bi-star"></i>
+                <div class="card-header bg-transparent border-0 p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="fw-bold mb-0" style="font-family: 'Manrope', sans-serif;">
+                            <i class="bi bi-star me-2 text-warning"></i>Customer Reviews
+                            {% if product.review_count %}
+                            <span class="badge bg-warning bg-opacity-10 text-warning ms-2">{{ product.review_count }}</span>
                             {% endif %}
-                        {% endfor %}
-                        <span class="text-muted ms-1">({{ product.average_rating|floatformat:1 }})</span>
-                    </div>
-                    {% endif %}
-                </div>
-                <div class="card-body">
-                    {% if user.is_authenticated %}
-                        {% if not existing_review %}
-                        <!-- Add Review Form -->
-                        <form method="post" action="{% url 'scanner:submit_review' product.barcode %}" class="mb-4">
-                            {% csrf_token %}
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Your Rating</label>
-                                <div class="rating-input">
-                                    {% for i in "12345" %}
-                                    <input type="radio" name="rating" value="{{ forloop.counter }}" id="star{{ forloop.counter }}" class="d-none">
-                                    <label for="star{{ forloop.counter }}" class="text-warning fs-4 cursor-pointer">
-                                        <i class="bi bi-star"></i>
-                                    </label>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="review_text" class="form-label fw-bold">Your Review</label>
-                                <textarea class="form-control" id="review_text" name="review_text" rows="3" placeholder="Share your thoughts about this product..."></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-send me-2"></i>Submit Review
-                            </button>
-                        </form>
-                        {% else %}
-                        <!-- Existing Review -->
-                        <div class="alert alert-info">
-                            <strong>Your Review:</strong>
-                            <div class="text-warning mb-2">
+                        </h4>
+                        {% if product.average_rating %}
+                        <div class="text-end">
+                            <div class="text-warning fs-4">
                                 {% for i in "12345" %}
-                                    {% if forloop.counter <= existing_review.rating %}
+                                    {% if forloop.counter <= product.average_rating %}
                                         <i class="bi bi-star-fill"></i>
                                     {% else %}
                                         <i class="bi bi-star"></i>
                                     {% endif %}
                                 {% endfor %}
                             </div>
-                            {% if existing_review.review_text %}
-                            <p class="mb-0">{{ existing_review.review_text }}</p>
-                            {% endif %}
+                            <small class="text-muted">{{ product.average_rating|floatformat:1 }} out of 5</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    {% if user.is_authenticated %}
+                        {% if not existing_review %}
+                        <!-- Enhanced Review Form -->
+                        <div class="review-form-container mb-5">
+                            <h5 class="fw-semibold mb-3">Share Your Experience</h5>
+                            <form method="post" action="{% url 'accounts:add_review' product.barcode %}" class="p-4 bg-light bg-opacity-50 rounded-3">
+                                {% csrf_token %}
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold mb-3">Rate this product</label>
+                                    <div class="rating-input d-flex gap-1">
+                                        {% for i in "12345" %}
+                                        <input type="radio" name="rating" value="{{ forloop.counter }}" id="star{{ forloop.counter }}" class="d-none">
+                                        <label for="star{{ forloop.counter }}" class="text-warning fs-2 cursor-pointer rating-star">
+                                            <i class="bi bi-star"></i>
+                                        </label>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="mb-4">
+                                    <label for="review_text" class="form-label fw-semibold">Your Review</label>
+                                    <textarea class="form-control" id="review_text" name="review_text" rows="4" 
+                                              placeholder="Tell others about your experience with this product..."></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-send me-2"></i>Submit Review
+                                </button>
+                            </form>
+                        </div>
+                        {% else %}
+                        <!-- User's Existing Review -->
+                        <div class="alert alert-info border-0 bg-info bg-opacity-10 mb-4">
+                            <div class="d-flex align-items-start">
+                                <i class="bi bi-info-circle-fill text-info me-3 mt-1"></i>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-semibold mb-2">Your Review</h6>
+                                    <div class="text-warning mb-2">
+                                        {% for i in "12345" %}
+                                            {% if forloop.counter <= existing_review.rating %}
+                                                <i class="bi bi-star-fill"></i>
+                                            {% else %}
+                                                <i class="bi bi-star"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    {% if existing_review.review_text %}
+                                    <p class="mb-0">{{ existing_review.review_text }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
                         {% endif %}
                     {% else %}
-                    <p class="text-muted">
-                        <a href="{% url 'accounts:login' %}">Login</a> to write a review.
-                    </p>
+                    <div class="text-center py-4 mb-4">
+                        <i class="bi bi-person-plus display-1 text-muted mb-3"></i>
+                        <h5 class="fw-semibold mb-2">Want to share your experience?</h5>
+                        <p class="text-muted mb-3">Join our community to write reviews and help others make better food choices</p>
+                        <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-lg me-2">
+                            <i class="bi bi-box-arrow-in-right me-1"></i>Login
+                        </a>
+                        <a href="{% url 'accounts:register' %}" class="btn btn-outline-primary btn-lg">
+                            <i class="bi bi-person-plus me-1"></i>Sign Up
+                        </a>
+                    </div>
                     {% endif %}
 
                     <!-- Display Reviews -->
-                    {% for review in product.reviews.all|slice:":5" %}
-                    <div class="border-bottom pb-3 mb-3">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <strong>{{ review.user.username }}</strong>
-                                <div class="text-warning">
-                                    {% for i in "12345" %}
-                                        {% if forloop.counter <= review.rating %}
-                                            <i class="bi bi-star-fill"></i>
-                                        {% else %}
-                                            <i class="bi bi-star"></i>
-                                        {% endif %}
-                                    {% endfor %}
+                    <div class="reviews-list">
+                        {% for review in product.reviews.all|slice:":10" %}
+                        <div class="review-item p-4 mb-3 bg-light bg-opacity-50 rounded-3">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="user-avatar me-3">
+                                        <i class="bi bi-person-circle fs-2 text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-semibold mb-1">{{ review.user.get_full_name|default:review.user.username }}</h6>
+                                        <div class="text-warning">
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= review.rating %}
+                                                    <i class="bi bi-star-fill"></i>
+                                                {% else %}
+                                                    <i class="bi bi-star"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
                                 </div>
+                                <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>
                             </div>
-                            <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>
+                            {% if review.review_text %}
+                            <p class="mb-0 lh-lg">{{ review.review_text }}</p>
+                            {% endif %}
                         </div>
-                        {% if review.review_text %}
-                        <p class="mt-2 mb-0">{{ review.review_text }}</p>
-                        {% endif %}
+                        {% empty %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-chat-dots display-1 text-muted mb-3"></i>
+                            <h5 class="fw-semibold mb-2">No reviews yet</h5>
+                            <p class="text-muted">Be the first to share your experience with this product!</p>
+                        </div>
+                        {% endfor %}
                     </div>
-                    {% empty %}
-                    <p class="text-muted text-center py-4">No reviews yet. Be the first to review this product!</p>
-                    {% endfor %}
                 </div>
             </div>
         </div>
@@ -323,10 +423,172 @@
 </div>
 {% endblock %}
 
+{% block extra_css %}
+<style>
+/* Enhanced health score styling */
+.health-score-circle {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    position: relative;
+    box-shadow: var(--shadow-lg);
+    transition: transform var(--transition-normal);
+}
+
+.health-score-circle:hover {
+    transform: scale(1.05);
+}
+
+.health-score-excellent { 
+    background: linear-gradient(135deg, var(--health-excellent), #059669);
+}
+.health-score-good { 
+    background: linear-gradient(135deg, var(--health-good), #65a30d);
+}
+.health-score-fair { 
+    background: linear-gradient(135deg, var(--health-fair), #d97706);
+}
+.health-score-poor { 
+    background: linear-gradient(135deg, var(--health-poor), #dc2626);
+}
+
+/* Enhanced nutrition bars */
+.nutrition-bar {
+    height: 12px;
+    border-radius: 6px;
+    overflow: hidden;
+    background-color: var(--bg-tertiary);
+    position: relative;
+}
+
+.nutrition-bar .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), #06b6d4);
+    border-radius: 6px;
+    transition: width var(--transition-slow);
+    position: relative;
+    overflow: hidden;
+}
+
+.nutrition-bar .progress-fill::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 2s infinite;
+}
+
+/* Enhanced dietary badges */
+.dietary-badge {
+    transition: all var(--transition-fast);
+    cursor: default;
+}
+
+.dietary-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Enhanced rating input */
+.rating-input {
+    gap: 0.25rem;
+}
+
+.rating-star {
+    transition: all var(--transition-fast);
+    cursor: pointer;
+}
+
+.rating-star:hover {
+    transform: scale(1.1);
+}
+
+/* Review styling */
+.review-item {
+    transition: all var(--transition-fast);
+    border: 1px solid var(--border-color);
+}
+
+.review-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.user-avatar {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Ingredients text styling */
+.ingredients-text {
+    border: 1px solid var(--border-color);
+    transition: all var(--transition-fast);
+}
+
+.ingredients-text:hover {
+    border-color: var(--primary-color);
+    background-color: var(--primary-light) !important;
+}
+
+/* Nutrition item styling */
+.nutrition-item {
+    border: 1px solid var(--border-color);
+    transition: all var(--transition-fast);
+}
+
+.nutrition-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+    border-color: var(--primary-color);
+}
+
+/* Sticky positioning for mobile */
+@media (max-width: 991px) {
+    .sticky-top {
+        position: relative !important;
+        top: auto !important;
+    }
+}
+
+/* Enhanced animations */
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* Badge enhancements */
+.badge {
+    font-weight: 500;
+    letter-spacing: 0.025em;
+}
+
+/* Card hover effects */
+.card {
+    transition: all var(--transition-normal);
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+</style>
+{% endblock %}
+
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Rating input functionality
+    // Enhanced rating input functionality
     const ratingInputs = document.querySelectorAll('.rating-input input[type="radio"]');
     const ratingLabels = document.querySelectorAll('.rating-input label');
     
@@ -337,28 +599,81 @@ document.addEventListener('DOMContentLoaded', function() {
         
         label.addEventListener('click', function() {
             ratingInputs[index].checked = true;
+            highlightStars(index + 1);
         });
     });
     
-    document.querySelector('.rating-input').addEventListener('mouseleave', function() {
-        const checkedInput = document.querySelector('.rating-input input[type="radio"]:checked');
-        if (checkedInput) {
-            highlightStars(parseInt(checkedInput.value));
-        } else {
-            highlightStars(0);
-        }
-    });
+    const ratingContainer = document.querySelector('.rating-input');
+    if (ratingContainer) {
+        ratingContainer.addEventListener('mouseleave', function() {
+            const checkedInput = document.querySelector('.rating-input input[type="radio"]:checked');
+            if (checkedInput) {
+                highlightStars(parseInt(checkedInput.value));
+            } else {
+                highlightStars(0);
+            }
+        });
+    }
     
     function highlightStars(count) {
         ratingLabels.forEach((label, index) => {
             const icon = label.querySelector('i');
             if (index < count) {
                 icon.className = 'bi bi-star-fill';
+                label.style.color = '#fbbf24';
             } else {
                 icon.className = 'bi bi-star';
+                label.style.color = '#d1d5db';
             }
         });
     }
+});
+
+// Add to nutrition tracker function
+function addToNutritionTracker() {
+    // This would integrate with the nutrition goals system
+    const productName = "{{ product.name|escapejs }}";
+    
+    if (confirm(`Add "${productName}" to your nutrition tracker?`)) {
+        // Here you would make an AJAX call to add nutrition data
+        fetch('{% url "accounts:add_to_nutrition_tracker" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                'barcode': '{{ product.barcode }}',
+                'serving_size': 100 // Default serving size
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Product added to your nutrition tracker!');
+            } else {
+                alert('Error adding product. Please try again.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error adding product. Please try again.');
+        });
+    }
+}
+
+// Smooth scroll for long content
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    });
 });
 </script>
 {% endblock %}
