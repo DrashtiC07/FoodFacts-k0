@@ -416,10 +416,12 @@ def search_products(request):
 
 @login_required
 def scan_history(request):
-    """Display user's scan history with pagination"""
+    """Display user's scan history with proper user filtering and pagination"""
     scans = ScanHistory.objects.filter(
-        user=request.user
+        user=request.user  # This ensures only current user's scans
     ).select_related('product').order_by('-scanned_at')
+    
+    logger.info(f"[v0] Scan history for user {request.user.username}: {scans.count()} scans found")
     
     paginator = Paginator(scans, 20)  # Show 20 scans per page
     page_number = request.GET.get('page')
@@ -427,8 +429,78 @@ def scan_history(request):
     
     return render(request, 'scanner/history.html', {
         'page_obj': page_obj,
-        'total_scans': scans.count()
+        'total_scans': scans.count(),
+        'user_scans_only': True  # Flag to indicate user-specific filtering
     })
+
+@login_required
+def save_product(request):
+    """Enhanced save product functionality with comprehensive error handling"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            barcode = data.get('barcode')
+            
+            if not barcode:
+                return JsonResponse({'success': False, 'error': 'Barcode is required'})
+            
+            # Get or create the product
+            product, created = Product.objects.get_or_create(
+                barcode=barcode,
+                defaults={
+                    'name': data.get('name', 'Unknown Product'),
+                    'brand': data.get('brand', ''),
+                    'category': data.get('category', ''),
+                    'ingredients': data.get('ingredients', ''),
+                    'image_url': data.get('image_url', ''),
+                }
+            )
+            
+            # Update product information if provided
+            if not created:
+                for field in ['name', 'brand', 'category', 'ingredients', 'image_url']:
+                    if data.get(field):
+                        setattr(product, field, data[field])
+                
+                # Update nutrition info if provided
+                if data.get('nutrition_info'):
+                    product.nutrition_info = data['nutrition_info']
+                
+                product.save()
+            
+            # Create scan history entry
+            scan_history, scan_created = ScanHistory.objects.get_or_create(
+                user=request.user,
+                product=product,
+                defaults={'scanned_at': timezone.now()}
+            )
+            
+            # If scan already exists, update the timestamp
+            if not scan_created:
+                scan_history.scanned_at = timezone.now()
+                scan_history.save()
+            
+            # Calculate health score if nutrition info is available
+            if product.nutrition_info:
+                health_score = product.calculate_health_score()
+                if health_score is not None:
+                    product.health_score = health_score
+                    product.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Product saved successfully!',
+                'product_id': product.id,
+                'created': created
+            })
+            
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'error': 'Invalid JSON data'})
+        except Exception as e:
+            logger.error(f"[v0] Save product error: {str(e)}")
+            return JsonResponse({'success': False, 'error': f'Error saving product: {str(e)}'})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
 # Helper Functions
 def process_uploaded_image(image_file):

@@ -246,7 +246,7 @@
         <div class="card-body p-4">
           {% if scan_history %}
             {% for scan in scan_history %}
-            <div class="d-flex align-items-center mb-3 p-3 rounded-3 bg-light bg-opacity-50 {% if not forloop.last %}mb-3{% endif %}" style="padding-top: 20px;">
+            <div class="d-flex align-items-center mb-3 p-3 rounded-3 bg-light bg-opacity-50 {% if not forloop.last %}mb-3{% endif %}">
               <div class="product-image me-3">
                 {% if scan.product.image_url %}
                 <img
@@ -265,7 +265,7 @@
               </div>
               <div class="flex-grow-1">
                 <h6 class="mb-1 fw-semibold">
-                  <a href="{% url 'scanner:product_detail' scan.product.barcode %}" class="text-decoration-none text-dark product-link" style="padding-top: 10px; display: inline-block;">
+                  <a href="{% url 'scanner:product_detail' scan.product.barcode %}" class="text-decoration-none text-dark product-link" style="padding-top: 20px; display: inline-block;">
                     {{ scan.product.name|truncatechars:35 }}
                   </a>
                 </h6>
@@ -308,7 +308,7 @@
         <div class="card-body p-4">
           {% if favorite_products %}
             {% for favorite in favorite_products %}
-            <div class="d-flex align-items-center mb-3 p-3 rounded-3 bg-light bg-opacity-50" style="padding-top: 20px;">
+            <div class="d-flex align-items-center mb-3 p-3 rounded-3 bg-light bg-opacity-50">
               <div class="product-image me-3">
                 {% if favorite.product.image_url %}
                 <img
@@ -327,7 +327,7 @@
               </div>
               <div class="flex-grow-1">
                 <h6 class="mb-1 fw-semibold">
-                  <a href="{% url 'scanner:product_detail' favorite.product.barcode %}" class="text-decoration-none text-dark product-link" style="padding-top: 10px; display: inline-block;">
+                  <a href="{% url 'scanner:product_detail' favorite.product.barcode %}" class="text-decoration-none text-dark product-link" style="padding-top: 20px; display: inline-block;">
                     {{ favorite.product.name|truncatechars:35 }}
                   </a>
                 </h6>
@@ -372,7 +372,7 @@
         </div>
         <div class="card-body p-4">
           {% for review in user_reviews %}
-          <div class="mb-4 p-3 rounded-3 bg-light bg-opacity-50 {% if not forloop.last %}mb-4{% endif %}" style="padding-top: 20px;">
+          <div class="mb-4 p-3 rounded-3 bg-light bg-opacity-50 {% if not forloop.last %}mb-4{% endif %}">
             <div class="d-flex align-items-start">
               <div class="product-image me-3">
                 {% if review.product.image_url %}
@@ -392,7 +392,7 @@
               </div>
               <div class="flex-grow-1">
                 <h6 class="mb-2 fw-semibold">
-                  <a href="{% url 'scanner:product_detail' review.product.barcode %}" class="text-decoration-none text-dark product-link" style="padding-top: 10px; display: inline-block;">
+                  <a href="{% url 'scanner:product_detail' review.product.barcode %}" class="text-decoration-none text-dark product-link" style="padding-top: 20px; display: inline-block;">
                     {{ review.product.name }}
                   </a>
                 </h6>
@@ -783,6 +783,18 @@ document.getElementById('nutritionGoalsForm').addEventListener('submit', functio
     alert('Calories target must be between 1000 and 5000');
     return;
   }
+  if (protein < 10 || protein > 300) {
+    alert('Protein target must be between 10 and 300g');
+    return;
+  }
+  if (fat < 10 || fat > 200) {
+    alert('Fat target must be between 10 and 200g');
+    return;
+  }
+  if (carbs < 50 || carbs > 800) {
+    alert('Carbs target must be between 50 and 800g');
+    return;
+  }
   
   // Show loading state with enhanced animation
   submitBtn.disabled = true;
@@ -847,5 +859,153 @@ document.getElementById('nutritionGoalsForm').addEventListener('submit', functio
     submitBtn.style.transform = 'scale(1)';
   });
 });
+
+document.getElementById('nutritionGoalsForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  console.log('[v0] Nutrition goals form submitted');
+  
+  const formData = new FormData(this);
+  const submitBtn = this.querySelector('button[type="submit"]');
+  const originalText = submitBtn.innerHTML;
+  
+  // Enhanced validation with specific error messages
+  const calories = parseInt(formData.get('calories_target'));
+  const protein = parseInt(formData.get('protein_target'));
+  const fat = parseInt(formData.get('fat_target'));
+  const carbs = parseInt(formData.get('carbs_target'));
+  
+  if (calories < 1000 || calories > 5000) {
+    alert('Calories target must be between 1000 and 5000');
+    return;
+  }
+  if (protein < 10 || protein > 300) {
+    alert('Protein target must be between 10 and 300g');
+    return;
+  }
+  if (fat < 10 || fat > 200) {
+    alert('Fat target must be between 10 and 200g');
+    return;
+  }
+  if (carbs < 50 || carbs > 800) {
+    alert('Carbs target must be between 50 and 800g');
+    return;
+  }
+  
+  // Show enhanced loading state
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving Goals...';
+  submitBtn.style.transform = 'scale(0.98)';
+  
+  fetch(this.action, {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
+    }
+  })
+  .then(response => {
+    console.log('[v0] Response status:', response.status);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  })
+  .then(data => {
+    console.log('[v0] Response data:', data);
+    if (data.success) {
+      // Enhanced success feedback with progress bar updates
+      submitBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i>Goals Saved!';
+      submitBtn.style.transform = 'scale(1)';
+      submitBtn.classList.remove('btn-primary');
+      submitBtn.classList.add('btn-success');
+      
+      // Update progress bars immediately if data is provided
+      if (data.progress) {
+        updateProgressBars(data.progress, data.remaining);
+      }
+      
+      // Close modal with enhanced visual feedback
+      setTimeout(() => {
+        const modal = bootstrap.Modal.getInstance(document.getElementById('nutritionGoalsModal'));
+        modal.hide();
+        
+        // Show enhanced success message
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-success alert-dismissible fade show';
+        alertDiv.innerHTML = `
+          <i class="bi bi-check-circle me-2"></i>Your nutrition goals have been updated successfully! Progress bars updated.
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.container').firstChild);
+        
+        // Auto-dismiss alert after 5 seconds
+        setTimeout(() => {
+          const alert = bootstrap.Alert.getOrCreateInstance(alertDiv);
+          alert.close();
+        }, 5000);
+        
+      }, 1000);
+    } else {
+      console.error('[v0] Error saving goals:', data.error);
+      alert('Error saving goals: ' + (data.error || 'Please try again.'));
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalText;
+      submitBtn.style.transform = 'scale(1)';
+    }
+  })
+  .catch(error => {
+    console.error('[v0] Fetch error:', error);
+    alert('Error saving goals. Please check your connection and try again.');
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = originalText;
+    submitBtn.style.transform = 'scale(1)';
+  });
+});
+
+function updateProgressBars(progress, remaining) {
+  console.log('[v0] Updating progress bars:', progress, remaining);
+  
+  const progressBars = {
+    calories: document.querySelector('.nutrition-goal-card:nth-child(1) .progress-fill'),
+    protein: document.querySelector('.nutrition-goal-card:nth-child(2) .progress-fill'),
+    fat: document.querySelector('.nutrition-goal-card:nth-child(3) .progress-fill'),
+    carbs: document.querySelector('.nutrition-goal-card:nth-child(4) .progress-fill')
+  };
+  
+  const badges = {
+    calories: document.querySelector('.nutrition-goal-card:nth-child(1) .badge'),
+    protein: document.querySelector('.nutrition-goal-card:nth-child(2) .badge'),
+    fat: document.querySelector('.nutrition-goal-card:nth-child(3) .badge'),
+    carbs: document.querySelector('.nutrition-goal-card:nth-child(4) .badge')
+  };
+  
+  const percentages = {
+    calories: document.querySelector('.nutrition-goal-card:nth-child(1) .text-muted:first-of-type'),
+    protein: document.querySelector('.nutrition-goal-card:nth-child(2) .text-muted:first-of-type'),
+    fat: document.querySelector('.nutrition-goal-card:nth-child(3) .text-muted:first-of-type'),
+    carbs: document.querySelector('.nutrition-goal-card:nth-child(4) .text-muted:first-of-type')
+  };
+  
+  const remainingElements = {
+    calories: document.querySelector('.nutrition-goal-card:nth-child(1) .text-muted:last-of-type'),
+    protein: document.querySelector('.nutrition-goal-card:nth-child(2) .text-muted:last-of-type'),
+    fat: document.querySelector('.nutrition-goal-card:nth-child(3) .text-muted:last-of-type'),
+    carbs: document.querySelector('.nutrition-goal-card:nth-child(4) .text-muted:last-of-type')
+  };
+  
+  // Update each progress bar with animation
+  Object.keys(progress).forEach(key => {
+    if (progressBars[key]) {
+      progressBars[key].style.width = `${progress[key]}%`;
+    }
+    if (percentages[key]) {
+      percentages[key].textContent = `${Math.round(progress[key])}% of goal`;
+    }
+    if (remainingElements[key]) {
+      const unit = key === 'calories' ? ' kcal left' : 'g left';
+      remainingElements[key].textContent = `${remaining[key]}${unit}`;
+    }
+  });
+}
 </script>
 {% endblock %}

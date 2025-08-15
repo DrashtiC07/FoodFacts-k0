@@ -375,23 +375,38 @@
                 
                 console.log('[v0] Switching from', currentTheme, 'to', newTheme);
                 
-                // Apply theme immediately
+                // Apply theme immediately with visual feedback
+                this.style.transform = 'scale(0.9)';
+                this.style.opacity = '0.7';
+                
+                // Apply theme changes
                 html.setAttribute('data-theme', newTheme);
                 localStorage.setItem('theme', newTheme);
                 updateThemeIcon(newTheme);
                 
-                // Add visual feedback
-                this.style.transform = 'scale(0.9)';
-                setTimeout(() => {
-                    this.style.transform = 'scale(1)';
-                }, 150);
-                
                 // Force CSS update by triggering reflow
                 document.body.offsetHeight;
                 
+                // Reset button appearance
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                    this.style.opacity = '1';
+                }, 200);
+                
                 console.log('[v0] Theme switched successfully to:', newTheme);
+                
+                // Show brief success indicator
+                const originalIcon = icon.className;
+                icon.className = 'bi bi-check-circle-fill';
+                setTimeout(() => {
+                    updateThemeIcon(newTheme);
+                }, 500);
+                
             } catch (error) {
                 console.error('[v0] Error switching theme:', error);
+                // Reset button on error
+                this.style.transform = 'scale(1)';
+                this.style.opacity = '1';
             }
         });
         
