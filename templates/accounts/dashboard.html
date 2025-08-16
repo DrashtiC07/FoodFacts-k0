@@ -968,6 +968,64 @@ function updateProgressBars(data) {
 
 // Enhanced goal setting with preset options and AJAX form submission
 document.addEventListener('DOMContentLoaded', function() {
+    function updateProgressBars(data) {
+        console.log('[v0] Updating progress bars with data:', data);
+        
+        if (data.progress && data.remaining) {
+            // Update calories progress
+            const caloriesProgress = document.querySelector('.progress-bar[data-nutrient="calories"]');
+            const caloriesPercentage = document.querySelector('.nutrition-percentage[data-nutrient="calories"]');
+            const caloriesRemaining = document.querySelector('.nutrition-remaining[data-nutrient="calories"]');
+            
+            if (caloriesProgress) {
+                const percentage = Math.min(data.progress.calories || 0, 100);
+                caloriesProgress.style.width = percentage + '%';
+                caloriesProgress.setAttribute('aria-valuenow', percentage);
+            }
+            if (caloriesPercentage) caloriesPercentage.textContent = Math.round(data.progress.calories || 0) + '% of goal';
+            if (caloriesRemaining) caloriesRemaining.textContent = (data.remaining.calories || 0) + ' kcal left';
+            
+            // Update protein progress
+            const proteinProgress = document.querySelector('.progress-bar[data-nutrient="protein"]');
+            const proteinPercentage = document.querySelector('.nutrition-percentage[data-nutrient="protein"]');
+            const proteinRemaining = document.querySelector('.nutrition-remaining[data-nutrient="protein"]');
+            
+            if (proteinProgress) {
+                const percentage = Math.min(data.progress.protein || 0, 100);
+                proteinProgress.style.width = percentage + '%';
+                proteinProgress.setAttribute('aria-valuenow', percentage);
+            }
+            if (proteinPercentage) proteinPercentage.textContent = Math.round(data.progress.protein || 0) + '% of goal';
+            if (proteinRemaining) proteinRemaining.textContent = (data.remaining.protein || 0) + 'g left';
+            
+            // Update fat progress
+            const fatProgress = document.querySelector('.progress-bar[data-nutrient="fat"]');
+            const fatPercentage = document.querySelector('.nutrition-percentage[data-nutrient="fat"]');
+            const fatRemaining = document.querySelector('.nutrition-remaining[data-nutrient="fat"]');
+            
+            if (fatProgress) {
+                const percentage = Math.min(data.progress.fat || 0, 100);
+                fatProgress.style.width = percentage + '%';
+                fatProgress.setAttribute('aria-valuenow', percentage);
+            }
+            if (fatPercentage) fatPercentage.textContent = Math.round(data.progress.fat || 0) + '% of goal';
+            if (fatRemaining) fatRemaining.textContent = (data.remaining.fat || 0) + 'g left';
+            
+            // Update carbs progress
+            const carbsProgress = document.querySelector('.progress-bar[data-nutrient="carbs"]');
+            const carbsPercentage = document.querySelector('.nutrition-percentage[data-nutrient="carbs"]');
+            const carbsRemaining = document.querySelector('.nutrition-remaining[data-nutrient="carbs"]');
+            
+            if (carbsProgress) {
+                const percentage = Math.min(data.progress.carbs || 0, 100);
+                carbsProgress.style.width = percentage + '%';
+                carbsProgress.setAttribute('aria-valuenow', percentage);
+            }
+            if (carbsPercentage) carbsPercentage.textContent = Math.round(data.progress.carbs || 0) + '% of goal';
+            if (carbsRemaining) carbsRemaining.textContent = (data.remaining.carbs || 0) + 'g left';
+        }
+    }
+
     // Add preset goal functionality
     const presetButtons = document.querySelectorAll('.preset-goal-btn');
     presetButtons.forEach(button => {
@@ -1004,19 +1062,34 @@ document.addEventListener('DOMContentLoaded', function() {
             const submitButton = this.querySelector('button[type="submit"]');
             const originalText = submitButton.innerHTML;
             
+            console.log('[v0] Submitting nutrition goals form');
+            
             // Show loading state
             submitButton.disabled = true;
             submitButton.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Saving...';
+            
+            // Get CSRF token from form or meta tag
+            const csrfToken = formData.get('csrfmiddlewaretoken') || 
+                             document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+                             document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
             
             fetch(this.action, {
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('[v0] Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
+                console.log('[v0] Response data:', data);
                 if (data.success) {
                     // Update progress bars immediately
                     updateProgressBars(data);
@@ -1044,16 +1117,16 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }, 5000);
                     
-                    // Reload page to show updated values
                     setTimeout(() => {
                         location.reload();
-                    }, 1500);
+                    }, 1000);
                 } else {
+                    console.error('[v0] Server error:', data.error);
                     alert('Error: ' + (data.error || 'Failed to save goals'));
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
+                console.error('[v0] Fetch error:', error);
                 alert('An error occurred while saving goals. Please try again.');
             })
             .finally(() => {
