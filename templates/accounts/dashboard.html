@@ -928,7 +928,45 @@ function exportNutritionData() {
     URL.revokeObjectURL(url);
 }
 
-// Added enhanced goal setting with preset options
+function updateProgressBars(data) {
+    // Update progress bars with new values
+    const nutrients = ['calories', 'protein', 'fat', 'carbs'];
+    
+    nutrients.forEach(nutrient => {
+        const progress = data.progress[nutrient] || 0;
+        const remaining = data.remaining[nutrient] || 0;
+        const target = data.targets ? data.targets[nutrient] : 0;
+        
+        // Update progress bar width
+        const progressBar = document.querySelector(`.nutrition-bar .progress-fill.bg-${nutrient === 'calories' ? 'primary' : nutrient === 'protein' ? 'info' : nutrient === 'fat' ? 'warning' : 'success'}`);
+        if (progressBar) {
+            progressBar.style.width = Math.min(progress, 100) + '%';
+        }
+        
+        // Update badge with current/target values
+        const badge = document.querySelector(`.badge:contains("${nutrient}")`);
+        if (badge && target) {
+            const consumed = target - remaining;
+            const unit = nutrient === 'calories' ? '' : 'g';
+            badge.textContent = `${consumed}/${target}${unit}`;
+        }
+        
+        // Update percentage text
+        const percentageText = document.querySelector(`.text-muted:contains("% of goal")`);
+        if (percentageText) {
+            percentageText.textContent = `${Math.round(progress)}% of goal`;
+        }
+        
+        // Update remaining text
+        const remainingText = document.querySelector(`.text-muted:contains("left")`);
+        if (remainingText) {
+            const unit = nutrient === 'calories' ? ' kcal' : 'g';
+            remainingText.textContent = `${remaining}${unit} left`;
+        }
+    });
+}
+
+// Enhanced goal setting with preset options and AJAX form submission
 document.addEventListener('DOMContentLoaded', function() {
     // Add preset goal functionality
     const presetButtons = document.querySelectorAll('.preset-goal-btn');
@@ -956,6 +994,75 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('carbs_target').value = goals.carbs;
         });
     });
+    
+    const nutritionForm = document.getElementById('nutritionGoalsForm');
+    if (nutritionForm) {
+        nutritionForm.addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent default form submission
+            
+            const formData = new FormData(this);
+            const submitButton = this.querySelector('button[type="submit"]');
+            const originalText = submitButton.innerHTML;
+            
+            // Show loading state
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Saving...';
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update progress bars immediately
+                    updateProgressBars(data);
+                    
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('nutritionGoalsModal'));
+                    if (modal) {
+                        modal.hide();
+                    }
+                    
+                    // Show success message
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed';
+                    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+                    alertDiv.innerHTML = `
+                        <i class="bi bi-check-circle me-2"></i>${data.message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `;
+                    document.body.appendChild(alertDiv);
+                    
+                    // Auto-remove alert after 5 seconds
+                    setTimeout(() => {
+                        if (alertDiv.parentNode) {
+                            alertDiv.remove();
+                        }
+                    }, 5000);
+                    
+                    // Reload page to show updated values
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to save goals'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while saving goals. Please try again.');
+            })
+            .finally(() => {
+                // Reset button state
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalText;
+            });
+        });
+    }
 });
 </script>
 {% endblock %}
