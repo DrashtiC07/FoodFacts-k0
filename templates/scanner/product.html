@@ -152,53 +152,136 @@
                 </div>
 
                 <!-- Product Meta -->
-                <!-- Enhanced flexbox layout for tags with proper overflow handling -->
-                <div class="d-flex flex-wrap gap-2 mb-4" style="max-width: 100%; overflow: hidden;">
-                    <span class="badge px-3 py-2" style="background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border-color); word-break: break-word; flex: 0 0 auto; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                <!-- Enhanced flexbox layout for tags with proper overflow handling and responsive wrapping -->
+                <div class="tags-container" style="
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 0.5rem;
+                    margin-bottom: 1.5rem;
+                    max-width: 100%;
+                    overflow: hidden;
+                ">
+                    <span class="tag-item badge px-3 py-2" style="
+                        background: var(--bg-secondary);
+                        color: var(--text-secondary);
+                        border: 1px solid var(--border-color);
+                        flex: 0 0 auto;
+                        max-width: 200px;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        word-break: break-word;
+                    ">
                         <i class="bi bi-upc-scan me-1"></i>{{ product.barcode }}
                     </span>
+                    
                     {% if product.category %}
-                    <span class="badge px-3 py-2" style="background: var(--primary-light); color: var(--primary-color); border: 1px solid var(--primary-color); word-break: break-word; flex: 0 0 auto; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <span class="tag-item badge px-3 py-2" style="
+                        background: var(--primary-light);
+                        color: var(--primary-color);
+                        border: 1px solid var(--primary-color);
+                        flex: 0 0 auto;
+                        max-width: 200px;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        word-break: break-word;
+                    ">
                         <i class="bi bi-tag me-1"></i>{{ product.category }}
                     </span>
                     {% endif %}
+                    
                     {% if product.serving_size %}
-                    <span class="badge px-3 py-2" style="background: rgba(255, 195, 160, 0.2); color: var(--accent-color); border: 1px solid var(--accent-color); word-break: break-word; flex: 0 0 auto; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <span class="tag-item badge px-3 py-2" style="
+                        background: rgba(255, 195, 160, 0.2);
+                        color: var(--accent-color);
+                        border: 1px solid var(--accent-color);
+                        flex: 0 0 auto;
+                        max-width: 200px;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        word-break: break-word;
+                    ">
                         <i class="bi bi-cup me-1"></i>{{ product.serving_size }}
                     </span>
                     {% endif %}
                     
                     {% if product.vegan %}
-                    <span class="badge px-3 py-2" style="background: var(--health-excellent); color: white; word-break: break-word; flex: 0 0 auto; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <span class="tag-item badge px-3 py-2" style="
+                        background: var(--health-excellent);
+                        color: white;
+                        flex: 0 0 auto;
+                        max-width: 150px;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        word-break: break-word;
+                    ">
                         <i class="bi bi-leaf me-1"></i>Vegan
                     </span>
                     {% elif product.vegetarian %}
-                    <span class="badge px-3 py-2" style="background: var(--health-good); color: white; word-break: break-word; flex: 0 0 auto; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <span class="tag-item badge px-3 py-2" style="
+                        background: var(--health-good);
+                        color: white;
+                        flex: 0 0 auto;
+                        max-width: 150px;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        word-break: break-word;
+                    ">
                         <i class="bi bi-egg me-1"></i>Vegetarian
                     </span>
                     {% endif %}
                     
                     {% if product.organic %}
-                    <span class="badge px-3 py-2" style="background: var(--health-excellent); color: white; word-break: break-word; flex: 0 0 auto; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <span class="tag-item badge px-3 py-2" style="
+                        background: var(--health-excellent);
+                        color: white;
+                        flex: 0 0 auto;
+                        max-width: 150px;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        word-break: break-word;
+                    ">
                         <i class="bi bi-award me-1"></i>Organic
                     </span>
                     {% endif %}
                     
                     {% if product.palm_oil_free %}
-                    <span class="badge px-3 py-2" style="background: var(--health-good); color: white; word-break: break-word; flex: 0 0 auto; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <span class="tag-item badge px-3 py-2" style="
+                        background: var(--health-good);
+                        color: white;
+                        flex: 0 0 auto;
+                        max-width: 180px;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        word-break: break-word;
+                    ">
                         <i class="bi bi-shield-check me-1"></i>Palm Oil Free
                     </span>
                     {% endif %}
                     
                     {% if product.allergens %}
                         {% for allergen in product.allergens %}
-                        <span class="badge px-3 py-2" style="background: var(--health-poor); color: white; word-break: break-word; flex: 0 0 auto; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        <span class="tag-item badge px-3 py-2" style="
+                            background: var(--health-poor);
+                            color: white;
+                            flex: 0 0 auto;
+                            max-width: 150px;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                            word-break: break-word;
+                        ">
                             <i class="bi bi-exclamation-triangle me-1"></i>{{ allergen|title }}
                         </span>
                         {% endfor %}
                     {% endif %}
                 </div>
-            </div>
 
             <!-- NOVA Group Information -->
             {% if product.nova_group %}

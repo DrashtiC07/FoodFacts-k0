@@ -364,7 +364,25 @@
     </main>
 
     <!-- Theme Toggle Button -->
-    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme" style="
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: none;
+        background: var(--primary-color);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
+        font-size: 1.2rem;
+    ">
         <i class="bi bi-moon-fill"></i>
     </button>
 
@@ -392,123 +410,138 @@
 
     <!-- Enhanced theme toggle script with better CSS variable updates -->
     <script>
-        const themeToggle = document.getElementById('theme-toggle');
-        const html = document.documentElement;
-        const icon = themeToggle.querySelector('i');
-        
-        // Load saved theme or default to light
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        console.log('[v0] Loading saved theme:', savedTheme);
-        applyTheme(savedTheme);
-        
-        themeToggle.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('[v0] Theme toggle clicked');
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('theme-toggle');
+            const html = document.documentElement;
+            const icon = themeToggle.querySelector('i');
             
-            try {
+            // Load saved theme or default to light
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            console.log('[v0] Loading saved theme:', savedTheme);
+            setTheme(savedTheme);
+            
+            themeToggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('[v0] Theme toggle clicked');
+                
                 const currentTheme = html.getAttribute('data-theme') || 'light';
                 const newTheme = currentTheme === 'light' ? 'dark' : 'light';
                 
                 console.log('[v0] Switching from', currentTheme, 'to', newTheme);
                 
-                // Apply theme immediately with visual feedback
+                // Visual feedback
                 this.style.transform = 'scale(0.9)';
-                this.style.opacity = '0.7';
                 
-                // Apply theme changes
-                applyTheme(newTheme);
+                // Apply theme
+                setTheme(newTheme);
                 localStorage.setItem('theme', newTheme);
                 
-                // Reset button appearance
+                // Reset button
                 setTimeout(() => {
                     this.style.transform = 'scale(1)';
-                    this.style.opacity = '1';
-                }, 200);
+                }, 150);
                 
                 console.log('[v0] Theme switched successfully to:', newTheme);
+            });
+            
+            function setTheme(theme) {
+                console.log('[v0] Setting theme to:', theme);
                 
-            } catch (error) {
-                console.error('[v0] Error switching theme:', error);
-                this.style.transform = 'scale(1)';
-                this.style.opacity = '1';
-            }
-        });
-        
-        function applyTheme(theme) {
-            console.log('[v0] Applying theme:', theme);
-            html.setAttribute('data-theme', theme);
-            updateThemeIcon(theme);
-            
-            // Force immediate CSS variable updates
-            const root = document.documentElement;
-            if (theme === 'dark') {
-                root.style.setProperty('--text-primary', '#f9fafb');
-                root.style.setProperty('--text-secondary', '#d1d5db');
-                root.style.setProperty('--text-muted', '#9ca3af');
-                root.style.setProperty('--bg-primary', '#111827');
-                root.style.setProperty('--bg-secondary', '#1f2937');
-                root.style.setProperty('--card-bg', '#1f2937');
-                root.style.setProperty('--border-color', '#374151');
-                root.style.setProperty('--primary-color', '#3b82f6');
-                root.style.setProperty('--primary-light', 'rgba(59, 130, 246, 0.15)');
-                root.style.setProperty('--accent-color', '#fbbf24');
-            } else {
-                root.style.setProperty('--text-primary', '#1f2937');
-                root.style.setProperty('--text-secondary', '#4b5563');
-                root.style.setProperty('--text-muted', '#9ca3af');
-                root.style.setProperty('--bg-primary', '#ffffff');
-                root.style.setProperty('--bg-secondary', '#f8fafc');
-                root.style.setProperty('--card-bg', '#ffffff');
-                root.style.setProperty('--border-color', '#e5e7eb');
-                root.style.setProperty('--primary-color', '#2563eb');
-                root.style.setProperty('--primary-light', 'rgba(37, 99, 235, 0.1)');
-                root.style.setProperty('--accent-color', '#f59e0b');
-            }
-            
-            // Force reflow to apply changes immediately
-            document.body.offsetHeight;
-        }
-        
-        function updateThemeIcon(theme) {
-            console.log('[v0] Updating theme icon for:', theme);
-            try {
+                // Set data attribute
+                html.setAttribute('data-theme', theme);
+                
+                // Update icon
                 if (theme === 'dark') {
                     icon.className = 'bi bi-sun-fill';
                     themeToggle.setAttribute('aria-label', 'Switch to light theme');
-                    themeToggle.title = 'Switch to light theme';
                 } else {
                     icon.className = 'bi bi-moon-fill';
                     themeToggle.setAttribute('aria-label', 'Switch to dark theme');
-                    themeToggle.title = 'Switch to dark theme';
                 }
-            } catch (error) {
-                console.error('[v0] Error updating theme icon:', error);
-            }
-        }
-        
-        // Enhanced keyboard support
-        themeToggle.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                console.log('[v0] Theme toggle activated via keyboard');
-                this.click();
-            }
-        });
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('[v0] DOM loaded, ensuring theme is applied');
-            try {
-                const currentTheme = html.getAttribute('data-theme') || 'light';
-                applyTheme(currentTheme);
                 
-                // Ensure theme variables are applied with delay
-                setTimeout(() => {
-                    document.body.offsetHeight; // Trigger reflow
-                }, 100);
-            } catch (error) {
-                console.error('[v0] Error applying theme on load:', error);
+                // Force immediate CSS variable updates
+                const root = document.documentElement;
+                const style = root.style;
+                
+                if (theme === 'dark') {
+                    // Dark theme variables
+                    style.setProperty('--primary-color', '#3b82f6');
+                    style.setProperty('--primary-light', 'rgba(59, 130, 246, 0.15)');
+                    style.setProperty('--accent-color', '#fbbf24');
+                    style.setProperty('--text-primary', '#f9fafb');
+                    style.setProperty('--text-secondary', '#d1d5db');
+                    style.setProperty('--text-muted', '#9ca3af');
+                    style.setProperty('--bg-primary', '#111827');
+                    style.setProperty('--bg-secondary', '#1f2937');
+                    style.setProperty('--card-bg', '#1f2937');
+                    style.setProperty('--border-color', '#374151');
+                } else {
+                    // Light theme variables
+                    style.setProperty('--primary-color', '#2563eb');
+                    style.setProperty('--primary-light', 'rgba(37, 99, 235, 0.1)');
+                    style.setProperty('--accent-color', '#f59e0b');
+                    style.setProperty('--text-primary', '#1f2937');
+                    style.setProperty('--text-secondary', '#4b5563');
+                    style.setProperty('--text-muted', '#9ca3af');
+                    style.setProperty('--bg-primary', '#ffffff');
+                    style.setProperty('--bg-secondary', '#f8fafc');
+                    style.setProperty('--card-bg', '#ffffff');
+                    style.setProperty('--border-color', '#e5e7eb');
+                }
+                
+                // Force immediate reflow to apply changes
+                document.body.offsetHeight;
+                
+                // Update all elements that might not be using CSS variables
+                updateElementStyles(theme);
             }
+            
+            function updateElementStyles(theme) {
+                // Force update navbar
+                const navbar = document.querySelector('.navbar');
+                if (navbar) {
+                    navbar.style.backgroundColor = theme === 'dark' ? '#1f2937' : '#ffffff';
+                    navbar.style.borderBottomColor = theme === 'dark' ? '#374151' : '#e5e7eb';
+                }
+                
+                // Force update cards
+                const cards = document.querySelectorAll('.card');
+                cards.forEach(card => {
+                    card.style.backgroundColor = theme === 'dark' ? '#1f2937' : '#ffffff';
+                    card.style.borderColor = theme === 'dark' ? '#374151' : '#e5e7eb';
+                    card.style.color = theme === 'dark' ? '#f9fafb' : '#1f2937';
+                });
+                
+                // Force update body
+                document.body.style.backgroundColor = theme === 'dark' ? '#111827' : '#ffffff';
+                document.body.style.color = theme === 'dark' ? '#f9fafb' : '#1f2937';
+                
+                // Force update dropdowns
+                const dropdowns = document.querySelectorAll('.dropdown-menu');
+                dropdowns.forEach(dropdown => {
+                    dropdown.style.backgroundColor = theme === 'dark' ? '#1f2937' : '#ffffff';
+                    dropdown.style.borderColor = theme === 'dark' ? '#374151' : '#e5e7eb';
+                });
+                
+                // Force update form controls
+                const formControls = document.querySelectorAll('.form-control, .form-select');
+                formControls.forEach(control => {
+                    control.style.backgroundColor = theme === 'dark' ? '#1f2937' : '#f8fafc';
+                    control.style.borderColor = theme === 'dark' ? '#374151' : '#e5e7eb';
+                    control.style.color = theme === 'dark' ? '#f9fafb' : '#1f2937';
+                });
+                
+                console.log('[v0] Updated all element styles for theme:', theme);
+            }
+            
+            // Keyboard support
+            themeToggle.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    this.click();
+                }
+            });
         });
     </script>
     
