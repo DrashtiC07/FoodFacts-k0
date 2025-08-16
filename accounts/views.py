@@ -279,3 +279,29 @@ def add_to_nutrition_tracker(request):
             
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
+
+@require_POST
+def toggle_theme(request):
+    """Toggle theme between light and dark mode via AJAX"""
+    try:
+        data = json.loads(request.body)
+        theme = data.get('theme', 'light')
+        
+        # Validate theme value
+        if theme not in ['light', 'dark']:
+            theme = 'light'
+        
+        # Store theme in session
+        request.session['theme'] = theme
+        
+        return JsonResponse({
+            'status': 'success',
+            'theme': theme,
+            'message': f'Theme switched to {theme} mode'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'error': str(e)
+        })
