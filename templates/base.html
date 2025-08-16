@@ -59,7 +59,7 @@
             --border-color: #374151;
         }
         
-        /* Enhanced global styling for consistent theme application across all elements */
+        /* Enhanced global styling for consistent theme application */
         * {
             transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
         }
@@ -76,16 +76,28 @@
             color: var(--text-primary) !important;
         }
         
-        /* Enhanced Bootstrap component overrides for consistent theming */
+        /* Enhanced card styling for consistent theming */
         .card {
             background-color: var(--card-bg) !important;
-            border-color: var(--border-color) !important;
+            border: 1px solid var(--border-color) !important;
             color: var(--text-primary) !important;
         }
         
+        .card-header {
+            background-color: var(--bg-secondary) !important;
+            border-bottom: 1px solid var(--border-color) !important;
+            color: var(--text-primary) !important;
+        }
+        
+        .card-body {
+            background-color: var(--card-bg) !important;
+            color: var(--text-primary) !important;
+        }
+        
+        /* Enhanced form controls for theme consistency */
         .form-control, .form-select {
             background-color: var(--bg-secondary) !important;
-            border-color: var(--border-color) !important;
+            border: 1px solid var(--border-color) !important;
             color: var(--text-primary) !important;
         }
         
@@ -96,44 +108,35 @@
             box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25) !important;
         }
         
+        /* Enhanced modal styling for theme consistency */
         .modal-content {
             background-color: var(--card-bg) !important;
-            border-color: var(--border-color) !important;
+            border: 1px solid var(--border-color) !important;
             color: var(--text-primary) !important;
         }
         
-        .modal-header, .modal-footer {
-            border-color: var(--border-color) !important;
+        .modal-header {
+            border-bottom: 1px solid var(--border-color) !important;
         }
         
+        .modal-footer {
+            border-top: 1px solid var(--border-color) !important;
+        }
+        
+        /* Enhanced table styling for theme consistency */
         .table {
             color: var(--text-primary) !important;
         }
         
-        .table th, .table td {
-            border-color: var(--border-color) !important;
-        }
-        
-        .accordion-item {
-            background-color: var(--card-bg) !important;
-            border-color: var(--border-color) !important;
-        }
-        
-        .accordion-button {
+        .table-striped > tbody > tr:nth-of-type(odd) > td,
+        .table-striped > tbody > tr:nth-of-type(odd) > th {
             background-color: var(--bg-secondary) !important;
-            color: var(--text-primary) !important;
-            border-color: var(--border-color) !important;
-        }
-        
-        .accordion-button:not(.collapsed) {
-            background-color: var(--primary-light) !important;
-            color: var(--primary-color) !important;
         }
         
         /* Enhanced navbar styling for theme compatibility */
         .navbar {
             background-color: var(--card-bg) !important;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color) !important;
             backdrop-filter: blur(10px);
             z-index: 1050 !important;
         }
@@ -194,37 +197,17 @@
             color: var(--text-primary) !important;
         }
         
-        /* Enhanced theme toggle button with better positioning and styling */
-        .theme-toggle {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            width: 3.5rem;
-            height: 3.5rem;
-            border-radius: 50%;
-            border: none;
-            background: var(--primary-color) !important;
-            color: white !important;
-            font-size: 1.2rem;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            transition: all 0.3s ease !important;
-            z-index: 1060 !important;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .theme-toggle:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-        }
-        
+        /* Added active state for theme toggle button */
         .theme-toggle:active {
             transform: scale(0.95);
         }
 
         /* Added padding to prevent navbar collision for product cards */
+        .card-body.p-4 {
+            padding-top: 2rem !important;
+        }
+        
+        /* Specific padding for product links to avoid navbar collision */
         .product-link {
             padding-top: 1rem !important;
             display: inline-block;
@@ -242,15 +225,6 @@
         }
         
         .text-muted {
-            color: var(--text-muted) !important;
-        }
-        
-        /* Enhanced breadcrumb styling for theme compatibility */
-        .breadcrumb-item a {
-            color: var(--primary-color) !important;
-        }
-        
-        .breadcrumb-item.active {
             color: var(--text-muted) !important;
         }
     </style>
@@ -416,7 +390,7 @@
         </div>
     </footer>
 
-    <!-- Enhanced theme toggle script with better error handling and immediate CSS updates -->
+    <!-- Enhanced theme toggle script with better CSS variable updates -->
     <script>
         const themeToggle = document.getElementById('theme-toggle');
         const html = document.documentElement;
@@ -425,8 +399,7 @@
         // Load saved theme or default to light
         const savedTheme = localStorage.getItem('theme') || 'light';
         console.log('[v0] Loading saved theme:', savedTheme);
-        html.setAttribute('data-theme', savedTheme);
-        updateThemeIcon(savedTheme);
+        applyTheme(savedTheme);
         
         themeToggle.addEventListener('click', function(e) {
             e.preventDefault();
@@ -444,15 +417,8 @@
                 this.style.opacity = '0.7';
                 
                 // Apply theme changes
-                html.setAttribute('data-theme', newTheme);
+                applyTheme(newTheme);
                 localStorage.setItem('theme', newTheme);
-                updateThemeIcon(newTheme);
-                
-                // Force immediate CSS variable updates
-                updateCSSVariables(newTheme);
-                
-                // Force reflow to ensure changes are applied
-                document.body.offsetHeight;
                 
                 // Reset button appearance
                 setTimeout(() => {
@@ -469,7 +435,12 @@
             }
         });
         
-        function updateCSSVariables(theme) {
+        function applyTheme(theme) {
+            console.log('[v0] Applying theme:', theme);
+            html.setAttribute('data-theme', theme);
+            updateThemeIcon(theme);
+            
+            // Force immediate CSS variable updates
             const root = document.documentElement;
             if (theme === 'dark') {
                 root.style.setProperty('--text-primary', '#f9fafb');
@@ -494,6 +465,9 @@
                 root.style.setProperty('--primary-light', 'rgba(37, 99, 235, 0.1)');
                 root.style.setProperty('--accent-color', '#f59e0b');
             }
+            
+            // Force reflow to apply changes immediately
+            document.body.offsetHeight;
         }
         
         function updateThemeIcon(theme) {
@@ -526,13 +500,12 @@
             console.log('[v0] DOM loaded, ensuring theme is applied');
             try {
                 const currentTheme = html.getAttribute('data-theme') || 'light';
-                updateThemeIcon(currentTheme);
-                updateCSSVariables(currentTheme);
+                applyTheme(currentTheme);
                 
-                // Ensure theme variables are applied
+                // Ensure theme variables are applied with delay
                 setTimeout(() => {
                     document.body.offsetHeight; // Trigger reflow
-                }, 50);
+                }, 100);
             } catch (error) {
                 console.error('[v0] Error applying theme on load:', error);
             }

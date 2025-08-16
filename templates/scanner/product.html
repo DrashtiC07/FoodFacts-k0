@@ -152,6 +152,7 @@
                 </div>
 
                 <!-- Product Meta -->
+                <!-- Enhanced flexbox layout for tags with proper overflow handling -->
                 <div class="d-flex flex-wrap gap-2 mb-4" style="max-width: 100%; overflow: hidden;">
                     <span class="badge px-3 py-2" style="background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border-color); word-break: break-word; flex: 0 0 auto; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                         <i class="bi bi-upc-scan me-1"></i>{{ product.barcode }}
@@ -184,7 +185,7 @@
                     {% endif %}
                     
                     {% if product.palm_oil_free %}
-                    <span class="badge px-3 py-2" style="background: var(--health-good); color: white; word-break: break-word; flex: 0 0 auto; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <span class="badge px-3 py-2" style="background: var(--health-good); color: white; word-break: break-word; flex: 0 0 auto; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                         <i class="bi bi-shield-check me-1"></i>Palm Oil Free
                     </span>
                     {% endif %}
