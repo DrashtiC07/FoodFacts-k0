@@ -420,130 +420,6 @@
   {% endif %}
 </div>
 
-  <!-- Enhanced Recent Activity Section with better functionality -->
-  <div class="row mb-5">
-    <div class="col-12">
-      <div class="card border-0 shadow-sm">
-        <div class="card-header bg-transparent border-0 p-4">
-          <h4 class="fw-bold mb-1">
-            <i class="bi bi-clock-history me-2 text-primary"></i>Recent Activity
-          </h4>
-          <p class="text-muted mb-0">Your latest scans and interactions</p>
-        </div>
-        <div class="card-body p-4">
-          <div class="row">
-            <!-- Recent Scans -->
-            <div class="col-md-4 mb-4">
-              <h6 class="fw-semibold mb-3">
-                <i class="bi bi-upc-scan me-1 text-primary"></i>Recent Scans
-              </h6>
-              {% if scan_history %}
-                {% for scan in scan_history|slice:":3" %}
-                <div class="d-flex align-items-center mb-3 p-3 rounded" style="background: var(--bg-secondary);">
-                  <div class="flex-shrink-0 me-3">
-                    {% if scan.product.image_url %}
-                      <img src="{{ scan.product.image_url }}" alt="{{ scan.product.name }}" 
-                           class="rounded" style="width: 40px; height: 40px; object-fit: cover;">
-                    {% else %}
-                      <div class="bg-primary bg-opacity-10 rounded d-flex align-items-center justify-content-center" 
-                           style="width: 40px; height: 40px;">
-                        <i class="bi bi-box text-primary"></i>
-                      </div>
-                    {% endif %}
-                  </div>
-                  <div class="flex-grow-1">
-                    <a href="{% url 'scanner:product_detail' scan.product.barcode %}" 
-                       class="text-decoration-none fw-medium d-block product-link" 
-                       style="color: var(--text-primary); padding-top: 80px;">
-                      {{ scan.product.name|truncatechars:25 }}
-                    </a>
-                    <small class="text-muted">{{ scan.scanned_at|timesince }} ago</small>
-                  </div>
-                </div>
-                {% endfor %}
-                <a href="{% url 'scanner:scan_history' %}" class="btn btn-sm btn-outline-primary">
-                  <i class="bi bi-eye me-1"></i>View All History
-                </a>
-              {% else %}
-                <p class="text-muted">No scans yet. <a href="{% url 'scanner:scan' %}">Start scanning!</a></p>
-              {% endif %}
-            </div>
-            
-            <!-- Favorite Products -->
-            <div class="col-md-4 mb-4">
-              <h6 class="fw-semibold mb-3">
-                <i class="bi bi-heart-fill me-1 text-danger"></i>Favorite Products
-              </h6>
-              {% if favorite_products %}
-                {% for favorite in favorite_products|slice:":3" %}
-                <div class="d-flex align-items-center mb-3 p-3 rounded" style="background: var(--bg-secondary);">
-                  <div class="flex-shrink-0 me-3">
-                    {% if favorite.product.image_url %}
-                      <img src="{{ favorite.product.image_url }}" alt="{{ favorite.product.name }}" 
-                           class="rounded" style="width: 40px; height: 40px; object-fit: cover;">
-                    {% else %}
-                      <div class="bg-danger bg-opacity-10 rounded d-flex align-items-center justify-content-center" 
-                           style="width: 40px; height: 40px;">
-                        <i class="bi bi-heart text-danger"></i>
-                      </div>
-                    {% endif %}
-                  </div>
-                  <div class="flex-grow-1">
-                    {% if favorite.product.barcode %}
-                    <a href="{% url 'scanner:product_detail' favorite.product.barcode %}" 
-                       class="text-decoration-none fw-medium d-block product-link" 
-                       style="color: var(--text-primary); padding-top: 80px;">
-                      {{ favorite.product.name|truncatechars:25 }}
-                    </a>
-                    {% else %}
-                    <div class="fw-medium" style="color: var(--text-primary);">
-                      {{ favorite.product.name|truncatechars:25 }}
-                      <small class="text-muted d-block">No barcode available</small>
-                    </div>
-                    {% endif %}
-                    <small class="text-muted">Added {{ favorite.created_at|timesince }} ago</small>
-                  </div>
-                </div>
-                {% endfor %}
-              {% else %}
-                <p class="text-muted">No favorites yet. Heart products you love!</p>
-              {% endif %}
-            </div>
-            
-            <!-- Recent Reviews -->
-            <div class="col-md-4 mb-4">
-              <h6 class="fw-semibold mb-3">
-                <i class="bi bi-star-fill me-1 text-warning"></i>Your Recent Reviews
-              </h6>
-              {% if user_reviews %}
-                {% for review in user_reviews|slice:":3" %}
-                <div class="d-flex align-items-center mb-3 p-3 rounded" style="background: var(--bg-secondary);">
-                  <div class="flex-shrink-0 me-3">
-                    <div class="bg-warning bg-opacity-10 rounded d-flex align-items-center justify-content-center" 
-                         style="width: 40px; height: 40px;">
-                      <span class="fw-bold text-warning">{{ review.rating }}</span>
-                    </div>
-                  </div>
-                  <div class="flex-grow-1">
-                    <a href="{% url 'scanner:product_detail' review.product.barcode %}" 
-                       class="text-decoration-none fw-medium d-block product-link" 
-                       style="color: var(--text-primary); padding-top: 80px;">
-                      {{ review.product.name|truncatechars:25 }}
-                    </a>
-                    <small class="text-muted">{{ review.created_at|timesince }} ago</small>
-                  </div>
-                </div>
-                {% endfor %}
-              {% else %}
-                <p class="text-muted">No reviews yet. Share your thoughts!</p>
-              {% endif %}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
 <!-- Nutrition Goals Modal -->
 <div class="modal fade" id="nutritionGoalsModal" tabindex="-1">
   <div class="modal-dialog modal-lg">
@@ -782,9 +658,113 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- Enhanced JavaScript for better form handling and user experience -->
 <script>
-// Enhanced nutrition goals form handling
+// Nutrition goals presets
+function setPreset(type) {
+  console.log('[v0] Setting preset:', type);
+  const presets = {
+    weight_loss: { calories: 1800, protein: 120, fat: 60, carbs: 180 },
+    maintenance: { calories: 2200, protein: 80, fat: 75, carbs: 275 },
+    muscle_gain: { calories: 2800, protein: 140, fat: 90, carbs: 350 }
+  };
+  
+  const preset = presets[type];
+  if (preset) {
+    // Update form fields with animation
+    const fields = [
+      { name: 'calories_target', value: preset.calories },
+      { name: 'protein_target', value: preset.protein },
+      { name: 'fat_target', value: preset.fat },
+      { name: 'carbs_target', value: preset.carbs }
+    ];
+    
+    fields.forEach((field, index) => {
+      setTimeout(() => {
+        const input = document.querySelector(`input[name="${field.name}"]`);
+        if (input) {
+          input.style.transform = 'scale(1.05)';
+          input.value = field.value;
+          setTimeout(() => {
+            input.style.transform = 'scale(1)';
+          }, 200);
+        }
+      }, index * 100);
+    });
+    
+    // Visual feedback for preset button
+    const presetButtons = document.querySelectorAll('[onclick*="setPreset"]');
+    presetButtons.forEach(btn => btn.classList.remove('btn-primary'));
+    event.target.classList.add('btn-primary');
+    setTimeout(() => {
+      event.target.classList.remove('btn-primary');
+      event.target.classList.add('btn-outline-primary');
+    }, 2000);
+  }
+}
+
+function resetDailyGoals() {
+  if (confirm('Are you sure you want to reset today\'s nutrition tracking? This will set all consumed values to zero.')) {
+    console.log('[v0] Resetting daily goals');
+    
+    const resetBtn = event.target;
+    const originalText = resetBtn.innerHTML;
+    resetBtn.disabled = true;
+    resetBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Resetting...';
+    
+    fetch('{% url "accounts:reset_daily_goals" %}', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+    })
+    .then(response => {
+      console.log('[v0] Reset response status:', response.status);
+      return response.json();
+    })
+    .then(data => {
+      console.log('[v0] Reset response data:', data);
+      if (data.success) {
+        // Show success message
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-info alert-dismissible fade show';
+        alertDiv.innerHTML = `
+          <i class="bi bi-arrow-clockwise me-2"></i>Daily nutrition tracking has been reset!
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.container').firstChild);
+        
+        // Reload page to show updated progress bars
+        setTimeout(() => {
+          location.reload();
+        }, 1500);
+      } else {
+        console.error('[v0] Error resetting goals:', data.error);
+        alert('Error resetting goals: ' + (data.error || 'Please try again.'));
+        resetBtn.disabled = false;
+        resetBtn.innerHTML = originalText;
+      }
+    })
+    .catch(error => {
+      console.error('[v0] Reset fetch error:', error);
+      alert('Error resetting goals. Please check your connection and try again.');
+      resetBtn.disabled = false;
+      resetBtn.innerHTML = originalText;
+    });
+  }
+}
+
+document.querySelectorAll('.interactive-card').forEach(card => {
+  card.addEventListener('mouseenter', function() {
+    this.style.transform = 'translateY(-4px)';
+  });
+  
+  card.addEventListener('mouseleave', function() {
+    this.style.transform = 'translateY(0)';
+  });
+});
+
 document.getElementById('nutritionGoalsForm').addEventListener('submit', function(e) {
   e.preventDefault();
   console.log('[v0] Nutrition goals form submitted');
@@ -793,30 +773,30 @@ document.getElementById('nutritionGoalsForm').addEventListener('submit', functio
   const submitBtn = this.querySelector('button[type="submit"]');
   const originalText = submitBtn.innerHTML;
   
-  // Enhanced validation
+  // Validate form inputs
   const calories = parseInt(formData.get('calories_target'));
   const protein = parseInt(formData.get('protein_target'));
   const fat = parseInt(formData.get('fat_target'));
   const carbs = parseInt(formData.get('carbs_target'));
   
   if (calories < 1000 || calories > 5000) {
-    showAlert('Calories target must be between 1000 and 5000', 'warning');
+    alert('Calories target must be between 1000 and 5000');
     return;
   }
   if (protein < 10 || protein > 300) {
-    showAlert('Protein target must be between 10 and 300g', 'warning');
+    alert('Protein target must be between 10 and 300g');
     return;
   }
   if (fat < 10 || fat > 200) {
-    showAlert('Fat target must be between 10 and 200g', 'warning');
+    alert('Fat target must be between 10 and 200g');
     return;
   }
   if (carbs < 50 || carbs > 800) {
-    showAlert('Carbs target must be between 50 and 800g', 'warning');
+    alert('Carbs target must be between 50 and 800g');
     return;
   }
   
-  // Enhanced loading state
+  // Show loading state with enhanced animation
   submitBtn.disabled = true;
   submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving Goals...';
   submitBtn.style.transform = 'scale(0.98)';
@@ -838,134 +818,194 @@ document.getElementById('nutritionGoalsForm').addEventListener('submit', functio
   .then(data => {
     console.log('[v0] Response data:', data);
     if (data.success) {
-      // Success feedback
+      // Enhanced success feedback
       submitBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i>Saved!';
       submitBtn.style.transform = 'scale(1)';
       submitBtn.classList.remove('btn-primary');
       submitBtn.classList.add('btn-success');
       
-      // Close modal and show success
+      // Close modal with delay for visual feedback
       setTimeout(() => {
         const modal = bootstrap.Modal.getInstance(document.getElementById('nutritionGoalsModal'));
         modal.hide();
         
-        showAlert('Your nutrition goals have been updated successfully!', 'success');
+        // Show enhanced success message
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-success alert-dismissible fade show';
+        alertDiv.innerHTML = `
+          <i class="bi bi-check-circle me-2"></i>Your nutrition goals have been updated successfully! Progress bars will update momentarily.
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.container').firstChild);
         
-        // Reload page to show updated progress
+        // Reload page after delay to show updated progress bars
         setTimeout(() => {
           location.reload();
-        }, 1500);
+        }, 2000);
       }, 1000);
     } else {
       console.error('[v0] Error saving goals:', data.error);
-      showAlert('Error saving goals: ' + (data.error || 'Please try again.'), 'danger');
-      resetSubmitButton();
+      alert('Error saving goals: ' + (data.error || 'Please try again.'));
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalText;
+      submitBtn.style.transform = 'scale(1)';
     }
   })
   .catch(error => {
     console.error('[v0] Fetch error:', error);
-    showAlert('Network error. Please check your connection and try again.', 'danger');
-    resetSubmitButton();
-  });
-  
-  function resetSubmitButton() {
+    alert('Error saving goals. Please check your connection and try again.');
     submitBtn.disabled = false;
     submitBtn.innerHTML = originalText;
     submitBtn.style.transform = 'scale(1)';
-    submitBtn.classList.remove('btn-success');
-    submitBtn.classList.add('btn-primary');
-  }
+  });
 });
 
-// Enhanced preset functionality
-function setPreset(type) {
-  const caloriesInput = document.querySelector('input[name="calories_target"]');
-  const proteinInput = document.querySelector('input[name="protein_target"]');
-  const fatInput = document.querySelector('input[name="fat_target"]');
-  const carbsInput = document.querySelector('input[name="carbs_target"]');
+document.getElementById('nutritionGoalsForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  console.log('[v0] Nutrition goals form submitted');
   
-  let values = {};
+  const formData = new FormData(this);
+  const submitBtn = this.querySelector('button[type="submit"]');
+  const originalText = submitBtn.innerHTML;
   
-  switch(type) {
-    case 'weight_loss':
-      values = { calories: 1800, protein: 120, fat: 60, carbs: 180 };
-      break;
-    case 'maintenance':
-      values = { calories: 2200, protein: 100, fat: 75, carbs: 275 };
-      break;
-    case 'muscle_gain':
-      values = { calories: 2800, protein: 140, fat: 90, carbs: 350 };
-      break;
+  // Enhanced validation with specific error messages
+  const calories = parseInt(formData.get('calories_target'));
+  const protein = parseInt(formData.get('protein_target'));
+  const fat = parseInt(formData.get('fat_target'));
+  const carbs = parseInt(formData.get('carbs_target'));
+  
+  if (calories < 1000 || calories > 5000) {
+    alert('Calories target must be between 1000 and 5000');
+    return;
+  }
+  if (protein < 10 || protein > 300) {
+    alert('Protein target must be between 10 and 300g');
+    return;
+  }
+  if (fat < 10 || fat > 200) {
+    alert('Fat target must be between 10 and 200g');
+    return;
+  }
+  if (carbs < 50 || carbs > 800) {
+    alert('Carbs target must be between 50 and 800g');
+    return;
   }
   
-  // Animate value changes
-  animateValueChange(caloriesInput, values.calories);
-  animateValueChange(proteinInput, values.protein);
-  animateValueChange(fatInput, values.fat);
-  animateValueChange(carbsInput, values.carbs);
+  // Show enhanced loading state
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving Goals...';
+  submitBtn.style.transform = 'scale(0.98)';
   
-  // Visual feedback for preset selection
-  document.querySelectorAll('.btn-outline-primary').forEach(btn => {
-    btn.classList.remove('active');
-  });
-  event.target.classList.add('active');
-}
-
-function animateValueChange(input, newValue) {
-  input.style.transform = 'scale(1.05)';
-  input.style.background = 'var(--primary-color-light)';
-  setTimeout(() => {
-    input.value = newValue;
-    input.style.transform = 'scale(1)';
-    input.style.background = '';
-  }, 200);
-}
-
-// Enhanced alert system
-function showAlert(message, type) {
-  const alertDiv = document.createElement('div');
-  alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
-  alertDiv.innerHTML = `
-    <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'exclamation-circle'} me-2"></i>
-    ${message}
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-  `;
-  
-  const container = document.querySelector('.container');
-  container.insertBefore(alertDiv, container.firstChild);
-  
-  // Auto-dismiss after 5 seconds
-  setTimeout(() => {
-    if (alertDiv.parentNode) {
-      alertDiv.remove();
+  fetch(this.action, {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
     }
-  }, 5000);
-}
+  })
+  .then(response => {
+    console.log('[v0] Response status:', response.status);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  })
+  .then(data => {
+    console.log('[v0] Response data:', data);
+    if (data.success) {
+      // Enhanced success feedback with progress bar updates
+      submitBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i>Goals Saved!';
+      submitBtn.style.transform = 'scale(1)';
+      submitBtn.classList.remove('btn-primary');
+      submitBtn.classList.add('btn-success');
+      
+      // Update progress bars immediately if data is provided
+      if (data.progress) {
+        updateProgressBars(data.progress, data.remaining);
+      }
+      
+      // Close modal with enhanced visual feedback
+      setTimeout(() => {
+        const modal = bootstrap.Modal.getInstance(document.getElementById('nutritionGoalsModal'));
+        modal.hide();
+        
+        // Show enhanced success message
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-success alert-dismissible fade show';
+        alertDiv.innerHTML = `
+          <i class="bi bi-check-circle me-2"></i>Your nutrition goals have been updated successfully! Progress bars updated.
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.container').firstChild);
+        
+        // Auto-dismiss alert after 5 seconds
+        setTimeout(() => {
+          const alert = bootstrap.Alert.getOrCreateInstance(alertDiv);
+          alert.close();
+        }, 5000);
+        
+      }, 1000);
+    } else {
+      console.error('[v0] Error saving goals:', data.error);
+      alert('Error saving goals: ' + (data.error || 'Please try again.'));
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalText;
+      submitBtn.style.transform = 'scale(1)';
+    }
+  })
+  .catch(error => {
+    console.error('[v0] Fetch error:', error);
+    alert('Error saving goals. Please check your connection and try again.');
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = originalText;
+    submitBtn.style.transform = 'scale(1)';
+  });
+});
 
-// Reset daily goals functionality
-function resetDailyGoals() {
-  if (confirm('Are you sure you want to reset today\'s nutrition progress? This action cannot be undone.')) {
-    fetch('{% url "accounts:reset_daily_goals" %}', {
-      method: 'POST',
-      headers: {
-        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-        'X-Requested-With': 'XMLHttpRequest',
-      }
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        showAlert('Daily nutrition progress has been reset!', 'success');
-        setTimeout(() => location.reload(), 1000);
-      } else {
-        showAlert('Error resetting progress. Please try again.', 'danger');
-      }
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      showAlert('Network error. Please try again.', 'danger');
-    });
-  }
+function updateProgressBars(progress, remaining) {
+  console.log('[v0] Updating progress bars:', progress, remaining);
+  
+  const progressBars = {
+    calories: document.querySelector('.nutrition-goal-card:nth-child(1) .progress-fill'),
+    protein: document.querySelector('.nutrition-goal-card:nth-child(2) .progress-fill'),
+    fat: document.querySelector('.nutrition-goal-card:nth-child(3) .progress-fill'),
+    carbs: document.querySelector('.nutrition-goal-card:nth-child(4) .progress-fill')
+  };
+  
+  const badges = {
+    calories: document.querySelector('.nutrition-goal-card:nth-child(1) .badge'),
+    protein: document.querySelector('.nutrition-goal-card:nth-child(2) .badge'),
+    fat: document.querySelector('.nutrition-goal-card:nth-child(3) .badge'),
+    carbs: document.querySelector('.nutrition-goal-card:nth-child(4) .badge')
+  };
+  
+  const percentages = {
+    calories: document.querySelector('.nutrition-goal-card:nth-child(1) .text-muted:first-of-type'),
+    protein: document.querySelector('.nutrition-goal-card:nth-child(2) .text-muted:first-of-type'),
+    fat: document.querySelector('.nutrition-goal-card:nth-child(3) .text-muted:first-of-type'),
+    carbs: document.querySelector('.nutrition-goal-card:nth-child(4) .text-muted:first-of-type')
+  };
+  
+  const remainingElements = {
+    calories: document.querySelector('.nutrition-goal-card:nth-child(1) .text-muted:last-of-type'),
+    protein: document.querySelector('.nutrition-goal-card:nth-child(2) .text-muted:last-of-type'),
+    fat: document.querySelector('.nutrition-goal-card:nth-child(3) .text-muted:last-of-type'),
+    carbs: document.querySelector('.nutrition-goal-card:nth-child(4) .text-muted:last-of-type')
+  };
+  
+  // Update each progress bar with animation
+  Object.keys(progress).forEach(key => {
+    if (progressBars[key]) {
+      progressBars[key].style.width = `${progress[key]}%`;
+    }
+    if (percentages[key]) {
+      percentages[key].textContent = `${Math.round(progress[key])}% of goal`;
+    }
+    if (remainingElements[key]) {
+      const unit = key === 'calories' ? ' kcal left' : 'g left';
+      remainingElements[key].textContent = `${remaining[key]}${unit}`;
+    }
+  });
 }
 </script>
 {% endblock %}

@@ -102,7 +102,7 @@
                                 <a class="dropdown-item d-flex align-items-center py-2 px-3" 
                                    href="{% url 'accounts:logout' %}"
                                    style="color: var(--health-poor); border-radius: var(--border-radius-sm);">
-                                    <i class="bi bi-box-arrow-right me-3" style="color: var(--primary-color);"></i>
+                                    <i class="bi bi-box-arrow-right me-3"></i>
                                     <span>Logout</span>
                                 </a>
                             </li>
@@ -154,26 +154,8 @@
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Enhanced theme toggle button with better positioning and visibility -->
-    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme" style="
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        border: none;
-        background: var(--primary-color);
-        color: white;
-        font-size: 1.5rem;
-        cursor: pointer;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        transition: all 0.3s ease;
-        z-index: 1000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    ">
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
         <i class="bi bi-moon-fill"></i>
     </button>
 
@@ -199,57 +181,119 @@
         </div>
     </footer>
 
-    <!-- Simplified and more reliable theme toggle script -->
+    <!-- Enhanced theme toggle script with better reliability -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const themeToggle = document.getElementById('theme-toggle');
-            const html = document.documentElement;
-            const icon = themeToggle.querySelector('i');
+        const themeToggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('i');
+        
+        // Load saved theme or default to light
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        console.log('[v0] Loading saved theme:', savedTheme);
+        applyTheme(savedTheme);
+        
+        themeToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('[v0] Theme toggle clicked');
             
-            // Load saved theme or default to light
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            console.log('[v0] Loading saved theme:', savedTheme);
-            setTheme(savedTheme);
-            
-            themeToggle.addEventListener('click', function(e) {
-                e.preventDefault();
-                console.log('[v0] Theme toggle clicked');
-                
+            try {
                 const currentTheme = html.getAttribute('data-theme') || 'light';
                 const newTheme = currentTheme === 'light' ? 'dark' : 'light';
                 
                 console.log('[v0] Switching from', currentTheme, 'to', newTheme);
                 
-                // Visual feedback
+                // Apply theme immediately with visual feedback
                 this.style.transform = 'scale(0.9)';
+                this.style.opacity = '0.7';
+                
+                // Apply theme changes
+                applyTheme(newTheme);
+                localStorage.setItem('theme', newTheme);
+                
+                // Reset button appearance
                 setTimeout(() => {
                     this.style.transform = 'scale(1)';
-                }, 150);
+                    this.style.opacity = '1';
+                }, 200);
                 
-                setTheme(newTheme);
-                localStorage.setItem('theme', newTheme);
-            });
-            
-            function setTheme(theme) {
-                console.log('[v0] Setting theme to:', theme);
+                console.log('[v0] Theme switched successfully to:', newTheme);
                 
+            } catch (error) {
+                console.error('[v0] Error switching theme:', error);
+                // Reset button on error
+                this.style.transform = 'scale(1)';
+                this.style.opacity = '1';
+            }
+        });
+        
+        function applyTheme(theme) {
+            console.log('[v0] Applying theme:', theme);
+            try {
                 // Set data-theme attribute
                 html.setAttribute('data-theme', theme);
                 
-                // Update icon
+                // Force immediate CSS update
+                document.body.offsetHeight;
+                
+                // Update theme icon
+                updateThemeIcon(theme);
+                
+                // Force repaint of all elements
+                setTimeout(() => {
+                    const allElements = document.querySelectorAll('*');
+                    allElements.forEach(el => {
+                        el.style.display = 'none';
+                        el.offsetHeight; // Trigger reflow
+                        el.style.display = '';
+                    });
+                }, 50);
+                
+            } catch (error) {
+                console.error('[v0] Error applying theme:', error);
+            }
+        }
+        
+        function updateThemeIcon(theme) {
+            console.log('[v0] Updating theme icon for:', theme);
+            try {
                 if (theme === 'dark') {
                     icon.className = 'bi bi-sun-fill';
-                    themeToggle.style.background = '#ffc107';
+                    themeToggle.setAttribute('aria-label', 'Switch to light theme');
+                    themeToggle.title = 'Switch to light theme';
                 } else {
                     icon.className = 'bi bi-moon-fill';
-                    themeToggle.style.background = 'var(--primary-color)';
+                    themeToggle.setAttribute('aria-label', 'Switch to dark theme');
+                    themeToggle.title = 'Switch to dark theme';
                 }
-                
-                // Force CSS update
-                document.body.style.display = 'none';
-                document.body.offsetHeight;
-                document.body.style.display = '';
+            } catch (error) {
+                console.error('[v0] Error updating theme icon:', error);
             }
+        }
+        
+        // Enhanced keyboard support
+        themeToggle.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                console.log('[v0] Theme toggle activated via keyboard');
+                this.click();
+            }
+        });
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('[v0] DOM loaded, ensuring theme is applied');
+            try {
+                const currentTheme = html.getAttribute('data-theme') || 'light';
+                applyTheme(currentTheme);
+            } catch (error) {
+                console.error('[v0] Error applying theme on load:', error);
+            }
+        });
+        
+        window.addEventListener('pageshow', function() {
+            console.log('[v0] Page shown, reapplying theme');
+            const currentTheme = html.getAttribute('data-theme') || localStorage.getItem('theme') || 'light';
+            applyTheme(currentTheme);
         });
     </script>
     
