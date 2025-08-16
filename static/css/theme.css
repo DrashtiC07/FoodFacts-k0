@@ -1,0 +1,394 @@
+/* Global Theme System for Food Scanner */
+/* This file contains all theme-related CSS to ensure consistent theming across all pages */
+
+:root {
+  /* Light theme colors */
+  --primary-color: #2563eb;
+  --primary-light: rgba(37, 99, 235, 0.1);
+  --accent-color: #f59e0b;
+  --text-primary: #1f2937;
+  --text-secondary: #4b5563;
+  --text-muted: #9ca3af;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --card-bg: #ffffff;
+  --border-color: #e5e7eb;
+  --border-radius: 0.75rem;
+  --border-radius-sm: 0.5rem;
+
+  /* Health score colors */
+  --health-excellent: #10b981;
+  --health-good: #84cc16;
+  --health-fair: #f59e0b;
+  --health-poor: #ef4444;
+
+  /* Typography */
+  --font-primary: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-secondary: "Work Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+[data-theme="dark"] {
+  /* Dark theme colors */
+  --primary-color: #3b82f6;
+  --primary-light: rgba(59, 130, 246, 0.15);
+  --accent-color: #fbbf24;
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --text-muted: #9ca3af;
+  --bg-primary: #111827;
+  --bg-secondary: #1f2937;
+  --card-bg: #1f2937;
+  --border-color: #374151;
+}
+
+/* Global transitions for smooth theme switching */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
+}
+
+/* Base body and typography styling */
+body {
+  font-family: var(--font-primary) !important;
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Navbar styling with highest specificity */
+.navbar,
+.navbar-expand-lg {
+  background-color: var(--card-bg) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  backdrop-filter: blur(10px);
+  z-index: 1050 !important;
+}
+
+.navbar-brand,
+.navbar-brand:hover,
+.navbar-brand:focus {
+  color: var(--text-primary) !important;
+  font-family: var(--font-secondary) !important;
+}
+
+.nav-link,
+.navbar-nav .nav-link {
+  color: var(--text-secondary) !important;
+  font-weight: 500;
+}
+
+.nav-link:hover,
+.nav-link:focus,
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link:focus {
+  color: var(--primary-color) !important;
+}
+
+/* Button styling */
+.btn-primary {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  color: white !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  opacity: 0.9;
+}
+
+.btn-outline-primary {
+  border-color: var(--primary-color) !important;
+  color: var(--primary-color) !important;
+  background-color: transparent !important;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus,
+.btn-outline-primary:active {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  color: white !important;
+}
+
+/* Dropdown styling */
+.dropdown-menu {
+  background-color: var(--card-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+}
+
+.dropdown-item {
+  color: var(--text-primary) !important;
+  background-color: transparent !important;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus,
+.dropdown-item:active {
+  background-color: var(--bg-secondary) !important;
+  color: var(--primary-color) !important;
+}
+
+.dropdown-header {
+  color: var(--text-primary) !important;
+}
+
+.dropdown-divider {
+  border-color: var(--border-color) !important;
+}
+
+/* Card styling */
+.card {
+  background-color: var(--card-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.card-header {
+  background-color: var(--bg-secondary) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.card-body {
+  background-color: var(--card-bg) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Form styling */
+.form-control,
+.form-select {
+  background-color: var(--card-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+  background-color: var(--card-bg) !important;
+  border-color: var(--primary-color) !important;
+  color: var(--text-primary) !important;
+  box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25) !important;
+}
+
+.form-control::placeholder {
+  color: var(--text-muted) !important;
+}
+
+/* Alert styling */
+.alert {
+  border: 1px solid var(--border-color) !important;
+  background-color: var(--card-bg) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Table styling */
+.table {
+  color: var(--text-primary) !important;
+}
+
+.table th {
+  border-color: var(--border-color) !important;
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+.table td {
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Modal styling */
+.modal-content {
+  background-color: var(--card-bg) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.modal-header {
+  border-bottom: 1px solid var(--border-color) !important;
+  background-color: var(--bg-secondary) !important;
+}
+
+.modal-title {
+  color: var(--text-primary) !important;
+}
+
+.modal-body {
+  color: var(--text-primary) !important;
+}
+
+.modal-footer {
+  border-top: 1px solid var(--border-color) !important;
+  background-color: var(--bg-secondary) !important;
+}
+
+/* Theme toggle button */
+.theme-toggle {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  border: none;
+  background: var(--primary-color);
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.theme-toggle:active {
+  transform: scale(0.95);
+}
+
+/* Product card padding to prevent navbar collision */
+.card-body.p-4 {
+  padding-top: 2rem !important;
+}
+
+.product-link {
+  padding-top: 1rem !important;
+  display: inline-block;
+}
+
+/* Footer styling */
+footer {
+  background-color: var(--bg-secondary) !important;
+  border-top: 1px solid var(--border-color) !important;
+  color: var(--text-secondary) !important;
+}
+
+footer h5 {
+  color: var(--text-primary) !important;
+}
+
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+/* Text color overrides */
+p,
+span,
+div,
+li,
+a {
+  color: inherit !important;
+}
+
+a:not(.btn):not(.nav-link):not(.dropdown-item) {
+  color: var(--primary-color) !important;
+}
+
+a:not(.btn):not(.nav-link):not(.dropdown-item):hover {
+  color: var(--primary-color) !important;
+  opacity: 0.8;
+}
+
+/* Progress bar styling for nutrition goals */
+.progress {
+  background-color: var(--bg-secondary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.progress-bar {
+  background-color: var(--primary-color) !important;
+}
+
+/* Tag styling with proper flexbox for overflow handling */
+.tag-container {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.5rem !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+
+.tag-item {
+  flex-shrink: 0 !important;
+  word-break: break-word !important;
+  max-width: 100% !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Ensure all Bootstrap components use theme colors */
+.bg-light {
+  background-color: var(--bg-secondary) !important;
+}
+
+.bg-dark {
+  background-color: var(--bg-primary) !important;
+}
+
+.text-dark {
+  color: var(--text-primary) !important;
+}
+
+.text-light {
+  color: var(--text-secondary) !important;
+}
+
+.border {
+  border-color: var(--border-color) !important;
+}
+
+/* Input group styling */
+.input-group-text {
+  background-color: var(--bg-secondary) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+/* List group styling */
+.list-group-item {
+  background-color: var(--card-bg) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.list-group-item:hover {
+  background-color: var(--bg-secondary) !important;
+}
+
+/* Badge styling */
+.badge {
+  background-color: var(--primary-color) !important;
+  color: white !important;
+}
+
+/* Accordion styling */
+.accordion-item {
+  background-color: var(--card-bg) !important;
+  border-color: var(--border-color) !important;
+}
+
+.accordion-header button {
+  background-color: var(--card-bg) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.accordion-body {
+  background-color: var(--card-bg) !important;
+  color: var(--text-primary) !important;
+}
