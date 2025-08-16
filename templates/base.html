@@ -59,12 +59,16 @@
             --border-color: #374151;
         }
         
+        /* Enhanced global styling to ensure theme applies to all elements */
+        * {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
+        }
+        
         /* Apply fonts globally for better visibility */
         body {
             font-family: var(--font-primary) !important;
             background-color: var(--bg-primary) !important;
             color: var(--text-primary) !important;
-            transition: background-color 0.3s ease, color 0.3s ease;
         }
         
         h1, h2, h3, h4, h5, h6 {
@@ -72,68 +76,174 @@
             color: var(--text-primary) !important;
         }
         
-        /* Enhanced navbar styling for theme compatibility */
-        .navbar {
+        /* Enhanced navbar styling with higher specificity */
+        .navbar,
+        .navbar-expand-lg {
             background-color: var(--card-bg) !important;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color) !important;
             backdrop-filter: blur(10px);
-            /* Added z-index to ensure navbar stays above all content */
             z-index: 1050 !important;
         }
         
-        .navbar-brand {
+        .navbar-brand,
+        .navbar-brand:hover,
+        .navbar-brand:focus {
             color: var(--text-primary) !important;
             font-family: var(--font-secondary) !important;
         }
         
-        .nav-link {
+        .nav-link,
+        .navbar-nav .nav-link {
             color: var(--text-secondary) !important;
             font-weight: 500;
         }
         
-        .nav-link:hover {
+        .nav-link:hover,
+        .nav-link:focus,
+        .navbar-nav .nav-link:hover,
+        .navbar-nav .nav-link:focus {
             color: var(--primary-color) !important;
         }
         
-        /* Enhanced button styling */
+        /* Enhanced Bootstrap component overrides */
         .btn-primary {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-            color: white;
+            background-color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+            color: white !important;
+        }
+        
+        .btn-primary:hover,
+        .btn-primary:focus,
+        .btn-primary:active {
+            background-color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+            opacity: 0.9;
         }
         
         .btn-outline-primary {
-            border-color: var(--primary-color);
-            color: var(--primary-color);
+            border-color: var(--primary-color) !important;
+            color: var(--primary-color) !important;
+            background-color: transparent !important;
         }
         
-        .btn-outline-primary:hover {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-            color: white;
+        .btn-outline-primary:hover,
+        .btn-outline-primary:focus,
+        .btn-outline-primary:active {
+            background-color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+            color: white !important;
         }
         
-        /* Enhanced dropdown styling */
+        /* Enhanced dropdown styling with higher specificity */
         .dropdown-menu {
             background-color: var(--card-bg) !important;
             border: 1px solid var(--border-color) !important;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
         }
         
         .dropdown-item {
             color: var(--text-primary) !important;
+            background-color: transparent !important;
         }
         
-        .dropdown-item:hover {
+        .dropdown-item:hover,
+        .dropdown-item:focus,
+        .dropdown-item:active {
             background-color: var(--bg-secondary) !important;
             color: var(--primary-color) !important;
         }
         
+        .dropdown-header {
+            color: var(--text-primary) !important;
+        }
+        
+        .dropdown-divider {
+            border-color: var(--border-color) !important;
+        }
+        
+        /* Enhanced card styling */
+        .card {
+            background-color: var(--card-bg) !important;
+            border: 1px solid var(--border-color) !important;
+            color: var(--text-primary) !important;
+        }
+        
+        .card-header {
+            background-color: var(--bg-secondary) !important;
+            border-bottom: 1px solid var(--border-color) !important;
+            color: var(--text-primary) !important;
+        }
+        
+        .card-body {
+            background-color: var(--card-bg) !important;
+            color: var(--text-primary) !important;
+        }
+        
+        /* Enhanced form styling */
+        .form-control,
+        .form-select {
+            background-color: var(--card-bg) !important;
+            border: 1px solid var(--border-color) !important;
+            color: var(--text-primary) !important;
+        }
+        
+        .form-control:focus,
+        .form-select:focus {
+            background-color: var(--card-bg) !important;
+            border-color: var(--primary-color) !important;
+            color: var(--text-primary) !important;
+            box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25) !important;
+        }
+        
+        .form-control::placeholder {
+            color: var(--text-muted) !important;
+        }
+        
         /* Enhanced alert styling */
         .alert {
-            border: 1px solid var(--border-color);
-            background-color: var(--card-bg);
-            color: var(--text-primary);
+            border: 1px solid var(--border-color) !important;
+            background-color: var(--card-bg) !important;
+            color: var(--text-primary) !important;
+        }
+        
+        /* Enhanced table styling */
+        .table {
+            color: var(--text-primary) !important;
+        }
+        
+        .table th {
+            border-color: var(--border-color) !important;
+            background-color: var(--bg-secondary) !important;
+            color: var(--text-primary) !important;
+        }
+        
+        .table td {
+            border-color: var(--border-color) !important;
+            color: var(--text-primary) !important;
+        }
+        
+        /* Enhanced modal styling */
+        .modal-content {
+            background-color: var(--card-bg) !important;
+            border: 1px solid var(--border-color) !important;
+        }
+        
+        .modal-header {
+            border-bottom: 1px solid var(--border-color) !important;
+            background-color: var(--bg-secondary) !important;
+        }
+        
+        .modal-title {
+            color: var(--text-primary) !important;
+        }
+        
+        .modal-body {
+            color: var(--text-primary) !important;
+        }
+        
+        .modal-footer {
+            border-top: 1px solid var(--border-color) !important;
+            background-color: var(--bg-secondary) !important;
         }
         
         /* Enhanced theme toggle button */
@@ -159,7 +269,6 @@
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
         }
         
-        /* Added active state for theme toggle button */
         .theme-toggle:active {
             transform: scale(0.95);
         }
@@ -188,6 +297,20 @@
         
         .text-muted {
             color: var(--text-muted) !important;
+        }
+        
+        /* Enhanced text color overrides */
+        p, span, div, li, a {
+            color: inherit !important;
+        }
+        
+        a:not(.btn):not(.nav-link):not(.dropdown-item) {
+            color: var(--primary-color) !important;
+        }
+        
+        a:not(.btn):not(.nav-link):not(.dropdown-item):hover {
+            color: var(--primary-color) !important;
+            opacity: 0.8;
         }
     </style>
     
@@ -352,7 +475,7 @@
         </div>
     </footer>
 
-    <!-- Enhanced theme toggle script for better functionality -->
+    <!-- Enhanced theme toggle script with better reliability -->
     <script>
         const themeToggle = document.getElementById('theme-toggle');
         const html = document.documentElement;
@@ -361,8 +484,7 @@
         // Load saved theme or default to light
         const savedTheme = localStorage.getItem('theme') || 'light';
         console.log('[v0] Loading saved theme:', savedTheme);
-        html.setAttribute('data-theme', savedTheme);
-        updateThemeIcon(savedTheme);
+        applyTheme(savedTheme);
         
         themeToggle.addEventListener('click', function(e) {
             e.preventDefault();
@@ -380,30 +502,8 @@
                 this.style.opacity = '0.7';
                 
                 // Apply theme changes
-                html.setAttribute('data-theme', newTheme);
+                applyTheme(newTheme);
                 localStorage.setItem('theme', newTheme);
-                updateThemeIcon(newTheme);
-                
-                // Force CSS update by triggering reflow
-                document.body.offsetHeight;
-                
-                // Update CSS custom properties immediately
-                const root = document.documentElement;
-                if (newTheme === 'dark') {
-                    root.style.setProperty('--text-primary', '#f9fafb');
-                    root.style.setProperty('--text-secondary', '#d1d5db');
-                    root.style.setProperty('--bg-primary', '#111827');
-                    root.style.setProperty('--bg-secondary', '#1f2937');
-                    root.style.setProperty('--card-bg', '#1f2937');
-                    root.style.setProperty('--border-color', '#374151');
-                } else {
-                    root.style.setProperty('--text-primary', '#1f2937');
-                    root.style.setProperty('--text-secondary', '#4b5563');
-                    root.style.setProperty('--bg-primary', '#ffffff');
-                    root.style.setProperty('--bg-secondary', '#f8fafc');
-                    root.style.setProperty('--card-bg', '#ffffff');
-                    root.style.setProperty('--border-color', '#e5e7eb');
-                }
                 
                 // Reset button appearance
                 setTimeout(() => {
@@ -413,13 +513,6 @@
                 
                 console.log('[v0] Theme switched successfully to:', newTheme);
                 
-                // Show brief success indicator
-                const originalIcon = icon.className;
-                icon.className = 'bi bi-check-circle-fill';
-                setTimeout(() => {
-                    updateThemeIcon(newTheme);
-                }, 500);
-                
             } catch (error) {
                 console.error('[v0] Error switching theme:', error);
                 // Reset button on error
@@ -427,6 +520,33 @@
                 this.style.opacity = '1';
             }
         });
+        
+        function applyTheme(theme) {
+            console.log('[v0] Applying theme:', theme);
+            try {
+                // Set data-theme attribute
+                html.setAttribute('data-theme', theme);
+                
+                // Force immediate CSS update
+                document.body.offsetHeight;
+                
+                // Update theme icon
+                updateThemeIcon(theme);
+                
+                // Force repaint of all elements
+                setTimeout(() => {
+                    const allElements = document.querySelectorAll('*');
+                    allElements.forEach(el => {
+                        el.style.display = 'none';
+                        el.offsetHeight; // Trigger reflow
+                        el.style.display = '';
+                    });
+                }, 50);
+                
+            } catch (error) {
+                console.error('[v0] Error applying theme:', error);
+            }
+        }
         
         function updateThemeIcon(theme) {
             console.log('[v0] Updating theme icon for:', theme);
@@ -458,15 +578,16 @@
             console.log('[v0] DOM loaded, ensuring theme is applied');
             try {
                 const currentTheme = html.getAttribute('data-theme') || 'light';
-                updateThemeIcon(currentTheme);
-                
-                // Ensure theme variables are applied
-                setTimeout(() => {
-                    document.body.offsetHeight; // Trigger reflow
-                }, 50);
+                applyTheme(currentTheme);
             } catch (error) {
                 console.error('[v0] Error applying theme on load:', error);
             }
+        });
+        
+        window.addEventListener('pageshow', function() {
+            console.log('[v0] Page shown, reapplying theme');
+            const currentTheme = html.getAttribute('data-theme') || localStorage.getItem('theme') || 'light';
+            applyTheme(currentTheme);
         });
     </script>
     
