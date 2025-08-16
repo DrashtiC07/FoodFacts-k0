@@ -196,6 +196,67 @@
             </div>
           </div>
           
+          <!-- Added enhanced analytics and achievement tracking -->
+          <div class="row mt-4">
+            <div class="col-md-6 mb-4">
+              <div class="card border-0 bg-light">
+                <div class="card-body p-3">
+                  <h6 class="fw-semibold mb-3">
+                    <i class="bi bi-graph-up me-2 text-success"></i>Weekly Progress
+                  </h6>
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="small text-muted">Scans this week</span>
+                    <span class="fw-semibold text-success">{{ recent_scans_count }}</span>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="small text-muted">Goal completion</span>
+                    <span class="fw-semibold text-primary">
+                      {% widthratio calories_progress 100 100 %}%
+                    </span>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <span class="small text-muted">Streak</span>
+                    <span class="fw-semibold text-warning">{{ days_active }} days</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6 mb-4">
+              <div class="card border-0 bg-light">
+                <div class="card-body p-3">
+                  <h6 class="fw-semibold mb-3">
+                    <i class="bi bi-trophy me-2 text-warning"></i>Achievements
+                  </h6>
+                  {% if scan_history|length >= 10 %}
+                  <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                    <span class="small">Scanner Pro (10+ scans)</span>
+                  </div>
+                  {% endif %}
+                  {% if user_reviews|length >= 5 %}
+                  <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                    <span class="small">Reviewer (5+ reviews)</span>
+                  </div>
+                  {% endif %}
+                  {% if favorite_products|length >= 3 %}
+                  <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                    <span class="small">Curator (3+ favorites)</span>
+                  </div>
+                  {% endif %}
+                  {% if days_active >= 7 %}
+                  <div class="d-flex align-items-center">
+                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                    <span class="small">Consistent User (7+ days)</span>
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+          
           <!-- Quick Actions -->
           <div class="row mt-4">
             <div class="col-12">
@@ -208,6 +269,10 @@
                 </a>
                 <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#nutritionTipsModal">
                   <i class="bi bi-lightbulb me-1"></i>Tips
+                </button>
+                <!-- Added export functionality for user data -->
+                <button class="btn btn-sm btn-outline-info" onclick="exportNutritionData()">
+                  <i class="bi bi-download me-1"></i>Export Data
                 </button>
               </div>
             </div>
@@ -223,6 +288,152 @@
             </button>
           </div>
           {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Added comprehensive Recent Activity section with enhanced scan logging -->
+  <div class="row mb-5">
+    <div class="col-lg-8 mb-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0 p-4">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0">
+              <i class="bi bi-clock-history me-2 text-primary"></i>Recent Activity
+            </h5>
+            <a href="{% url 'scanner:scan_history' %}" class="btn btn-sm btn-outline-primary">
+              View All History
+            </a>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          {% if scan_history %}
+          <div class="list-group list-group-flush">
+            {% for scan in scan_history %}
+            <div class="list-group-item border-0 py-3 px-4">
+              <div class="d-flex align-items-center">
+                <div class="flex-shrink-0 me-3">
+                  {% if scan.product.image_url %}
+                  <img src="{{ scan.product.image_url }}" alt="{{ scan.product.name }}" 
+                       class="rounded" style="width: 50px; height: 50px; object-fit: cover;">
+                  {% else %}
+                  <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                       style="width: 50px; height: 50px;">
+                    <i class="bi bi-image text-muted"></i>
+                  </div>
+                  {% endif %}
+                </div>
+                <div class="flex-grow-1">
+                  {% if scan.product.barcode %}
+                  <a href="{% url 'scanner:product_detail' scan.product.barcode %}" 
+                     class="text-decoration-none product-link" style="padding-top: 80px;">
+                    <h6 class="mb-1 fw-semibold">{{ scan.product.name|truncatechars:40 }}</h6>
+                  </a>
+                  {% else %}
+                  <h6 class="mb-1 fw-semibold text-muted">{{ scan.product.name|truncatechars:40 }}</h6>
+                  {% endif %}
+                  <div class="d-flex align-items-center gap-3">
+                    <small class="text-muted">
+                      <i class="bi bi-clock me-1"></i>{{ scan.scanned_at|timesince }} ago
+                    </small>
+                    {% if scan.product.brand %}
+                    <small class="text-muted">
+                      <i class="bi bi-building me-1"></i>{{ scan.product.brand }}
+                    </small>
+                    {% endif %}
+                    {% if scan.product.health_score %}
+                    <span class="badge badge-sm 
+                      {% if scan.product.health_score >= 80 %}bg-success
+                      {% elif scan.product.health_score >= 60 %}bg-warning
+                      {% else %}bg-danger{% endif %}">
+                      Health: {{ scan.product.health_score }}/100
+                    </span>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="flex-shrink-0">
+                  <i class="bi bi-chevron-right text-muted"></i>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="text-center py-5">
+            <i class="bi bi-upc-scan display-1 text-muted mb-3"></i>
+            <h6 class="fw-semibold mb-2">No Scans Yet</h6>
+            <p class="text-muted mb-4">Start scanning products to see your activity here</p>
+            <a href="{% url 'scanner:scan' %}" class="btn btn-primary">
+              <i class="bi bi-camera me-2"></i>Scan Your First Product
+            </a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Added Quick Stats sidebar with personalized insights -->
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-transparent border-0 p-4">
+          <h6 class="fw-bold mb-0">
+            <i class="bi bi-pie-chart me-2 text-primary"></i>Quick Stats
+          </h6>
+        </div>
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="text-muted">Total Products</span>
+            <span class="fw-bold">{{ scan_history|length }}</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="text-muted">Favorites</span>
+            <span class="fw-bold text-danger">{{ favorite_products|length }}</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="text-muted">Reviews</span>
+            <span class="fw-bold text-warning">{{ user_reviews|length }}</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="text-muted">Member Since</span>
+            <span class="fw-bold text-success">{{ user.date_joined|date:"M Y" }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Added personalized recommendations -->
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0 p-4">
+          <h6 class="fw-bold mb-0">
+            <i class="bi bi-lightbulb me-2 text-warning"></i>Personalized Tips
+          </h6>
+        </div>
+        <div class="card-body p-4">
+          {% if calories_progress < 50 %}
+          <div class="alert alert-info alert-sm mb-3">
+            <i class="bi bi-info-circle me-2"></i>
+            <small>You're under your calorie goal. Consider adding a healthy snack!</small>
+          </div>
+          {% endif %}
+          
+          {% if protein_progress < 70 %}
+          <div class="alert alert-warning alert-sm mb-3">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <small>Boost your protein intake with lean meats, beans, or nuts.</small>
+          </div>
+          {% endif %}
+          
+          {% if recent_scans_count == 0 %}
+          <div class="alert alert-primary alert-sm mb-3">
+            <i class="bi bi-camera me-2"></i>
+            <small>Scan a product this week to track your nutrition!</small>
+          </div>
+          {% endif %}
+          
+          <div class="alert alert-success alert-sm">
+            <i class="bi bi-trophy me-2"></i>
+            <small>Keep up the great work! You've been active for {{ days_active }} days.</small>
+          </div>
         </div>
       </div>
     </div>
@@ -437,7 +648,7 @@
             <div class="col-md-6 mb-3">
               <label class="form-label fw-semibold">Daily Calories Target</label>
               <div class="input-group">
-                <input type="number" class="form-control" name="calories_target" 
+                <input type="number" class="form-control" name="calories_target" id="calories_target"
                        value="{{ dietary_goals.calories_target|default:2000 }}" min="1000" max="5000">
                 <span class="input-group-text">kcal</span>
               </div>
@@ -446,7 +657,7 @@
             <div class="col-md-6 mb-3">
               <label class="form-label fw-semibold">Daily Protein Target</label>
               <div class="input-group">
-                <input type="number" class="form-control" name="protein_target" 
+                <input type="number" class="form-control" name="protein_target" id="protein_target"
                        value="{{ dietary_goals.protein_target|default:50 }}" min="20" max="200">
                 <span class="input-group-text">g</span>
               </div>
@@ -455,7 +666,7 @@
             <div class="col-md-6 mb-3">
               <label class="form-label fw-semibold">Daily Fat Target</label>
               <div class="input-group">
-                <input type="number" class="form-control" name="fat_target" 
+                <input type="number" class="form-control" name="fat_target" id="fat_target"
                        value="{{ dietary_goals.fat_target|default:70 }}" min="20" max="150">
                 <span class="input-group-text">g</span>
               </div>
@@ -464,7 +675,7 @@
             <div class="col-md-6 mb-3">
               <label class="form-label fw-semibold">Daily Carbs Target</label>
               <div class="input-group">
-                <input type="number" class="form-control" name="carbs_target" 
+                <input type="number" class="form-control" name="carbs_target" id="carbs_target"
                        value="{{ dietary_goals.carbs_target|default:300 }}" min="50" max="500">
                 <span class="input-group-text">g</span>
               </div>
@@ -477,17 +688,17 @@
             <h6 class="fw-semibold mb-3">Quick Presets</h6>
             <div class="row">
               <div class="col-md-4 mb-2">
-                <button type="button" class="btn btn-outline-primary w-100" onclick="setPreset('weight_loss')">
+                <button type="button" class="btn btn-outline-primary w-100 preset-goal-btn" data-preset="weight-loss">
                   <i class="bi bi-arrow-down-circle me-1"></i>Weight Loss
                 </button>
               </div>
               <div class="col-md-4 mb-2">
-                <button type="button" class="btn btn-outline-primary w-100" onclick="setPreset('maintenance')">
+                <button type="button" class="btn btn-outline-primary w-100 preset-goal-btn" data-preset="maintenance">
                   <i class="bi bi-dash-circle me-1"></i>Maintenance
                 </button>
               </div>
               <div class="col-md-4 mb-2">
-                <button type="button" class="btn btn-outline-primary w-100" onclick="setPreset('muscle_gain')">
+                <button type="button" class="btn btn-outline-primary w-100 preset-goal-btn" data-preset="muscle-gain">
                   <i class="bi bi-arrow-up-circle me-1"></i>Muscle Gain
                 </button>
               </div>
@@ -659,353 +870,92 @@
 
 {% block extra_js %}
 <script>
-// Nutrition goals presets
-function setPreset(type) {
-  console.log('[v0] Setting preset:', type);
-  const presets = {
-    weight_loss: { calories: 1800, protein: 120, fat: 60, carbs: 180 },
-    maintenance: { calories: 2200, protein: 80, fat: 75, carbs: 275 },
-    muscle_gain: { calories: 2800, protein: 140, fat: 90, carbs: 350 }
-  };
-  
-  const preset = presets[type];
-  if (preset) {
-    // Update form fields with animation
-    const fields = [
-      { name: 'calories_target', value: preset.calories },
-      { name: 'protein_target', value: preset.protein },
-      { name: 'fat_target', value: preset.fat },
-      { name: 'carbs_target', value: preset.carbs }
-    ];
-    
-    fields.forEach((field, index) => {
-      setTimeout(() => {
-        const input = document.querySelector(`input[name="${field.name}"]`);
-        if (input) {
-          input.style.transform = 'scale(1.05)';
-          input.value = field.value;
-          setTimeout(() => {
-            input.style.transform = 'scale(1)';
-          }, 200);
-        }
-      }, index * 100);
-    });
-    
-    // Visual feedback for preset button
-    const presetButtons = document.querySelectorAll('[onclick*="setPreset"]');
-    presetButtons.forEach(btn => btn.classList.remove('btn-primary'));
-    event.target.classList.add('btn-primary');
-    setTimeout(() => {
-      event.target.classList.remove('btn-primary');
-      event.target.classList.add('btn-outline-primary');
-    }, 2000);
-  }
-}
-
 function resetDailyGoals() {
-  if (confirm('Are you sure you want to reset today\'s nutrition tracking? This will set all consumed values to zero.')) {
-    console.log('[v0] Resetting daily goals');
+    if (confirm('Are you sure you want to reset today\'s nutrition tracking? This will set all consumed values to zero.')) {
+        fetch('{% url "accounts:reset_daily_goals" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while resetting goals.');
+        });
+    }
+}
+
+function exportNutritionData() {
+    const data = {
+        user: '{{ user.username }}',
+        goals: {
+            calories: {{ dietary_goals.calories_target|default:0 }},
+            protein: {{ dietary_goals.protein_target|default:0 }},
+            fat: {{ dietary_goals.fat_target|default:0 }},
+            carbs: {{ dietary_goals.carbs_target|default:0 }}
+        },
+        consumed: {
+            calories: {{ dietary_goals.calories_consumed|default:0 }},
+            protein: {{ dietary_goals.protein_consumed|default:0 }},
+            fat: {{ dietary_goals.fat_consumed|default:0 }},
+            carbs: {{ dietary_goals.carbs_consumed|default:0 }}
+        },
+        stats: {
+            totalScans: {{ scan_history|length }},
+            favorites: {{ favorite_products|length }},
+            reviews: {{ user_reviews|length }},
+            daysActive: {{ days_active }}
+        }
+    };
     
-    const resetBtn = event.target;
-    const originalText = resetBtn.innerHTML;
-    resetBtn.disabled = true;
-    resetBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Resetting...';
-    
-    fetch('{% url "accounts:reset_daily_goals" %}', {
-      method: 'POST',
-      headers: {
-        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-      },
-    })
-    .then(response => {
-      console.log('[v0] Reset response status:', response.status);
-      return response.json();
-    })
-    .then(data => {
-      console.log('[v0] Reset response data:', data);
-      if (data.success) {
-        // Show success message
-        const alertDiv = document.createElement('div');
-        alertDiv.className = 'alert alert-info alert-dismissible fade show';
-        alertDiv.innerHTML = `
-          <i class="bi bi-arrow-clockwise me-2"></i>Daily nutrition tracking has been reset!
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.container').firstChild);
-        
-        // Reload page to show updated progress bars
-        setTimeout(() => {
-          location.reload();
-        }, 1500);
-      } else {
-        console.error('[v0] Error resetting goals:', data.error);
-        alert('Error resetting goals: ' + (data.error || 'Please try again.'));
-        resetBtn.disabled = false;
-        resetBtn.innerHTML = originalText;
-      }
-    })
-    .catch(error => {
-      console.error('[v0] Reset fetch error:', error);
-      alert('Error resetting goals. Please check your connection and try again.');
-      resetBtn.disabled = false;
-      resetBtn.innerHTML = originalText;
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'nutrition-data-{{ user.username }}.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+// Added enhanced goal setting with preset options
+document.addEventListener('DOMContentLoaded', function() {
+    // Add preset goal functionality
+    const presetButtons = document.querySelectorAll('.preset-goal-btn');
+    presetButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const preset = this.dataset.preset;
+            let goals = {};
+            
+            switch(preset) {
+                case 'weight-loss':
+                    goals = { calories: 1500, protein: 120, fat: 50, carbs: 150 };
+                    break;
+                case 'maintenance':
+                    goals = { calories: 2000, protein: 100, fat: 70, carbs: 250 };
+                    break;
+                case 'muscle-gain':
+                    goals = { calories: 2500, protein: 150, fat: 80, carbs: 300 };
+                    break;
+            }
+            
+            // Update form fields
+            document.getElementById('calories_target').value = goals.calories;
+            document.getElementById('protein_target').value = goals.protein;
+            document.getElementById('fat_target').value = goals.fat;
+            document.getElementById('carbs_target').value = goals.carbs;
+        });
     });
-  }
-}
-
-document.querySelectorAll('.interactive-card').forEach(card => {
-  card.addEventListener('mouseenter', function() {
-    this.style.transform = 'translateY(-4px)';
-  });
-  
-  card.addEventListener('mouseleave', function() {
-    this.style.transform = 'translateY(0)';
-  });
 });
-
-document.getElementById('nutritionGoalsForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  console.log('[v0] Nutrition goals form submitted');
-  
-  const formData = new FormData(this);
-  const submitBtn = this.querySelector('button[type="submit"]');
-  const originalText = submitBtn.innerHTML;
-  
-  // Validate form inputs
-  const calories = parseInt(formData.get('calories_target'));
-  const protein = parseInt(formData.get('protein_target'));
-  const fat = parseInt(formData.get('fat_target'));
-  const carbs = parseInt(formData.get('carbs_target'));
-  
-  if (calories < 1000 || calories > 5000) {
-    alert('Calories target must be between 1000 and 5000');
-    return;
-  }
-  if (protein < 10 || protein > 300) {
-    alert('Protein target must be between 10 and 300g');
-    return;
-  }
-  if (fat < 10 || fat > 200) {
-    alert('Fat target must be between 10 and 200g');
-    return;
-  }
-  if (carbs < 50 || carbs > 800) {
-    alert('Carbs target must be between 50 and 800g');
-    return;
-  }
-  
-  // Show loading state with enhanced animation
-  submitBtn.disabled = true;
-  submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving Goals...';
-  submitBtn.style.transform = 'scale(0.98)';
-  
-  fetch(this.action, {
-    method: 'POST',
-    body: formData,
-    headers: {
-      'X-Requested-With': 'XMLHttpRequest',
-    }
-  })
-  .then(response => {
-    console.log('[v0] Response status:', response.status);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return response.json();
-  })
-  .then(data => {
-    console.log('[v0] Response data:', data);
-    if (data.success) {
-      // Enhanced success feedback
-      submitBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i>Saved!';
-      submitBtn.style.transform = 'scale(1)';
-      submitBtn.classList.remove('btn-primary');
-      submitBtn.classList.add('btn-success');
-      
-      // Close modal with delay for visual feedback
-      setTimeout(() => {
-        const modal = bootstrap.Modal.getInstance(document.getElementById('nutritionGoalsModal'));
-        modal.hide();
-        
-        // Show enhanced success message
-        const alertDiv = document.createElement('div');
-        alertDiv.className = 'alert alert-success alert-dismissible fade show';
-        alertDiv.innerHTML = `
-          <i class="bi bi-check-circle me-2"></i>Your nutrition goals have been updated successfully! Progress bars will update momentarily.
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.container').firstChild);
-        
-        // Reload page after delay to show updated progress bars
-        setTimeout(() => {
-          location.reload();
-        }, 2000);
-      }, 1000);
-    } else {
-      console.error('[v0] Error saving goals:', data.error);
-      alert('Error saving goals: ' + (data.error || 'Please try again.'));
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = originalText;
-      submitBtn.style.transform = 'scale(1)';
-    }
-  })
-  .catch(error => {
-    console.error('[v0] Fetch error:', error);
-    alert('Error saving goals. Please check your connection and try again.');
-    submitBtn.disabled = false;
-    submitBtn.innerHTML = originalText;
-    submitBtn.style.transform = 'scale(1)';
-  });
-});
-
-document.getElementById('nutritionGoalsForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  console.log('[v0] Nutrition goals form submitted');
-  
-  const formData = new FormData(this);
-  const submitBtn = this.querySelector('button[type="submit"]');
-  const originalText = submitBtn.innerHTML;
-  
-  // Enhanced validation with specific error messages
-  const calories = parseInt(formData.get('calories_target'));
-  const protein = parseInt(formData.get('protein_target'));
-  const fat = parseInt(formData.get('fat_target'));
-  const carbs = parseInt(formData.get('carbs_target'));
-  
-  if (calories < 1000 || calories > 5000) {
-    alert('Calories target must be between 1000 and 5000');
-    return;
-  }
-  if (protein < 10 || protein > 300) {
-    alert('Protein target must be between 10 and 300g');
-    return;
-  }
-  if (fat < 10 || fat > 200) {
-    alert('Fat target must be between 10 and 200g');
-    return;
-  }
-  if (carbs < 50 || carbs > 800) {
-    alert('Carbs target must be between 50 and 800g');
-    return;
-  }
-  
-  // Show enhanced loading state
-  submitBtn.disabled = true;
-  submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving Goals...';
-  submitBtn.style.transform = 'scale(0.98)';
-  
-  fetch(this.action, {
-    method: 'POST',
-    body: formData,
-    headers: {
-      'X-Requested-With': 'XMLHttpRequest',
-    }
-  })
-  .then(response => {
-    console.log('[v0] Response status:', response.status);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return response.json();
-  })
-  .then(data => {
-    console.log('[v0] Response data:', data);
-    if (data.success) {
-      // Enhanced success feedback with progress bar updates
-      submitBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i>Goals Saved!';
-      submitBtn.style.transform = 'scale(1)';
-      submitBtn.classList.remove('btn-primary');
-      submitBtn.classList.add('btn-success');
-      
-      // Update progress bars immediately if data is provided
-      if (data.progress) {
-        updateProgressBars(data.progress, data.remaining);
-      }
-      
-      // Close modal with enhanced visual feedback
-      setTimeout(() => {
-        const modal = bootstrap.Modal.getInstance(document.getElementById('nutritionGoalsModal'));
-        modal.hide();
-        
-        // Show enhanced success message
-        const alertDiv = document.createElement('div');
-        alertDiv.className = 'alert alert-success alert-dismissible fade show';
-        alertDiv.innerHTML = `
-          <i class="bi bi-check-circle me-2"></i>Your nutrition goals have been updated successfully! Progress bars updated.
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.container').firstChild);
-        
-        // Auto-dismiss alert after 5 seconds
-        setTimeout(() => {
-          const alert = bootstrap.Alert.getOrCreateInstance(alertDiv);
-          alert.close();
-        }, 5000);
-        
-      }, 1000);
-    } else {
-      console.error('[v0] Error saving goals:', data.error);
-      alert('Error saving goals: ' + (data.error || 'Please try again.'));
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = originalText;
-      submitBtn.style.transform = 'scale(1)';
-    }
-  })
-  .catch(error => {
-    console.error('[v0] Fetch error:', error);
-    alert('Error saving goals. Please check your connection and try again.');
-    submitBtn.disabled = false;
-    submitBtn.innerHTML = originalText;
-    submitBtn.style.transform = 'scale(1)';
-  });
-});
-
-function updateProgressBars(progress, remaining) {
-  console.log('[v0] Updating progress bars:', progress, remaining);
-  
-  const progressBars = {
-    calories: document.querySelector('.nutrition-goal-card:nth-child(1) .progress-fill'),
-    protein: document.querySelector('.nutrition-goal-card:nth-child(2) .progress-fill'),
-    fat: document.querySelector('.nutrition-goal-card:nth-child(3) .progress-fill'),
-    carbs: document.querySelector('.nutrition-goal-card:nth-child(4) .progress-fill')
-  };
-  
-  const badges = {
-    calories: document.querySelector('.nutrition-goal-card:nth-child(1) .badge'),
-    protein: document.querySelector('.nutrition-goal-card:nth-child(2) .badge'),
-    fat: document.querySelector('.nutrition-goal-card:nth-child(3) .badge'),
-    carbs: document.querySelector('.nutrition-goal-card:nth-child(4) .badge')
-  };
-  
-  const percentages = {
-    calories: document.querySelector('.nutrition-goal-card:nth-child(1) .text-muted:first-of-type'),
-    protein: document.querySelector('.nutrition-goal-card:nth-child(2) .text-muted:first-of-type'),
-    fat: document.querySelector('.nutrition-goal-card:nth-child(3) .text-muted:first-of-type'),
-    carbs: document.querySelector('.nutrition-goal-card:nth-child(4) .text-muted:first-of-type')
-  };
-  
-  const remainingElements = {
-    calories: document.querySelector('.nutrition-goal-card:nth-child(1) .text-muted:last-of-type'),
-    protein: document.querySelector('.nutrition-goal-card:nth-child(2) .text-muted:last-of-type'),
-    fat: document.querySelector('.nutrition-goal-card:nth-child(3) .text-muted:last-of-type'),
-    carbs: document.querySelector('.nutrition-goal-card:nth-child(4) .text-muted:last-of-type')
-  };
-  
-  // Update each progress bar with animation
-  Object.keys(progress).forEach(key => {
-    if (progressBars[key]) {
-      progressBars[key].style.width = `${progress[key]}%`;
-    }
-    if (percentages[key]) {
-      percentages[key].textContent = `${Math.round(progress[key])}% of goal`;
-    }
-    if (remainingElements[key]) {
-      const unit = key === 'calories' ? ' kcal left' : 'g left';
-      remainingElements[key].textContent = `${remaining[key]}${unit}`;
-    }
-  });
-}
 </script>
 {% endblock %}
