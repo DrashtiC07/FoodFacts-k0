@@ -231,63 +231,50 @@
   <!-- Activity Sections -->
   <div class="row">
     <!-- Scan History (moved from navbar) -->
-    <div class="col-lg-6 mb-4">
+    <div class="col-lg-4 mb-4">
       <div class="card border-0 shadow-sm h-100">
         <div class="card-header bg-transparent border-0 p-4">
           <div class="d-flex justify-content-between align-items-center">
             <h5 class="fw-bold mb-0" style="font-family: 'Manrope', sans-serif;">
               <i class="bi bi-clock-history me-2 text-primary"></i>Recent Scans
             </h5>
-            <a href="{% url 'scanner:history' %}" class="btn btn-sm btn-outline-primary">
-              View All History
-            </a>
+            <a href="{% url 'scanner:scan_history' %}" class="btn btn-sm btn-outline-primary">View All</a>
           </div>
         </div>
         <div class="card-body p-4">
           {% if scan_history %}
             {% for scan in scan_history %}
-            <div class="d-flex align-items-center mb-3 p-3 rounded-3 bg-light bg-opacity-50 {% if not forloop.last %}mb-3{% endif %}">
-              <div class="product-image me-3">
-                {% if scan.product.image_url %}
-                <img
-                  src="{{ scan.product.image_url }}"
-                  alt="{{ scan.product.name }}"
-                  class="rounded-3"
-                  width="60"
-                  height="60"
-                  style="object-fit: cover"
-                />
-                {% else %}
-                <div class="bg-white rounded-3 d-flex align-items-center justify-content-center border" style="width: 60px; height: 60px">
-                  <i class="bi bi-image text-muted fs-4"></i>
+            <a href="{% url 'scanner:product_detail' scan.product.barcode %}" class="text-decoration-none product-link" style="padding-top: 1rem; display: block;">
+              <div class="d-flex align-items-center mb-3 p-3 rounded hover-card" style="background: var(--bg-light); transition: all 0.2s ease;">
+                <div class="me-3">
+                  {% if scan.product.image_url %}
+                  <img src="{{ scan.product.image_url }}" alt="{{ scan.product.name }}" 
+                       class="rounded" style="width: 50px; height: 50px; object-fit: cover;">
+                  {% else %}
+                  <div class="rounded d-flex align-items-center justify-content-center" 
+                       style="width: 50px; height: 50px; background: var(--bg-secondary);">
+                    <i class="bi bi-image text-muted"></i>
+                  </div>
+                  {% endif %}
+                </div>
+                <div class="flex-grow-1">
+                  <h6 class="mb-1 fw-semibold">{{ scan.product.name|truncatechars:30 }}</h6>
+                  <small class="text-muted">{{ scan.scanned_at|timesince }} ago</small>
+                </div>
+                {% if scan.product.health_score %}
+                <div class="text-end">
+                  <span class="badge {% if scan.product.health_score >= 70 %}bg-success{% elif scan.product.health_score >= 40 %}bg-warning{% else %}bg-danger{% endif %}">
+                    {{ scan.product.health_score }}
+                  </span>
                 </div>
                 {% endif %}
               </div>
-              <div class="flex-grow-1">
-                <h6 class="mb-1 fw-semibold">
-                  <a href="{% url 'scanner:product_detail' scan.product.barcode %}" class="text-decoration-none text-dark product-link" style="padding-top: 20px; display: inline-block;">
-                    {{ scan.product.name|truncatechars:35 }}
-                  </a>
-                </h6>
-                <div class="d-flex align-items-center gap-2 mb-1">
-                  {% if scan.product.health_score %}
-                  <span class="badge bg-{{ scan.product.health_score|lower }} badge-sm">
-                    {{ scan.product.health_score }}
-                  </span>
-                  {% endif %}
-                  <small class="text-muted">{{ scan.product.brand|default:"Unknown Brand" }}</small>
-                </div>
-                <small class="text-muted">
-                  <i class="bi bi-clock me-1"></i>{{ scan.scanned_at|timesince }} ago
-                </small>
-              </div>
-            </div>
+            </a>
             {% endfor %}
           {% else %}
-            <div class="text-center py-5">
-              <i class="bi bi-upc-scan display-1 text-muted mb-3"></i>
-              <h6 class="fw-semibold mb-2">No scans yet</h6>
-              <p class="text-muted mb-3">Start scanning products to see your history here</p>
+            <div class="text-center py-4">
+              <i class="bi bi-clock-history display-1 text-muted mb-3"></i>
+              <p class="text-muted mb-3">No scans yet</p>
               <a href="{% url 'scanner:scan' %}" class="btn btn-primary">
                 <i class="bi bi-camera me-1"></i>Start Scanning
               </a>
@@ -298,7 +285,7 @@
     </div>
 
     <!-- Favorite Products -->
-    <div class="col-lg-6 mb-4">
+    <div class="col-lg-4 mb-4">
       <div class="card border-0 shadow-sm h-100">
         <div class="card-header bg-transparent border-0 p-4">
           <h5 class="fw-bold mb-0" style="font-family: 'Manrope', sans-serif;">
@@ -358,12 +345,10 @@
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Recent Reviews -->
-  {% if user_reviews %}
-  <div class="row">
-    <div class="col-12">
+    <!-- Recent Reviews -->
+    <div class="col-lg-4 mb-4">
+      {% if user_reviews %}
       <div class="card border-0 shadow-sm">
         <div class="card-header bg-transparent border-0 p-4">
           <h5 class="fw-bold mb-0" style="font-family: 'Manrope', sans-serif;">
@@ -415,9 +400,18 @@
           {% endfor %}
         </div>
       </div>
+      {% else %}
+      <div class="text-center py-5">
+        <i class="bi bi-star display-1 text-muted mb-3"></i>
+        <h6 class="fw-semibold mb-2">No reviews yet</h6>
+        <p class="text-muted mb-3">Write reviews to see them here</p>
+        <a href="{% url 'scanner:search' %}" class="btn btn-outline-primary">
+          <i class="bi bi-search me-1"></i>Discover Products
+        </a>
+      </div>
+      {% endif %}
     </div>
   </div>
-  {% endif %}
 </div>
 
 <!-- Nutrition Goals Modal -->
@@ -645,6 +639,11 @@
   text-decoration: underline;
 }
 
+.hover-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
 @media (max-width: 768px) {
   .nutrition-goal-card {
     padding: 1rem;
@@ -842,108 +841,6 @@ document.getElementById('nutritionGoalsForm').addEventListener('submit', functio
         setTimeout(() => {
           location.reload();
         }, 2000);
-      }, 1000);
-    } else {
-      console.error('[v0] Error saving goals:', data.error);
-      alert('Error saving goals: ' + (data.error || 'Please try again.'));
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = originalText;
-      submitBtn.style.transform = 'scale(1)';
-    }
-  })
-  .catch(error => {
-    console.error('[v0] Fetch error:', error);
-    alert('Error saving goals. Please check your connection and try again.');
-    submitBtn.disabled = false;
-    submitBtn.innerHTML = originalText;
-    submitBtn.style.transform = 'scale(1)';
-  });
-});
-
-document.getElementById('nutritionGoalsForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  console.log('[v0] Nutrition goals form submitted');
-  
-  const formData = new FormData(this);
-  const submitBtn = this.querySelector('button[type="submit"]');
-  const originalText = submitBtn.innerHTML;
-  
-  // Enhanced validation with specific error messages
-  const calories = parseInt(formData.get('calories_target'));
-  const protein = parseInt(formData.get('protein_target'));
-  const fat = parseInt(formData.get('fat_target'));
-  const carbs = parseInt(formData.get('carbs_target'));
-  
-  if (calories < 1000 || calories > 5000) {
-    alert('Calories target must be between 1000 and 5000');
-    return;
-  }
-  if (protein < 10 || protein > 300) {
-    alert('Protein target must be between 10 and 300g');
-    return;
-  }
-  if (fat < 10 || fat > 200) {
-    alert('Fat target must be between 10 and 200g');
-    return;
-  }
-  if (carbs < 50 || carbs > 800) {
-    alert('Carbs target must be between 50 and 800g');
-    return;
-  }
-  
-  // Show enhanced loading state
-  submitBtn.disabled = true;
-  submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving Goals...';
-  submitBtn.style.transform = 'scale(0.98)';
-  
-  fetch(this.action, {
-    method: 'POST',
-    body: formData,
-    headers: {
-      'X-Requested-With': 'XMLHttpRequest',
-    }
-  })
-  .then(response => {
-    console.log('[v0] Response status:', response.status);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return response.json();
-  })
-  .then(data => {
-    console.log('[v0] Response data:', data);
-    if (data.success) {
-      // Enhanced success feedback with progress bar updates
-      submitBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i>Goals Saved!';
-      submitBtn.style.transform = 'scale(1)';
-      submitBtn.classList.remove('btn-primary');
-      submitBtn.classList.add('btn-success');
-      
-      // Update progress bars immediately if data is provided
-      if (data.progress) {
-        updateProgressBars(data.progress, data.remaining);
-      }
-      
-      // Close modal with enhanced visual feedback
-      setTimeout(() => {
-        const modal = bootstrap.Modal.getInstance(document.getElementById('nutritionGoalsModal'));
-        modal.hide();
-        
-        // Show enhanced success message
-        const alertDiv = document.createElement('div');
-        alertDiv.className = 'alert alert-success alert-dismissible fade show';
-        alertDiv.innerHTML = `
-          <i class="bi bi-check-circle me-2"></i>Your nutrition goals have been updated successfully! Progress bars updated.
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.container').firstChild);
-        
-        // Auto-dismiss alert after 5 seconds
-        setTimeout(() => {
-          const alert = bootstrap.Alert.getOrCreateInstance(alertDiv);
-          alert.close();
-        }, 5000);
-        
       }, 1000);
     } else {
       console.error('[v0] Error saving goals:', data.error);

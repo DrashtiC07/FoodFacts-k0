@@ -1233,7 +1233,7 @@ def calculate_environmental_impact(product):
     
     # Low impact ingredients
     low_impact_ingredients = [
-        'vegetables', 'fruits', 'beans', 'lentils', 'peas',
+        'vegetables', 'fruits', 'beans', 'lentils', peas',
         'oats', 'barley', 'quinoa', 'herbs', 'spices'
     ]
     
@@ -1341,9 +1341,11 @@ def scan_history(request):
     
     logger.info(f"[v0] Scan history for user {request.user.username}: {scans.count()} scans found")
     
-    # Debug: Log first few scan entries
+    # Debug: Log first few scan entries with enhanced security validation
     for i, scan in enumerate(scans[:3]):
-        logger.info(f"[v0] Scan {i+1}: {scan.product.name} by user {scan.user.username} at {scan.scanned_at}")
+        logger.info(f"[v0] Scan {i+1}: {scan.product.name} by user {scan.user.username} (ID: {scan.user.id}) at {scan.scanned_at}")
+        if scan.user.id != request.user.id:
+            logger.error(f"[v0] SECURITY ALERT: Scan {scan.id} belongs to user {scan.user.username} but was returned for user {request.user.username}")
     
     paginator = Paginator(scans, 20)  # Show 20 scans per page
     page_number = request.GET.get('page')

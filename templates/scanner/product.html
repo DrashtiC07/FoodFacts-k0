@@ -152,46 +152,47 @@
                 </div>
 
                 <!-- Product Meta -->
-                <div class="d-flex flex-wrap gap-2 mb-4" style="max-width: 100%;">
-                    <span class="badge px-3 py-2" style="background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border-color); word-break: break-word; flex-shrink: 0;">
+                <!-- Enhanced tag wrapping with proper flexbox layout to prevent overflow -->
+                <div class="d-flex flex-wrap gap-2 mb-4" style="max-width: 100%; display: flex !important; flex-wrap: wrap !important;">
+                    <span class="badge px-3 py-2" style="background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border-color); word-break: break-word; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">
                         <i class="bi bi-upc-scan me-1"></i>{{ product.barcode }}
                     </span>
                     {% if product.category %}
-                    <span class="badge px-3 py-2" style="background: var(--primary-light); color: var(--primary-color); border: 1px solid var(--primary-color); word-break: break-word; flex-shrink: 0;">
+                    <span class="badge px-3 py-2" style="background: var(--primary-light); color: var(--primary-color); border: 1px solid var(--primary-color); word-break: break-word; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">
                         <i class="bi bi-tag me-1"></i>{{ product.category }}
                     </span>
                     {% endif %}
                     {% if product.serving_size %}
-                    <span class="badge px-3 py-2" style="background: rgba(255, 195, 160, 0.2); color: var(--accent-color); border: 1px solid var(--accent-color); word-break: break-word; flex-shrink: 0;">
+                    <span class="badge px-3 py-2" style="background: rgba(255, 195, 160, 0.2); color: var(--accent-color); border: 1px solid var(--accent-color); word-break: break-word; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">
                         <i class="bi bi-cup me-1"></i>{{ product.serving_size }}
                     </span>
                     {% endif %}
                     
                     {% if product.vegan %}
-                    <span class="badge px-3 py-2" style="background: var(--health-excellent); color: white; word-break: break-word; flex-shrink: 0;">
+                    <span class="badge px-3 py-2" style="background: var(--health-excellent); color: white; word-break: break-word; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">
                         <i class="bi bi-leaf me-1"></i>Vegan
                     </span>
                     {% elif product.vegetarian %}
-                    <span class="badge px-3 py-2" style="background: var(--health-good); color: white; word-break: break-word; flex-shrink: 0;">
+                    <span class="badge px-3 py-2" style="background: var(--health-good); color: white; word-break: break-word; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">
                         <i class="bi bi-egg me-1"></i>Vegetarian
                     </span>
                     {% endif %}
                     
                     {% if product.organic %}
-                    <span class="badge px-3 py-2" style="background: var(--health-excellent); color: white; word-break: break-word; flex-shrink: 0;">
+                    <span class="badge px-3 py-2" style="background: var(--health-excellent); color: white; word-break: break-word; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">
                         <i class="bi bi-award me-1"></i>Organic
                     </span>
                     {% endif %}
                     
                     {% if product.palm_oil_free %}
-                    <span class="badge px-3 py-2" style="background: var(--health-good); color: white; word-break: break-word; flex-shrink: 0;">
+                    <span class="badge px-3 py-2" style="background: var(--health-good); color: white; word-break: break-word; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">
                         <i class="bi bi-shield-check me-1"></i>Palm Oil Free
                     </span>
                     {% endif %}
                     
                     {% if product.allergens %}
                         {% for allergen in product.allergens %}
-                        <span class="badge px-3 py-2" style="background: var(--health-poor); color: white; word-break: break-word; flex-shrink: 0;">
+                        <span class="badge px-3 py-2" style="background: var(--health-poor); color: white; word-break: break-word; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">
                             <i class="bi bi-exclamation-triangle me-1"></i>{{ allergen|title }}
                         </span>
                         {% endfor %}
@@ -398,9 +399,10 @@
                     {% if additives_analysis.detailed_additives %}
                     <div class="additives-details">
                         <h6 class="fw-semibold mb-3" style="color: var(--text-primary);">
-                            <i class="bi bi-list-ul me-2"></i>Detailed Analysis
+                            <i class="bi bi-list-ul me-2"></i>Detailed Analysis ({{ additives_analysis.detailed_additives|length }} additive{{ additives_analysis.detailed_additives|length|pluralize }})
                         </h6>
                         <div class="accordion" id="additivesAccordion">
+                            <!-- Display all additives found in the analysis, not just one -->
                             {% for additive in additives_analysis.detailed_additives %}
                             <div class="accordion-item border-0 mb-2" style="background: var(--bg-secondary); border-radius: var(--border-radius) !important;">
                                 <h2 class="accordion-header">
@@ -440,7 +442,7 @@
                                             <div class="col-md-4">
                                                 <div class="safety-info p-3 rounded" style="background: var(--card-bg); border: 1px solid var(--border-color);">
                                                     <div class="text-center mb-2">
-                                                        <div class="safety-badge mb-2" style="background: {% if additive.safety_level == 'safe' %}var(--health-excellent){% elif additive.safety_level == 'moderate' %}var(--health-fair){% else %}var(--health-poor){% endif %}; color: var(--text-primary); padding: 0.5rem; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                                        <div class="safety-badge mb-2" style="background: {% if additive.safety_level == 'safe' %}var(--health-excellent){% elif additive.safety_level == 'moderate' %}var(--health-fair){% else %}var(--health-poor){% endif %}; color: var(--text-primary); padding: 0.5rem; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items-center; justify-content: center; margin: 0 auto;">
                                                             <i class="bi bi-{% if additive.safety_level == 'safe' %}check-circle{% elif additive.safety_level == 'moderate' %}exclamation-triangle{% else %}x-circle{% endif %}"></i>
                                                         </div>
                                                         <div class="fw-semibold" style="color: var(--text-primary);">{{ additive.safety_level|title }}</div>
