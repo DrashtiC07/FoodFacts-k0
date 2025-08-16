@@ -17,8 +17,179 @@
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     
-    <!-- Replaced inline styles with external theme CSS file for global consistency -->
-    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    <!-- Enhanced CSS variables for better theme support -->
+    <style>
+        :root {
+            /* Light theme colors */
+            --primary-color: #2563eb;
+            --primary-light: rgba(37, 99, 235, 0.1);
+            --accent-color: #f59e0b;
+            --text-primary: #1f2937;
+            --text-secondary: #4b5563;
+            --text-muted: #9ca3af;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --card-bg: #ffffff;
+            --border-color: #e5e7eb;
+            --border-radius: 0.75rem;
+            --border-radius-sm: 0.5rem;
+            
+            /* Health score colors */
+            --health-excellent: #10b981;
+            --health-good: #84cc16;
+            --health-fair: #f59e0b;
+            --health-poor: #ef4444;
+            
+            /* Typography */
+            --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --font-secondary: 'Work Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        
+        [data-theme="dark"] {
+            /* Dark theme colors */
+            --primary-color: #3b82f6;
+            --primary-light: rgba(59, 130, 246, 0.15);
+            --accent-color: #fbbf24;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --text-muted: #9ca3af;
+            --bg-primary: #111827;
+            --bg-secondary: #1f2937;
+            --card-bg: #1f2937;
+            --border-color: #374151;
+        }
+        
+        /* Apply fonts globally for better visibility */
+        body {
+            font-family: var(--font-primary) !important;
+            background-color: var(--bg-primary) !important;
+            color: var(--text-primary) !important;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-secondary) !important;
+            color: var(--text-primary) !important;
+        }
+        
+        /* Enhanced navbar styling for theme compatibility */
+        .navbar {
+            background-color: var(--card-bg) !important;
+            border-bottom: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            /* Added z-index to ensure navbar stays above all content */
+            z-index: 1050 !important;
+        }
+        
+        .navbar-brand {
+            color: var(--text-primary) !important;
+            font-family: var(--font-secondary) !important;
+        }
+        
+        .nav-link {
+            color: var(--text-secondary) !important;
+            font-weight: 500;
+        }
+        
+        .nav-link:hover {
+            color: var(--primary-color) !important;
+        }
+        
+        /* Enhanced button styling */
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-outline-primary {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+        
+        /* Enhanced dropdown styling */
+        .dropdown-menu {
+            background-color: var(--card-bg) !important;
+            border: 1px solid var(--border-color) !important;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dropdown-item {
+            color: var(--text-primary) !important;
+        }
+        
+        .dropdown-item:hover {
+            background-color: var(--bg-secondary) !important;
+            color: var(--primary-color) !important;
+        }
+        
+        /* Enhanced alert styling */
+        .alert {
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg);
+            color: var(--text-primary);
+        }
+        
+        /* Enhanced theme toggle button */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 50%;
+            border: none;
+            background: var(--primary-color);
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Added active state for theme toggle button */
+        .theme-toggle:active {
+            transform: scale(0.95);
+        }
+
+        /* Added padding to prevent navbar collision for product cards */
+        .card-body.p-4 {
+            padding-top: 2rem !important;
+        }
+        
+        /* Specific padding for product links to avoid navbar collision */
+        .product-link {
+            padding-top: 1rem !important;
+            display: inline-block;
+        }
+        
+        /* Enhanced footer styling */
+        footer {
+            background-color: var(--bg-secondary) !important;
+            border-top: 1px solid var(--border-color) !important;
+            color: var(--text-secondary) !important;
+        }
+        
+        footer h5 {
+            color: var(--text-primary) !important;
+        }
+        
+        .text-muted {
+            color: var(--text-muted) !important;
+        }
+    </style>
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
@@ -181,7 +352,7 @@
         </div>
     </footer>
 
-    <!-- Enhanced theme toggle script with better reliability -->
+    <!-- Enhanced theme toggle script for better functionality -->
     <script>
         const themeToggle = document.getElementById('theme-toggle');
         const html = document.documentElement;
@@ -190,7 +361,8 @@
         // Load saved theme or default to light
         const savedTheme = localStorage.getItem('theme') || 'light';
         console.log('[v0] Loading saved theme:', savedTheme);
-        applyTheme(savedTheme);
+        html.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme);
         
         themeToggle.addEventListener('click', function(e) {
             e.preventDefault();
@@ -208,8 +380,30 @@
                 this.style.opacity = '0.7';
                 
                 // Apply theme changes
-                applyTheme(newTheme);
+                html.setAttribute('data-theme', newTheme);
                 localStorage.setItem('theme', newTheme);
+                updateThemeIcon(newTheme);
+                
+                // Force CSS update by triggering reflow
+                document.body.offsetHeight;
+                
+                // Update CSS custom properties immediately
+                const root = document.documentElement;
+                if (newTheme === 'dark') {
+                    root.style.setProperty('--text-primary', '#f9fafb');
+                    root.style.setProperty('--text-secondary', '#d1d5db');
+                    root.style.setProperty('--bg-primary', '#111827');
+                    root.style.setProperty('--bg-secondary', '#1f2937');
+                    root.style.setProperty('--card-bg', '#1f2937');
+                    root.style.setProperty('--border-color', '#374151');
+                } else {
+                    root.style.setProperty('--text-primary', '#1f2937');
+                    root.style.setProperty('--text-secondary', '#4b5563');
+                    root.style.setProperty('--bg-primary', '#ffffff');
+                    root.style.setProperty('--bg-secondary', '#f8fafc');
+                    root.style.setProperty('--card-bg', '#ffffff');
+                    root.style.setProperty('--border-color', '#e5e7eb');
+                }
                 
                 // Reset button appearance
                 setTimeout(() => {
@@ -219,6 +413,13 @@
                 
                 console.log('[v0] Theme switched successfully to:', newTheme);
                 
+                // Show brief success indicator
+                const originalIcon = icon.className;
+                icon.className = 'bi bi-check-circle-fill';
+                setTimeout(() => {
+                    updateThemeIcon(newTheme);
+                }, 500);
+                
             } catch (error) {
                 console.error('[v0] Error switching theme:', error);
                 // Reset button on error
@@ -226,33 +427,6 @@
                 this.style.opacity = '1';
             }
         });
-        
-        function applyTheme(theme) {
-            console.log('[v0] Applying theme:', theme);
-            try {
-                // Set data-theme attribute
-                html.setAttribute('data-theme', theme);
-                
-                // Force immediate CSS update
-                document.body.offsetHeight;
-                
-                // Update theme icon
-                updateThemeIcon(theme);
-                
-                // Force repaint of all elements
-                setTimeout(() => {
-                    const allElements = document.querySelectorAll('*');
-                    allElements.forEach(el => {
-                        el.style.display = 'none';
-                        el.offsetHeight; // Trigger reflow
-                        el.style.display = '';
-                    });
-                }, 50);
-                
-            } catch (error) {
-                console.error('[v0] Error applying theme:', error);
-            }
-        }
         
         function updateThemeIcon(theme) {
             console.log('[v0] Updating theme icon for:', theme);
@@ -284,16 +458,15 @@
             console.log('[v0] DOM loaded, ensuring theme is applied');
             try {
                 const currentTheme = html.getAttribute('data-theme') || 'light';
-                applyTheme(currentTheme);
+                updateThemeIcon(currentTheme);
+                
+                // Ensure theme variables are applied
+                setTimeout(() => {
+                    document.body.offsetHeight; // Trigger reflow
+                }, 50);
             } catch (error) {
                 console.error('[v0] Error applying theme on load:', error);
             }
-        });
-        
-        window.addEventListener('pageshow', function() {
-            console.log('[v0] Page shown, reapplying theme');
-            const currentTheme = html.getAttribute('data-theme') || localStorage.getItem('theme') || 'light';
-            applyTheme(currentTheme);
         });
     </script>
     
