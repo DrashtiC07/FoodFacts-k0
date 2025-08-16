@@ -1233,7 +1233,7 @@ def calculate_environmental_impact(product):
     
     # Low impact ingredients
     low_impact_ingredients = [
-        'vegetables', 'fruits', 'beans', 'lentils', peas',
+        'vegetables', 'fruits', 'beans', 'lentils', 'peas',
         'oats', 'barley', 'quinoa', 'herbs', 'spices'
     ]
     
