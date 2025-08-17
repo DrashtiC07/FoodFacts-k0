@@ -338,8 +338,11 @@
           <div class="row mt-4">
             <div class="col-12">
               <div class="d-flex flex-wrap gap-2">
-                <button class="btn btn-sm btn-outline-primary" onclick="resetDailyGoals()">
+                <button class="btn btn-sm btn-outline-primary" id="resetBtn">
                   <i class="bi bi-arrow-clockwise me-1"></i>Reset Today
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" id="resetManualFormBtn">
+                  <i class="bi bi-x-circle me-1"></i>Clear Form
                 </button>
                 <a href="{% url 'scanner:scan' %}" class="btn btn-sm btn-primary">
                   <i class="bi bi-plus-circle me-1"></i>Add Food
@@ -874,31 +877,33 @@
   </div>
 </div>
 
-<!-- Added Preset Confirmation Modal -->
-<!-- Enhanced preset confirmation modal with better styling -->
+<!-- Adding missing preset confirmation modal -->
+<!-- Preset Confirmation Modal -->
 <div class="modal fade" id="presetConfirmModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content border-0 shadow-lg">
       <div class="modal-header border-0 p-4">
         <h5 class="modal-title fw-bold">
-          <i class="bi bi-question-circle me-2 text-primary"></i>Apply Preset Goals?
+          <i class="bi bi-question-circle me-2 text-warning"></i>Apply Preset Goals?
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body p-4">
-        <p class="mb-3">Are you sure you want to apply the <strong id="presetTypeName"></strong> preset? This will replace your current goal values.</p>
-        <div class="bg-light rounded p-3">
+        <p class="mb-3">Are you sure you want to apply the <strong id="presetTypeName"></strong> preset?</p>
+        <p class="text-muted mb-3">This will replace your current goal values.</p>
+        
+        <div class="bg-light p-3 rounded">
           <h6 class="fw-semibold mb-2">New Goals:</h6>
           <div class="row text-sm">
             <div class="col-6">
-              <div class="mb-1"><strong>Calories:</strong> <span id="presetCalories"></span> kcal</div>
-              <div class="mb-1"><strong>Protein:</strong> <span id="presetProtein"></span>g</div>
-              <div class="mb-1"><strong>Fat:</strong> <span id="presetFat"></span>g</div>
+              <div class="mb-1">Calories: <span id="presetCalories">2000</span> kcal</div>
+              <div class="mb-1">Protein: <span id="presetProtein">100</span>g</div>
+              <div class="mb-1">Fat: <span id="presetFat">70</span>g</div>
             </div>
             <div class="col-6">
-              <div class="mb-1"><strong>Carbs:</strong> <span id="presetCarbs"></span>g</div>
-              <div class="mb-1"><strong>Sugar:</strong> <span id="presetSugar"></span>g</div>
-              <div class="mb-1"><strong>Sodium:</strong> <span id="presetSodium"></span>mg</div>
+              <div class="mb-1">Carbs: <span id="presetCarbs">250</span>g</div>
+              <div class="mb-1">Sugar: <span id="presetSugar">50</span>g</div>
+              <div class="mb-1">Sodium: <span id="presetSodium">2300</span>mg</div>
             </div>
           </div>
         </div>
@@ -912,6 +917,7 @@
     </div>
   </div>
 </div>
+
 {% endblock %}
 
 {% block extra_css %}
@@ -1026,11 +1032,10 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('[v0] Dashboard JavaScript loaded');
     
-    // Modern alert function
     function showModernAlert(message, type = 'success', duration = 5000) {
         const alertDiv = document.createElement('div');
         alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-        alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+        alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: none;';
         
         const icon = type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-triangle' : 'info-circle';
         alertDiv.innerHTML = `
@@ -1224,18 +1229,35 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    const resetManualFormBtn = document.getElementById('resetManualFormBtn');
+    if (resetManualFormBtn) {
+        resetManualFormBtn.addEventListener('click', function() {
+            const manualForm = document.getElementById('manualNutritionForm');
+            if (manualForm) {
+                manualForm.reset();
+                showModernAlert('Manual entry form cleared', 'info', 2000);
+            }
+        });
+    }
+
     // Enhanced updateProgressBars function with completion-based colors
     function updateProgressBars(data) {
         console.log('[v0] Updating progress bars with data:', data);
+        
+        if (!data || !data.progress) {
+            console.warn('[v0] No progress data provided');
+            return;
+        }
         
         const nutrients = ['calories', 'protein', 'fat', 'carbs', 'sugar', 'sodium'];
         
         nutrients.forEach(nutrient => {
             const progressBar = document.querySelector(`[data-nutrient="${nutrient}"] .progress-bar`);
             const progressText = document.querySelector(`[data-nutrient="${nutrient}"] .progress-text`);
+            const badge = document.querySelector(`[data-nutrient="${nutrient}"] .badge`);
             
-            if (data.progress && data.progress[nutrient] !== undefined) {
-                const percentage = Math.min(data.progress[nutrient], 100);
+            if (data.progress[nutrient] !== undefined) {
+                const percentage = Math.min(Math.max(data.progress[nutrient], 0), 100);
                 
                 if (progressBar) {
                     progressBar.style.width = percentage + '%';
@@ -1245,17 +1267,30 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (percentage < 50) {
                         gradient = 'linear-gradient(90deg, #dc3545, #fd7e14)'; // Red to orange
                     } else if (percentage <= 80) {
-                        gradient = 'linear-gradient(90deg, #ffc107, #fd7e14)'; // Yellow to orange
+                        if (nutrient === 'protein') {
+                            gradient = 'linear-gradient(90deg, #0ea5e9, #06b6d4)'; // Blue gradient for protein
+                        } else {
+                            gradient = 'linear-gradient(90deg, #ffc107, #fd7e14)'; // Yellow to orange
+                        }
                     } else {
                         gradient = 'linear-gradient(90deg, #198754, #20c997)'; // Green gradient
                     }
                     
                     progressBar.style.background = gradient;
-                    progressBar.style.transition = 'width 0.8s ease-in-out';
+                    progressBar.style.transition = 'width 0.8s ease-in-out, background 0.3s ease';
                 }
                 
                 if (progressText) {
                     progressText.textContent = Math.round(percentage) + '% of goal';
+                }
+                
+                // Update badge with consumed/target values
+                if (badge && data.consumed && data.remaining) {
+                    const consumed = data.consumed[nutrient] || 0;
+                    const target = consumed + (data.remaining[nutrient] || 0);
+                    const unit = nutrient === 'calories' ? '' : 
+                               nutrient === 'sodium' ? 'mg' : 'g';
+                    badge.textContent = `${consumed}/${target}${unit}`;
                 }
             }
         });
@@ -1317,7 +1352,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Enhanced manual nutrition form
     const manualForm = document.getElementById('manualNutritionForm');
     if (manualForm) {
         manualForm.addEventListener('submit', function(e) {
@@ -1330,6 +1364,24 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (calories === 0 && protein === 0 && fat === 0 && carbs === 0) {
                 showModernAlert('Please enter at least one nutrition value.', 'warning');
+                return;
+            }
+            
+            // Validate ranges
+            if (calories < 0 || calories > 2000) {
+                showModernAlert('Calories must be between 0 and 2000', 'danger');
+                return;
+            }
+            if (protein < 0 || protein > 200) {
+                showModernAlert('Protein must be between 0 and 200g', 'danger');
+                return;
+            }
+            if (fat < 0 || fat > 150) {
+                showModernAlert('Fat must be between 0 and 150g', 'danger');
+                return;
+            }
+            if (carbs < 0 || carbs > 300) {
+                showModernAlert('Carbs must be between 0 and 300g', 'danger');
                 return;
             }
             
@@ -1353,17 +1405,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Update progress bars without page reload
                     updateProgressBars(data);
                     
+                    // Update remaining values
+                    updateRemainingValues(data.remaining);
+                    
                     // Clear form
                     manualForm.reset();
                     
                     // Show modern success message
-                    showModernAlert('Nutrition added successfully!', 'success');
+                    showModernAlert(data.message, 'success');
                 } else {
-                    showModernAlert('Error adding nutrition: ' + (data.error || 'Unknown error'), 'danger');
+                    showModernAlert('Error: ' + (data.error || 'Unknown error'), 'danger');
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
+                console.error('[v0] Error adding manual nutrition:', error);
                 showModernAlert('Error adding nutrition. Please try again.', 'danger');
             });
         });
