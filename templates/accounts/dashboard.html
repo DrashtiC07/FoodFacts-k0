@@ -490,46 +490,24 @@
           </h6>
         </div>
         <div class="card-body p-4" id="personalizedTipsContent">
-          <!-- Always show dynamic tips based on user activity -->
-          <div class="alert alert-success alert-sm mb-3" id="activityTip">
-            <i class="bi bi-trophy me-2"></i>
-            <small>Keep up the great work! You've been active for {{ days_active|default:1 }} days.</small>
-          </div>
-          
-          <div class="alert alert-info alert-sm mb-3" id="calorieTip" {% if calories_progress >= 50 %}style="display: none;"{% endif %}>
-            <i class="bi bi-info-circle me-2"></i>
-            <small>You're under your calorie goal. Consider adding a healthy snack!</small>
-          </div>
-          
-          <div class="alert alert-warning alert-sm mb-3" id="proteinTip" {% if protein_progress >= 70 %}style="display: none;"{% endif %}>
-            <i class="bi bi-exclamation-triangle me-2"></i>
-            <small>Boost your protein intake with lean meats, beans, or nuts.</small>
-          </div>
-          
-          <div class="alert alert-primary alert-sm mb-3" id="scanTip" {% if recent_scans_count > 0 %}style="display: none;"{% endif %}>
-            <i class="bi bi-camera me-2"></i>
-            <small>Scan a product this week to track your nutrition!</small>
-          </div>
-          
-          <div class="alert alert-info alert-sm mb-3" id="scanSuccessTip" {% if recent_scans_count == 0 %}style="display: none;"{% endif %}>
-            <i class="bi bi-graph-up me-2"></i>
-            <small>Great job! You've scanned {{ recent_scans_count }} product{{ recent_scans_count|pluralize }} this week.</small>
-          </div>
-          
-          <div class="alert alert-warning alert-sm mb-3" id="sugarHighTip" {% if sugar_progress <= 80 %}style="display: none;"{% endif %}>
-            <i class="bi bi-exclamation-circle me-2"></i>
-            <small>Your sugar intake is high this week. Try choosing low-sugar alternatives.</small>
-          </div>
-          
-          <div class="alert alert-success alert-sm mb-3" id="sugarLowTip" {% if sugar_progress >= 30 %}style="display: none;"{% endif %}>
-            <i class="bi bi-check-circle me-2"></i>
-            <small>Excellent! You're keeping your sugar intake low this week.</small>
-          </div>
-          
-          <div class="alert alert-info alert-sm" id="hydrationTip">
-            <i class="bi bi-droplet me-2"></i>
-            <small>Remember to stay hydrated! Aim for 8 glasses of water daily.</small>
-          </div>
+          {% if personalized_tips %}
+            {% for tip in personalized_tips %}
+              <div class="alert alert-{{ tip.type }} alert-sm mb-3 persistent-tip" data-priority="{{ tip.priority }}">
+                <i class="bi bi-{{ tip.icon }} me-2"></i>
+                <small>{{ tip.message }}</small>
+              </div>
+            {% endfor %}
+          {% else %}
+            <!-- Fallback tips if no dynamic tips are generated -->
+            <div class="alert alert-info alert-sm mb-3 persistent-tip">
+              <i class="bi bi-info-circle me-2"></i>
+              <small>Welcome to your nutrition dashboard! Start scanning products to get personalized tips.</small>
+            </div>
+            <div class="alert alert-success alert-sm mb-3 persistent-tip">
+              <i class="bi bi-droplet me-2"></i>
+              <small>Remember to stay hydrated! Aim for 8 glasses of water daily.</small>
+            </div>
+          {% endif %}
         </div>
       </div>
     </div>
@@ -1054,32 +1032,59 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Update personalized tips dynamically
-    function updatePersonalizedTips(data) {
-        const calorieProgress = data.calories_progress || 0;
-        const proteinProgress = data.protein_progress || 0;
-        const sugarProgress = data.sugar_progress || 0;
-        
-        // Update calorie tip
-        const calorieTip = document.getElementById('calorieTip');
-        if (calorieTip) {
-            calorieTip.style.display = calorieProgress >= 50 ? 'none' : 'block';
-        }
-        
-        // Update protein tip
-        const proteinTip = document.getElementById('proteinTip');
-        if (proteinTip) {
-            proteinTip.style.display = proteinProgress >= 70 ? 'none' : 'block';
-        }
-        
-        // Update sugar tips
-        const sugarHighTip = document.getElementById('sugarHighTip');
-        const sugarLowTip = document.getElementById('sugarLowTip');
-        if (sugarHighTip && sugarLowTip) {
-            sugarHighTip.style.display = sugarProgress > 80 ? 'block' : 'none';
-            sugarLowTip.style.display = sugarProgress < 30 ? 'block' : 'none';
+    function updatePersonalizedTips(progressData) {
+        // Tips are now generated server-side and remain persistent
+        // This function ensures they stay visible and can be updated via AJAX if needed
+        const tipsContainer = document.getElementById('personalizedTipsContent');
+        if (tipsContainer) {
+            const tips = tipsContainer.querySelectorAll('.persistent-tip');
+            tips.forEach(tip => {
+                // Ensure all persistent tips remain visible
+                tip.style.display = 'block';
+                tip.style.opacity = '1';
+            });
         }
     }
     
+    const personalizedTipsContent = document.getElementById('personalizedTipsContent');
+    if (personalizedTipsContent) {
+        // Create a robust MutationObserver to prevent any hiding of tips
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList' || mutation.type === 'attributes') {
+                    // Ensure all persistent tips remain visible
+                    const persistentTips = personalizedTipsContent.querySelectorAll('.persistent-tip');
+                    persistentTips.forEach(tip => {
+                        if (tip.style.display === 'none' || tip.style.visibility === 'hidden' || tip.style.opacity === '0') {
+                            tip.style.display = 'block';
+                            tip.style.visibility = 'visible';
+                            tip.style.opacity = '1';
+                        }
+                    });
+                }
+            });
+        });
+        
+        observer.observe(personalizedTipsContent, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['style', 'class', 'hidden']
+        });
+        
+        // Additional protection: prevent any JavaScript from hiding tips
+        setInterval(() => {
+            const tips = personalizedTipsContent.querySelectorAll('.persistent-tip');
+            tips.forEach(tip => {
+                if (tip.style.display === 'none' || tip.style.visibility === 'hidden' || tip.style.opacity === '0') {
+                    tip.style.display = 'block';
+                    tip.style.visibility = 'visible';
+                    tip.style.opacity = '1';
+                }
+            });
+        }, 1000);
+    }
+
     // Enhanced preset functionality with proper AJAX calls
     const presetButtons = document.querySelectorAll('.preset-goal-btn');
     const presetModal = new bootstrap.Modal(document.getElementById('presetConfirmModal'));
