@@ -1075,50 +1075,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Enhanced updateProgressBars function
-    function updateProgressBars(data) {
-        console.log('[v0] Updating progress bars with data:', data);
-        
-        const nutrients = ['calories', 'protein', 'fat', 'carbs'];
-        
-        nutrients.forEach(nutrient => {
-            const progressBar = document.querySelector(`[data-nutrient="${nutrient}"] .progress-bar`);
-            const percentageSpan = document.querySelector(`[data-nutrient="${nutrient}"] .percentage`);
-            const remainingSpan = document.querySelector(`[data-nutrient="${nutrient}"] .remaining`);
-            
-            if (data.progress && data.progress[nutrient] !== undefined) {
-                const percentage = Math.min(data.progress[nutrient], 100);
-                
-                if (progressBar) {
-                    progressBar.style.width = percentage + '%';
-                    
-                    // Set color based on completion
-                    progressBar.className = 'progress-bar';
-                    if (percentage < 50) {
-                        progressBar.classList.add('bg-danger');
-                    } else if (percentage < 80) {
-                        progressBar.classList.add('bg-warning');
-                    } else {
-                        progressBar.classList.add('bg-success');
-                    }
-                }
-                
-                if (percentageSpan) {
-                    percentageSpan.textContent = Math.round(percentage) + '% of goal';
-                }
-            }
-            
-            if (data.remaining && data.remaining[nutrient] !== undefined && remainingSpan) {
-                const unit = nutrient === 'calories' ? 'kcal' : 'g';
-                remainingSpan.textContent = Math.max(0, data.remaining[nutrient]) + unit + ' left';
-            }
-        });
-        
-        // Update personalized tips
-        updatePersonalizedTips(data.progress || {});
-    }
-    
-    // Enhanced preset functionality
+    // Enhanced preset functionality with proper AJAX calls
     const presetButtons = document.querySelectorAll('.preset-goal-btn');
     const presetModal = new bootstrap.Modal(document.getElementById('presetConfirmModal'));
     let selectedPreset = null;
@@ -1130,29 +1087,26 @@ document.addEventListener('DOMContentLoaded', function() {
             protein: 120,
             fat: 50,
             carbs: 150,
-            sugar: 25,
-            sodium: 1800,
-            fiber: 25
+            sugar: 30,
+            sodium: 2000
         },
         'maintenance': {
             name: 'Maintenance',
             calories: 2000,
             protein: 100,
-            fat: 67,
+            fat: 70,
             carbs: 250,
             sugar: 50,
-            sodium: 2000,
-            fiber: 25
+            sodium: 2300
         },
         'muscle-gain': {
             name: 'Muscle Gain',
             calories: 2500,
             protein: 150,
-            fat: 83,
-            carbs: 313,
+            fat: 85,
+            carbs: 350,
             sugar: 60,
-            sodium: 2200,
-            fiber: 30
+            sodium: 2500
         }
     };
     
@@ -1177,106 +1131,192 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Confirm preset application
+    // Confirm preset application with AJAX call
     document.getElementById('confirmPresetBtn').addEventListener('click', function() {
         if (selectedPreset) {
-            // Fill form fields
-            document.getElementById('id_calories_target').value = selectedPreset.calories;
-            document.getElementById('id_protein_target').value = selectedPreset.protein;
-            document.getElementById('id_fat_target').value = selectedPreset.fat;
-            document.getElementById('id_carbs_target').value = selectedPreset.carbs;
-            document.getElementById('id_sugar_target').value = selectedPreset.sugar;
-            document.getElementById('id_sodium_target').value = selectedPreset.sodium;
-            if (document.getElementById('id_fiber_target')) {
-                document.getElementById('id_fiber_target').value = selectedPreset.fiber;
-            }
+            const presetType = Object.keys(presetData).find(key => presetData[key] === selectedPreset);
             
-            // Hide modal
-            presetModal.hide();
-            
-            // Show success message
-            showModernAlert(`${selectedPreset.name} preset applied! Click "Save Goals" to confirm changes.`, 'info');
-            
-            // Highlight the Save Goals button
-            const saveButton = document.querySelector('#nutritionGoalsModal .btn-primary');
-            if (saveButton) {
-                saveButton.classList.add('btn-warning');
-                saveButton.innerHTML = '<i class="bi bi-exclamation-circle me-1"></i>Save Goals (Modified)';
-                setTimeout(() => {
-                    saveButton.classList.remove('btn-warning');
-                    saveButton.innerHTML = '<i class="bi bi-check-circle me-1"></i>Save Goals';
-                }, 3000);
-            }
-        }
-    });
-    
-    // Enhanced nutrition goals form submission
-    const nutritionForm = document.getElementById('nutritionGoalsForm');
-    if (nutritionForm) {
-        nutritionForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const submitButton = this.querySelector('button[type="submit"]');
-            const originalText = submitButton ? submitButton.innerHTML : '';
-            
-            if (submitButton) {
-                submitButton.disabled = true;
-                submitButton.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Saving...';
-            }
-            
-            const formData = new FormData(this);
-            
-            fetch(this.action, {
+            fetch('{% url "accounts:apply_preset_goals" %}', {
                 method: 'POST',
-                body: formData,
                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                }
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({
+                    preset_type: presetType.replace('-', '_')
+                })
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
-                console.log('[v0] Response data:', data);
                 if (data.success) {
-                    // Update progress bars immediately
-                    updateProgressBars(data);
+                    // Hide modal
+                    presetModal.hide();
                     
-                    // Close modal
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('nutritionGoalsModal'));
-                    if (modal) {
-                        modal.hide();
+                    // Show success message
+                    showModernAlert(data.message, 'success');
+                    
+                    // Update form fields with new goals
+                    if (data.goals) {
+                        document.getElementById('calories_target').value = data.goals.calories_target;
+                        document.getElementById('protein_target').value = data.goals.protein_target;
+                        document.getElementById('fat_target').value = data.goals.fat_target;
+                        document.getElementById('carbs_target').value = data.goals.carbs_target;
+                        if (document.getElementById('sugar_target')) {
+                            document.getElementById('sugar_target').value = data.goals.sugar_target;
+                        }
+                        if (document.getElementById('sodium_target')) {
+                            document.getElementById('sodium_target').value = data.goals.sodium_target;
+                        }
                     }
                     
-                    // Show modern success alert
-                    showModernAlert(data.message || 'Your nutrition goals have been updated successfully!', 'success');
+                    // Update progress bars
+                    updateProgressBars(data);
                     
-                    // Reload page after short delay to show updated values
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1500);
+                    // Update remaining values display
+                    updateRemainingValues(data.remaining);
+                    
                 } else {
-                    console.error('[v0] Server error:', data.error);
-                    showModernAlert('Error: ' + (data.error || 'Failed to save goals'), 'danger');
+                    showModernAlert(data.error || 'Failed to apply preset goals', 'error');
                 }
             })
             .catch(error => {
-                console.error('[v0] Fetch error:', error);
-                showModernAlert('An error occurred while saving goals. Please try again.', 'danger');
-            })
-            .finally(() => {
-                // Reset button state
-                if (submitButton) {
-                    submitButton.disabled = false;
-                    submitButton.innerHTML = originalText;
+                console.error('[v0] Error applying preset:', error);
+                showModernAlert('Error applying preset goals. Please try again.', 'error');
+            });
+        }
+    });
+
+    // Reset button functionality
+    const resetBtn = document.getElementById('resetBtn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+            if (confirm('Are you sure you want to reset all daily nutrition consumption to zero?')) {
+                fetch('{% url "accounts:reset_daily_goals" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showModernAlert(data.message, 'success');
+                        
+                        // Update progress bars to 0%
+                        updateProgressBars(data);
+                        
+                        // Update remaining values
+                        updateRemainingValues(data.remaining);
+                        
+                        // Update consumed values display
+                        updateConsumedValues(data.consumed);
+                        
+                    } else {
+                        showModernAlert(data.error || 'Failed to reset daily goals', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('[v0] Error resetting goals:', error);
+                    showModernAlert('Error resetting daily goals. Please try again.', 'error');
+                });
+            }
+        });
+    }
+
+    // Enhanced updateProgressBars function with completion-based colors
+    function updateProgressBars(data) {
+        console.log('[v0] Updating progress bars with data:', data);
+        
+        const nutrients = ['calories', 'protein', 'fat', 'carbs', 'sugar', 'sodium'];
+        
+        nutrients.forEach(nutrient => {
+            const progressBar = document.querySelector(`[data-nutrient="${nutrient}"] .progress-bar`);
+            const progressText = document.querySelector(`[data-nutrient="${nutrient}"] .progress-text`);
+            
+            if (data.progress && data.progress[nutrient] !== undefined) {
+                const percentage = Math.min(data.progress[nutrient], 100);
+                
+                if (progressBar) {
+                    progressBar.style.width = percentage + '%';
+                    
+                    // Set gradient color based on completion percentage
+                    let gradient;
+                    if (percentage < 50) {
+                        gradient = 'linear-gradient(90deg, #dc3545, #fd7e14)'; // Red to orange
+                    } else if (percentage <= 80) {
+                        gradient = 'linear-gradient(90deg, #ffc107, #fd7e14)'; // Yellow to orange
+                    } else {
+                        gradient = 'linear-gradient(90deg, #198754, #20c997)'; // Green gradient
+                    }
+                    
+                    progressBar.style.background = gradient;
+                    progressBar.style.transition = 'width 0.8s ease-in-out';
+                }
+                
+                if (progressText) {
+                    progressText.textContent = Math.round(percentage) + '% of goal';
+                }
+            }
+        });
+        
+        // Update personalized tips based on new progress
+        updatePersonalizedTips(data.progress || {});
+    }
+
+    function updateRemainingValues(remaining) {
+        if (!remaining) return;
+        
+        Object.keys(remaining).forEach(nutrient => {
+            const remainingElement = document.querySelector(`[data-remaining="${nutrient}"]`);
+            if (remainingElement) {
+                const unit = nutrient === 'calories' ? ' kcal' : 
+                           nutrient === 'sodium' ? ' mg' : ' g';
+                remainingElement.textContent = Math.max(0, remaining[nutrient]) + unit + ' left';
+            }
+        });
+    }
+
+    function updateConsumedValues(consumed) {
+        if (!consumed) return;
+        
+        Object.keys(consumed).forEach(nutrient => {
+            const badge = document.querySelector(`[data-nutrient="${nutrient}"] .badge`);
+            if (badge) {
+                const target = document.querySelector(`#${nutrient}_target`)?.value || 0;
+                const unit = nutrient === 'calories' ? '' : 
+                           nutrient === 'sodium' ? 'mg' : 'g';
+                badge.textContent = `${consumed[nutrient]}/${target}${unit}`;
+            }
+        });
+    }
+
+    // Protect personalized tips from disappearing
+    const personalizedTipsContent = document.getElementById('personalizedTipsContent');
+    if (personalizedTipsContent) {
+        // Create a MutationObserver to prevent tips from being hidden
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList' || mutation.type === 'attributes') {
+                    // Ensure tips remain visible
+                    const tips = personalizedTipsContent.querySelectorAll('.alert');
+                    tips.forEach(tip => {
+                        if (tip.style.display === 'none' && !tip.hasAttribute('data-should-hide')) {
+                            tip.style.display = 'block';
+                        }
+                    });
                 }
             });
         });
+        
+        observer.observe(personalizedTipsContent, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['style', 'class']
+        });
     }
-    
+
     // Enhanced manual nutrition form
     const manualForm = document.getElementById('manualNutritionForm');
     if (manualForm) {

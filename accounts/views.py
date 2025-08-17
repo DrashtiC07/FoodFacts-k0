@@ -235,12 +235,132 @@ def reset_daily_goals(request):
         dietary_goals.last_reset_date = timezone.now().date()
         dietary_goals.save()
         
-        messages.success(request, 'Daily nutrition tracking has been reset!')
-        return JsonResponse({'success': True})
+        return JsonResponse({
+            'success': True,
+            'message': 'Daily nutrition tracking has been reset to zero!',
+            'progress': {
+                'calories': 0,
+                'protein': 0,
+                'fat': 0,
+                'carbs': 0,
+                'sugar': 0,
+                'sodium': 0
+            },
+            'consumed': {
+                'calories': 0,
+                'protein': 0,
+                'fat': 0,
+                'carbs': 0,
+                'sugar': 0,
+                'sodium': 0
+            },
+            'remaining': {
+                'calories': dietary_goals.calories_target,
+                'protein': dietary_goals.protein_target,
+                'fat': dietary_goals.fat_target,
+                'carbs': dietary_goals.carbs_target,
+                'sugar': dietary_goals.sugar_target,
+                'sodium': dietary_goals.sodium_target
+            }
+        })
     except DietaryGoal.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'No dietary goals found'})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
+@require_POST
+def apply_preset_goals(request):
+    """Apply preset nutrition goals (Weight Loss, Maintenance, Muscle Gain)"""
+    try:
+        data = json.loads(request.body)
+        preset_type = data.get('preset_type', '').lower()
+        
+        preset_values = {
+            'weight_loss': {
+                'calories_target': 1500,
+                'protein_target': 120,
+                'fat_target': 50,
+                'carbs_target': 150,
+                'sugar_target': 30,
+                'sodium_target': 2000,
+            },
+            'maintenance': {
+                'calories_target': 2000,
+                'protein_target': 100,
+                'fat_target': 70,
+                'carbs_target': 250,
+                'sugar_target': 50,
+                'sodium_target': 2300,
+            },
+            'muscle_gain': {
+                'calories_target': 2500,
+                'protein_target': 150,
+                'fat_target': 85,
+                'carbs_target': 350,
+                'sugar_target': 60,
+                'sodium_target': 2500,
+            }
+        }
+        
+        if preset_type not in preset_values:
+            return JsonResponse({'success': False, 'error': 'Invalid preset type'})
+        
+        # Get or create dietary goals
+        dietary_goals, created = DietaryGoal.objects.get_or_create(user=request.user)
+        
+        preset = preset_values[preset_type]
+        dietary_goals.calories_target = preset['calories_target']
+        dietary_goals.protein_target = preset['protein_target']
+        dietary_goals.fat_target = preset['fat_target']
+        dietary_goals.carbs_target = preset['carbs_target']
+        dietary_goals.sugar_target = preset['sugar_target']
+        dietary_goals.sodium_target = preset['sodium_target']
+        dietary_goals.save()
+        
+        # Calculate new progress percentages
+        calories_progress = min((dietary_goals.calories_consumed / dietary_goals.calories_target * 100), 100) if dietary_goals.calories_target > 0 else 0
+        protein_progress = min((dietary_goals.protein_consumed / dietary_goals.protein_target * 100), 100) if dietary_goals.protein_target > 0 else 0
+        fat_progress = min((dietary_goals.fat_consumed / dietary_goals.fat_target * 100), 100) if dietary_goals.fat_target > 0 else 0
+        carbs_progress = min((dietary_goals.carbs_consumed / dietary_goals.carbs_target * 100), 100) if dietary_goals.carbs_target > 0 else 0
+        sugar_progress = min((dietary_goals.sugar_consumed / dietary_goals.sugar_target * 100), 100) if dietary_goals.sugar_target > 0 else 0
+        sodium_progress = min((dietary_goals.sodium_consumed / dietary_goals.sodium_target * 100), 100) if dietary_goals.sodium_target > 0 else 0
+        
+        preset_name = preset_type.replace('_', ' ').title()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'{preset_name} goals applied successfully!',
+            'goals': {
+                'calories_target': dietary_goals.calories_target,
+                'protein_target': dietary_goals.protein_target,
+                'fat_target': dietary_goals.fat_target,
+                'carbs_target': dietary_goals.carbs_target,
+                'sugar_target': dietary_goals.sugar_target,
+                'sodium_target': dietary_goals.sodium_target,
+            },
+            'progress': {
+                'calories': calories_progress,
+                'protein': protein_progress,
+                'fat': fat_progress,
+                'carbs': carbs_progress,
+                'sugar': sugar_progress,
+                'sodium': sodium_progress
+            },
+            'remaining': {
+                'calories': max(0, dietary_goals.calories_target - dietary_goals.calories_consumed),
+                'protein': max(0, dietary_goals.protein_target - dietary_goals.protein_consumed),
+                'fat': max(0, dietary_goals.fat_target - dietary_goals.fat_consumed),
+                'carbs': max(0, dietary_goals.carbs_target - dietary_goals.carbs_consumed),
+                'sugar': max(0, dietary_goals.sugar_target - dietary_goals.sugar_consumed),
+                'sodium': max(0, dietary_goals.sodium_target - dietary_goals.sodium_consumed)
+            }
+        })
+        
+    except (ValueError, TypeError) as e:
+        return JsonResponse({'success': False, 'error': 'Invalid input values'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': f'An error occurred: {str(e)}'})
 
 @login_required
 def profile(request):
