@@ -326,6 +326,89 @@ def add_to_nutrition_tracker(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
 
+@login_required
+@require_POST
+def add_manual_nutrition(request):
+    """Add manual nutrition entries to user's daily tracking"""
+    try:
+        data = json.loads(request.body)
+        
+        # Get nutrition values from request
+        calories = float(data.get('calories', 0))
+        protein = float(data.get('protein', 0))
+        fat = float(data.get('fat', 0))
+        carbs = float(data.get('carbs', 0))
+        sugar = float(data.get('sugar', 0))
+        sodium = float(data.get('sodium', 0))
+        
+        # Validate input ranges
+        if calories < 0 or calories > 2000:
+            return JsonResponse({'success': False, 'error': 'Calories must be between 0 and 2000'})
+        if protein < 0 or protein > 200:
+            return JsonResponse({'success': False, 'error': 'Protein must be between 0 and 200g'})
+        if fat < 0 or fat > 150:
+            return JsonResponse({'success': False, 'error': 'Fat must be between 0 and 150g'})
+        if carbs < 0 or carbs > 300:
+            return JsonResponse({'success': False, 'error': 'Carbs must be between 0 and 300g'})
+        if sugar < 0 or sugar > 100:
+            return JsonResponse({'success': False, 'error': 'Sugar must be between 0 and 100g'})
+        if sodium < 0 or sodium > 3000:
+            return JsonResponse({'success': False, 'error': 'Sodium must be between 0 and 3000mg'})
+        
+        # Get or create dietary goals
+        dietary_goals, created = DietaryGoal.objects.get_or_create(user=request.user)
+        
+        # Add to daily consumption
+        dietary_goals.calories_consumed += int(calories)
+        dietary_goals.protein_consumed += int(protein)
+        dietary_goals.fat_consumed += int(fat)
+        dietary_goals.carbs_consumed += int(carbs)
+        dietary_goals.sugar_consumed += int(sugar)
+        dietary_goals.sodium_consumed += int(sodium)
+        dietary_goals.save()
+        
+        # Calculate new progress percentages
+        calories_progress = min((dietary_goals.calories_consumed / dietary_goals.calories_target * 100), 100) if dietary_goals.calories_target > 0 else 0
+        protein_progress = min((dietary_goals.protein_consumed / dietary_goals.protein_target * 100), 100) if dietary_goals.protein_target > 0 else 0
+        fat_progress = min((dietary_goals.fat_consumed / dietary_goals.fat_target * 100), 100) if dietary_goals.fat_target > 0 else 0
+        carbs_progress = min((dietary_goals.carbs_consumed / dietary_goals.carbs_target * 100), 100) if dietary_goals.carbs_target > 0 else 0
+        sugar_progress = min((dietary_goals.sugar_consumed / dietary_goals.sugar_target * 100), 100) if dietary_goals.sugar_target > 0 else 0
+        sodium_progress = min((dietary_goals.sodium_consumed / dietary_goals.sodium_target * 100), 100) if dietary_goals.sodium_target > 0 else 0
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Manual nutrition entry added successfully!',
+            'progress': {
+                'calories': calories_progress,
+                'protein': protein_progress,
+                'fat': fat_progress,
+                'carbs': carbs_progress,
+                'sugar': sugar_progress,
+                'sodium': sodium_progress
+            },
+            'consumed': {
+                'calories': dietary_goals.calories_consumed,
+                'protein': dietary_goals.protein_consumed,
+                'fat': dietary_goals.fat_consumed,
+                'carbs': dietary_goals.carbs_consumed,
+                'sugar': dietary_goals.sugar_consumed,
+                'sodium': dietary_goals.sodium_consumed
+            },
+            'remaining': {
+                'calories': max(0, dietary_goals.calories_target - dietary_goals.calories_consumed),
+                'protein': max(0, dietary_goals.protein_target - dietary_goals.protein_consumed),
+                'fat': max(0, dietary_goals.fat_target - dietary_goals.fat_consumed),
+                'carbs': max(0, dietary_goals.carbs_target - dietary_goals.carbs_consumed),
+                'sugar': max(0, dietary_goals.sugar_target - dietary_goals.sugar_consumed),
+                'sodium': max(0, dietary_goals.sodium_target - dietary_goals.sodium_consumed)
+            }
+        })
+        
+    except (ValueError, TypeError) as e:
+        return JsonResponse({'success': False, 'error': 'Invalid input values. Please enter valid numbers.'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': f'An error occurred: {str(e)}'})
+
 @require_POST
 def toggle_theme(request):
     """Toggle theme between light and dark mode via AJAX"""
