@@ -1,6 +1,8 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
+from datetime import date, timedelta
+from django.utils import timezone
 
 class CustomUser(AbstractUser):
     """Extended user model with additional fields"""
@@ -53,19 +55,52 @@ class DietaryGoal(models.Model):
     
     sugar_target = models.IntegerField(default=50)  # grams per day
     sodium_target = models.IntegerField(default=2300)  # mg per day
+    fiber_target = models.IntegerField(default=25)  # grams per day
     
-    # Daily consumption tracking
     calories_consumed = models.IntegerField(default=0)
     protein_consumed = models.IntegerField(default=0)
     fat_consumed = models.IntegerField(default=0)
     carbs_consumed = models.IntegerField(default=0)
     sugar_consumed = models.IntegerField(default=0)
     sodium_consumed = models.IntegerField(default=0)
+    fiber_consumed = models.IntegerField(default=0)
     
     last_reset_date = models.DateField(auto_now_add=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def reset_daily_if_needed(self):
+        """Reset daily consumption if it's a new day"""
+        today = date.today()
+        if self.last_reset_date < today:
+            self.calories_consumed = 0
+            self.protein_consumed = 0
+            self.fat_consumed = 0
+            self.carbs_consumed = 0
+            self.sugar_consumed = 0
+            self.sodium_consumed = 0
+            self.fiber_consumed = 0
+            self.last_reset_date = today
+            self.save()
+
+    def get_progress_percentage(self, nutrient):
+        """Calculate progress percentage for a specific nutrient"""
+        consumed = getattr(self, f'{nutrient}_consumed', 0)
+        target = getattr(self, f'{nutrient}_target', 1)
+        return min(100, (consumed / target) * 100) if target > 0 else 0
+
+    def add_nutrition(self, calories=0, protein=0, fat=0, carbs=0, sugar=0, sodium=0, fiber=0):
+        """Add nutrition values to daily consumption"""
+        self.reset_daily_if_needed()
+        self.calories_consumed += calories
+        self.protein_consumed += protein
+        self.fat_consumed += fat
+        self.carbs_consumed += carbs
+        self.sugar_consumed += sugar
+        self.sodium_consumed += sodium
+        self.fiber_consumed += fiber
+        self.save()
 
     def __str__(self):
         return f"{self.user.username}'s dietary goals"
@@ -75,21 +110,21 @@ class WeeklyNutritionLog(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='weekly_logs')
     week_start_date = models.DateField()
     
-    # Weekly averages
     avg_calories = models.FloatField(default=0)
     avg_protein = models.FloatField(default=0)
     avg_fat = models.FloatField(default=0)
     avg_carbs = models.FloatField(default=0)
     avg_sugar = models.FloatField(default=0)
     avg_sodium = models.FloatField(default=0)
+    avg_fiber = models.FloatField(default=0)
     
-    # Goal achievement percentages
     calories_achievement = models.FloatField(default=0)
     protein_achievement = models.FloatField(default=0)
     fat_achievement = models.FloatField(default=0)
     carbs_achievement = models.FloatField(default=0)
     sugar_achievement = models.FloatField(default=0)
     sodium_achievement = models.FloatField(default=0)
+    fiber_achievement = models.FloatField(default=0)
     
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -99,3 +134,28 @@ class WeeklyNutritionLog(models.Model):
 
     def __str__(self):
         return f"{self.user.username}'s nutrition log for week of {self.week_start_date}"
+
+class DailyNutritionSnapshot(models.Model):
+    """Daily nutrition snapshot for historical tracking"""
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='daily_snapshots')
+    date = models.DateField()
+    
+    calories = models.IntegerField(default=0)
+    protein = models.IntegerField(default=0)
+    fat = models.IntegerField(default=0)
+    carbs = models.IntegerField(default=0)
+    sugar = models.IntegerField(default=0)
+    sodium = models.IntegerField(default=0)
+    fiber = models.IntegerField(default=0)
+    
+    goals_met = models.IntegerField(default=0)  # Number of goals achieved
+    total_goals = models.IntegerField(default=7)  # Total number of tracked nutrients
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'date')
+        ordering = ['-date']
+
+    def __str__(self):
+        return f"{self.user.username}'s nutrition for {self.date}"
