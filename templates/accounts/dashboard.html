@@ -631,7 +631,7 @@
   {% endif %}
 </div>
 
-<!-- Nutrition Goals Modal -->
+<!-- Enhanced nutrition goals modal with sugar and sodium tracking -->
 <div class="modal fade" id="nutritionGoalsModal" tabindex="-1">
   <div class="modal-dialog modal-lg">
     <div class="modal-content border-0 shadow-lg">
@@ -681,6 +681,25 @@
               </div>
               <small class="form-text text-muted">Recommended: 45-65% of total calories</small>
             </div>
+            <!-- Added sugar and sodium target inputs -->
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold">Daily Sugar Target</label>
+              <div class="input-group">
+                <input type="number" class="form-control" name="sugar_target" id="sugar_target"
+                       value="{{ dietary_goals.sugar_target|default:50 }}" min="10" max="200">
+                <span class="input-group-text">g</span>
+              </div>
+              <small class="form-text text-muted">WHO recommends: <25g/day</small>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold">Daily Sodium Target</label>
+              <div class="input-group">
+                <input type="number" class="form-control" name="sodium_target" id="sodium_target"
+                       value="{{ dietary_goals.sodium_target|default:2300 }}" min="500" max="5000">
+                <span class="input-group-text">mg</span>
+              </div>
+              <small class="form-text text-muted">WHO recommends: <2000mg/day</small>
+            </div>
           </div>
           
           <!-- Quick Presets -->
@@ -708,7 +727,7 @@
       </div>
       <div class="modal-footer border-0 p-4">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="submit" form="nutritionGoalsForm" class="btn btn-primary">
+        <button type="submit" form="nutritionGoalsForm" class="btn btn-primary" id="saveGoalsBtn">
           <i class="bi bi-check-circle me-1"></i>Save Goals
         </button>
       </div>
@@ -968,90 +987,82 @@ function updateProgressBars(data) {
 
 // Enhanced goal setting with preset options and AJAX form submission
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('[v0] Dashboard JavaScript loaded');
+    
     function updateProgressBars(data) {
         console.log('[v0] Updating progress bars with data:', data);
         
-        if (data.progress && data.remaining) {
+        if (data.progress) {
             // Update calories progress
-            const caloriesProgress = document.querySelector('.progress-bar[data-nutrient="calories"]');
-            const caloriesPercentage = document.querySelector('.nutrition-percentage[data-nutrient="calories"]');
-            const caloriesRemaining = document.querySelector('.nutrition-remaining[data-nutrient="calories"]');
-            
-            if (caloriesProgress) {
-                const percentage = Math.min(data.progress.calories || 0, 100);
-                caloriesProgress.style.width = percentage + '%';
-                caloriesProgress.setAttribute('aria-valuenow', percentage);
+            const caloriesBar = document.querySelector('[data-nutrient="calories"] .progress-bar');
+            const caloriesText = document.querySelector('[data-nutrient="calories"] .progress-text');
+            if (caloriesBar && caloriesText) {
+                caloriesBar.style.width = data.progress.calories + '%';
+                caloriesText.textContent = Math.round(data.progress.calories) + '%';
             }
-            if (caloriesPercentage) caloriesPercentage.textContent = Math.round(data.progress.calories || 0) + '% of goal';
-            if (caloriesRemaining) caloriesRemaining.textContent = (data.remaining.calories || 0) + ' kcal left';
             
             // Update protein progress
-            const proteinProgress = document.querySelector('.progress-bar[data-nutrient="protein"]');
-            const proteinPercentage = document.querySelector('.nutrition-percentage[data-nutrient="protein"]');
-            const proteinRemaining = document.querySelector('.nutrition-remaining[data-nutrient="protein"]');
-            
-            if (proteinProgress) {
-                const percentage = Math.min(data.progress.protein || 0, 100);
-                proteinProgress.style.width = percentage + '%';
-                proteinProgress.setAttribute('aria-valuenow', percentage);
+            const proteinBar = document.querySelector('[data-nutrient="protein"] .progress-bar');
+            const proteinText = document.querySelector('[data-nutrient="protein"] .progress-text');
+            if (proteinBar && proteinText) {
+                proteinBar.style.width = data.progress.protein + '%';
+                proteinText.textContent = Math.round(data.progress.protein) + '%';
             }
-            if (proteinPercentage) proteinPercentage.textContent = Math.round(data.progress.protein || 0) + '% of goal';
-            if (proteinRemaining) proteinRemaining.textContent = (data.remaining.protein || 0) + 'g left';
             
             // Update fat progress
-            const fatProgress = document.querySelector('.progress-bar[data-nutrient="fat"]');
-            const fatPercentage = document.querySelector('.nutrition-percentage[data-nutrient="fat"]');
-            const fatRemaining = document.querySelector('.nutrition-remaining[data-nutrient="fat"]');
-            
-            if (fatProgress) {
-                const percentage = Math.min(data.progress.fat || 0, 100);
-                fatProgress.style.width = percentage + '%';
-                fatProgress.setAttribute('aria-valuenow', percentage);
+            const fatBar = document.querySelector('[data-nutrient="fat"] .progress-bar');
+            const fatText = document.querySelector('[data-nutrient="fat"] .progress-text');
+            if (fatBar && fatText) {
+                fatBar.style.width = data.progress.fat + '%';
+                fatText.textContent = Math.round(data.progress.fat) + '%';
             }
-            if (fatPercentage) fatPercentage.textContent = Math.round(data.progress.fat || 0) + '% of goal';
-            if (fatRemaining) fatRemaining.textContent = (data.remaining.fat || 0) + 'g left';
             
             // Update carbs progress
-            const carbsProgress = document.querySelector('.progress-bar[data-nutrient="carbs"]');
-            const carbsPercentage = document.querySelector('.nutrition-percentage[data-nutrient="carbs"]');
-            const carbsRemaining = document.querySelector('.nutrition-remaining[data-nutrient="carbs"]');
-            
-            if (carbsProgress) {
-                const percentage = Math.min(data.progress.carbs || 0, 100);
-                carbsProgress.style.width = percentage + '%';
-                carbsProgress.setAttribute('aria-valuenow', percentage);
+            const carbsBar = document.querySelector('[data-nutrient="carbs"] .progress-bar');
+            const carbsText = document.querySelector('[data-nutrient="carbs"] .progress-text');
+            if (carbsBar && carbsText) {
+                carbsBar.style.width = data.progress.carbs + '%';
+                carbsText.textContent = Math.round(data.progress.carbs) + '%';
             }
-            if (carbsPercentage) carbsPercentage.textContent = Math.round(data.progress.carbs || 0) + '% of goal';
-            if (carbsRemaining) carbsRemaining.textContent = (data.remaining.carbs || 0) + 'g left';
+            
+            if (data.progress.sugar !== undefined) {
+                const sugarBar = document.querySelector('[data-nutrient="sugar"] .progress-bar');
+                const sugarText = document.querySelector('[data-nutrient="sugar"] .progress-text');
+                if (sugarBar && sugarText) {
+                    sugarBar.style.width = data.progress.sugar + '%';
+                    sugarText.textContent = Math.round(data.progress.sugar) + '%';
+                }
+            }
+            
+            if (data.progress.sodium !== undefined) {
+                const sodiumBar = document.querySelector('[data-nutrient="sodium"] .progress-bar');
+                const sodiumText = document.querySelector('[data-nutrient="sodium"] .progress-text');
+                if (sodiumBar && sodiumText) {
+                    sodiumBar.style.width = data.progress.sodium + '%';
+                    sodiumText.textContent = Math.round(data.progress.sodium) + '%';
+                }
+            }
+        }
+        
+        // Update remaining amounts if provided
+        if (data.remaining) {
+            const remainingElements = {
+                calories: document.querySelector('[data-remaining="calories"]'),
+                protein: document.querySelector('[data-remaining="protein"]'),
+                fat: document.querySelector('[data-remaining="fat"]'),
+                carbs: document.querySelector('[data-remaining="carbs"]'),
+                sugar: document.querySelector('[data-remaining="sugar"]'),
+                sodium: document.querySelector('[data-remaining="sodium"]')
+            };
+            
+            Object.keys(remainingElements).forEach(nutrient => {
+                const element = remainingElements[nutrient];
+                if (element && data.remaining[nutrient] !== undefined) {
+                    element.textContent = data.remaining[nutrient];
+                }
+            });
         }
     }
-
-    // Add preset goal functionality
-    const presetButtons = document.querySelectorAll('.preset-goal-btn');
-    presetButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const preset = this.dataset.preset;
-            let goals = {};
-            
-            switch(preset) {
-                case 'weight-loss':
-                    goals = { calories: 1500, protein: 120, fat: 50, carbs: 150 };
-                    break;
-                case 'maintenance':
-                    goals = { calories: 2000, protein: 100, fat: 70, carbs: 250 };
-                    break;
-                case 'muscle-gain':
-                    goals = { calories: 2500, protein: 150, fat: 80, carbs: 300 };
-                    break;
-            }
-            
-            // Update form fields
-            document.getElementById('calories_target').value = goals.calories;
-            document.getElementById('protein_target').value = goals.protein;
-            document.getElementById('fat_target').value = goals.fat;
-            document.getElementById('carbs_target').value = goals.carbs;
-        });
-    });
     
     const nutritionForm = document.getElementById('nutritionGoalsForm');
     if (nutritionForm) {
@@ -1059,19 +1070,19 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault(); // Prevent default form submission
             
             const formData = new FormData(this);
-            const submitButton = this.querySelector('button[type="submit"]');
-            const originalText = submitButton.innerHTML;
+            const submitButton = document.getElementById('saveGoalsBtn');
+            const originalText = submitButton ? submitButton.innerHTML : '';
             
             console.log('[v0] Submitting nutrition goals form');
             
             // Show loading state
-            submitButton.disabled = true;
-            submitButton.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Saving...';
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Saving...';
+            }
             
-            // Get CSRF token from form or meta tag
-            const csrfToken = formData.get('csrfmiddlewaretoken') || 
-                             document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
-                             document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            // Get CSRF token from form
+            const csrfToken = formData.get('csrfmiddlewaretoken');
             
             fetch(this.action, {
                 method: 'POST',
@@ -1117,6 +1128,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }, 5000);
                     
+                    // Reload page after short delay to show updated values
                     setTimeout(() => {
                         location.reload();
                     }, 1000);
@@ -1131,11 +1143,42 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .finally(() => {
                 // Reset button state
-                submitButton.disabled = false;
-                submitButton.innerHTML = originalText;
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalText;
+                }
             });
         });
     }
+    
+    const presetButtons = document.querySelectorAll('.preset-goal-btn');
+    presetButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const preset = this.dataset.preset;
+            console.log('[v0] Applying preset:', preset);
+            
+            let goals = {};
+            switch(preset) {
+                case 'weight-loss':
+                    goals = {calories: 1500, protein: 120, fat: 50, carbs: 150, sugar: 25, sodium: 1800};
+                    break;
+                case 'maintenance':
+                    goals = {calories: 2000, protein: 80, fat: 70, carbs: 250, sugar: 50, sodium: 2300};
+                    break;
+                case 'muscle-gain':
+                    goals = {calories: 2500, protein: 150, fat: 80, carbs: 350, sugar: 60, sodium: 2500};
+                    break;
+            }
+            
+            // Update form inputs
+            Object.keys(goals).forEach(nutrient => {
+                const input = document.getElementById(nutrient + '_target');
+                if (input) {
+                    input.value = goals[nutrient];
+                }
+            });
+        });
+    });
 });
 </script>
 {% endblock %}

@@ -15,4 +15,5 @@ urlpatterns = [
     path('reset_daily_goals/', views.reset_daily_goals, name='reset_daily_goals'),
     path('add_to_nutrition_tracker/', views.add_to_nutrition_tracker, name='add_to_nutrition_tracker'),
     path('toggle-theme/', views.toggle_theme, name='toggle_theme'),
+    path('weekly-report/', views.weekly_nutrition_report, name='weekly_nutrition_report'),
 ]

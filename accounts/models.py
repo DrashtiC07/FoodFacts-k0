@@ -51,14 +51,51 @@ class DietaryGoal(models.Model):
     fat_target = models.IntegerField(default=70)
     carbs_target = models.IntegerField(default=300)
     
+    sugar_target = models.IntegerField(default=50)  # grams per day
+    sodium_target = models.IntegerField(default=2300)  # mg per day
+    
     # Daily consumption tracking
     calories_consumed = models.IntegerField(default=0)
     protein_consumed = models.IntegerField(default=0)
     fat_consumed = models.IntegerField(default=0)
     carbs_consumed = models.IntegerField(default=0)
+    sugar_consumed = models.IntegerField(default=0)
+    sodium_consumed = models.IntegerField(default=0)
+    
+    last_reset_date = models.DateField(auto_now_add=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.user.username}'s dietary goals"
+
+class WeeklyNutritionLog(models.Model):
+    """Weekly nutrition tracking for trend analysis"""
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='weekly_logs')
+    week_start_date = models.DateField()
+    
+    # Weekly averages
+    avg_calories = models.FloatField(default=0)
+    avg_protein = models.FloatField(default=0)
+    avg_fat = models.FloatField(default=0)
+    avg_carbs = models.FloatField(default=0)
+    avg_sugar = models.FloatField(default=0)
+    avg_sodium = models.FloatField(default=0)
+    
+    # Goal achievement percentages
+    calories_achievement = models.FloatField(default=0)
+    protein_achievement = models.FloatField(default=0)
+    fat_achievement = models.FloatField(default=0)
+    carbs_achievement = models.FloatField(default=0)
+    sugar_achievement = models.FloatField(default=0)
+    sodium_achievement = models.FloatField(default=0)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'week_start_date')
+        ordering = ['-week_start_date']
+
+    def __str__(self):
+        return f"{self.user.username}'s nutrition log for week of {self.week_start_date}"
