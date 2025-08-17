@@ -1011,6 +1011,74 @@ function updateProgressBars(data) {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('[v0] Dashboard JavaScript loaded');
     
+    // Handle Quick Preset button clicks
+    const presetButtons = document.querySelectorAll('.preset-goal-btn');
+    presetButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const preset = this.getAttribute('data-preset');
+            console.log('[v0] Preset button clicked:', preset);
+            
+            // Remove active state from all preset buttons
+            presetButtons.forEach(btn => btn.classList.remove('btn-primary', 'active'));
+            presetButtons.forEach(btn => btn.classList.add('btn-outline-primary'));
+            
+            // Add active state to clicked button
+            this.classList.remove('btn-outline-primary');
+            this.classList.add('btn-primary', 'active');
+            
+            // Set preset values based on selection
+            let presetValues = {};
+            
+            switch(preset) {
+                case 'weight-loss':
+                    presetValues = {
+                        calories: 1500,
+                        protein: 120,
+                        fat: 50,
+                        carbs: 150,
+                        sugar: 25,
+                        sodium: 2000,
+                        fiber: 25
+                    };
+                    break;
+                case 'maintenance':
+                    presetValues = {
+                        calories: 2000,
+                        protein: 100,
+                        fat: 65,
+                        carbs: 250,
+                        sugar: 50,
+                        sodium: 2300,
+                        fiber: 25
+                    };
+                    break;
+                case 'muscle-gain':
+                    presetValues = {
+                        calories: 2500,
+                        protein: 150,
+                        fat: 85,
+                        carbs: 300,
+                        sugar: 60,
+                        sodium: 2300,
+                        fiber: 30
+                    };
+                    break;
+            }
+            
+            // Update form fields with preset values
+            Object.keys(presetValues).forEach(nutrient => {
+                const input = document.getElementById(`id_${nutrient}_target`);
+                if (input) {
+                    input.value = presetValues[nutrient];
+                    // Trigger input event to update any listeners
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            });
+            
+            console.log('[v0] Applied preset values:', presetValues);
+        });
+    });
+    
     // Single updateProgressBars function to avoid conflicts
     function updateProgressBars(data) {
         console.log('[v0] Updating progress bars with data:', data);
