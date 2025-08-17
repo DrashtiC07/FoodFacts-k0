@@ -107,10 +107,9 @@
         <div class="card-body p-4">
           {% if dietary_goals %}
           <div class="row">
-            <!-- Fixed progress bar structure and CSS classes for proper color display -->
             <!-- Calories -->
             <div class="col-md-6 col-lg-3 mb-4">
-              <div class="nutrition-goal-card" data-nutrient="calories">
+              <div class="nutrition-goal-card">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                   <span class="fw-semibold text-primary">
                     <i class="bi bi-fire me-1"></i>Calories
@@ -119,19 +118,20 @@
                     {{ dietary_goals.calories_consumed }}/{{ dietary_goals.calories_target }}
                   </span>
                 </div>
+                <!-- Fixed progress bar width calculation and added smooth animation -->
                 <div class="nutrition-bar mb-2">
-                  <div class="progress-fill progress-bar" style="width: {{ calories_progress|floatformat:1 }}%; background: linear-gradient(90deg, var(--primary-color), #06b6d4); transition: width 0.8s ease-in-out;"></div>
+                  <div class="progress-fill" style="width: {{ calories_progress|floatformat:1 }}%; transition: width 0.8s ease-in-out;"></div>
                 </div>
                 <div class="d-flex justify-content-between">
-                  <small class="text-muted progress-text">{{ calories_progress|floatformat:0 }}% of goal</small>
-                  <small class="text-muted" data-remaining="calories">{{ calories_remaining }} kcal left</small>
+                  <small class="text-muted">{{ calories_progress|floatformat:0 }}% of goal</small>
+                  <small class="text-muted">{{ calories_remaining }} kcal left</small>
                 </div>
               </div>
             </div>
             
             <!-- Protein -->
             <div class="col-md-6 col-lg-3 mb-4">
-              <div class="nutrition-goal-card" data-nutrient="protein">
+              <div class="nutrition-goal-card">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                   <span class="fw-semibold text-info">
                     <i class="bi bi-egg me-1"></i>Protein
@@ -140,19 +140,20 @@
                     {{ dietary_goals.protein_consumed }}/{{ dietary_goals.protein_target }}g
                   </span>
                 </div>
+                <!-- Fixed progress bar width calculation and added smooth animation -->
                 <div class="nutrition-bar mb-2">
-                  <div class="progress-fill progress-bar bg-info" style="width: {{ protein_progress|floatformat:1 }}%; background: linear-gradient(90deg, #0ea5e9, #06b6d4); transition: width 0.8s ease-in-out;"></div>
+                  <div class="progress-fill bg-info" style="width: {{ protein_progress|floatformat:1 }}%; transition: width 0.8s ease-in-out;"></div>
                 </div>
                 <div class="d-flex justify-content-between">
-                  <small class="text-muted progress-text">{{ protein_progress|floatformat:0 }}% of goal</small>
-                  <small class="text-muted" data-remaining="protein">{{ protein_remaining }}g left</small>
+                  <small class="text-muted">{{ protein_progress|floatformat:0 }}% of goal</small>
+                  <small class="text-muted">{{ protein_remaining }}g left</small>
                 </div>
               </div>
             </div>
             
             <!-- Fat -->
             <div class="col-md-6 col-lg-3 mb-4">
-              <div class="nutrition-goal-card" data-nutrient="fat">
+              <div class="nutrition-goal-card">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                   <span class="fw-semibold text-warning">
                     <i class="bi bi-droplet me-1"></i>Fat
@@ -161,19 +162,20 @@
                     {{ dietary_goals.fat_consumed }}/{{ dietary_goals.fat_target }}g
                   </span>
                 </div>
+                <!-- Fixed progress bar width calculation and added smooth animation -->
                 <div class="nutrition-bar mb-2">
-                  <div class="progress-fill progress-bar bg-warning" style="width: {{ fat_progress|floatformat:1 }}%; background: linear-gradient(90deg, var(--accent-color), #f59e0b); transition: width 0.8s ease-in-out;"></div>
+                  <div class="progress-fill bg-warning" style="width: {{ fat_progress|floatformat:1 }}%; transition: width 0.8s ease-in-out;"></div>
                 </div>
                 <div class="d-flex justify-content-between">
-                  <small class="text-muted progress-text">{{ fat_progress|floatformat:0 }}% of goal</small>
-                  <small class="text-muted" data-remaining="fat">{{ fat_remaining }}g left</small>
+                  <small class="text-muted">{{ fat_progress|floatformat:0 }}% of goal</small>
+                  <small class="text-muted">{{ fat_remaining }}g left</small>
                 </div>
               </div>
             </div>
             
             <!-- Carbs -->
             <div class="col-md-6 col-lg-3 mb-4">
-              <div class="nutrition-goal-card" data-nutrient="carbs">
+              <div class="nutrition-goal-card">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                   <span class="fw-semibold text-success">
                     <i class="bi bi-grain me-1"></i>Carbs
@@ -182,12 +184,13 @@
                     {{ dietary_goals.carbs_consumed }}/{{ dietary_goals.carbs_target }}g
                   </span>
                 </div>
+                <!-- Fixed progress bar width calculation and added smooth animation -->
                 <div class="nutrition-bar mb-2">
-                  <div class="progress-fill progress-bar bg-success" style="width: {{ carbs_progress|floatformat:1 }}%; background: linear-gradient(90deg, var(--health-excellent), #10b981); transition: width 0.8s ease-in-out;"></div>
+                  <div class="progress-fill bg-success" style="width: {{ carbs_progress|floatformat:1 }}%; transition: width 0.8s ease-in-out;"></div>
                 </div>
                 <div class="d-flex justify-content-between">
-                  <small class="text-muted progress-text">{{ carbs_progress|floatformat:0 }}% of goal</small>
-                  <small class="text-muted" data-remaining="carbs">{{ carbs_remaining }}g left</small>
+                  <small class="text-muted">{{ carbs_progress|floatformat:0 }}% of goal</small>
+                  <small class="text-muted">{{ carbs_remaining }}g left</small>
                 </div>
               </div>
             </div>
@@ -398,20 +401,14 @@
         </div>
       </div>
 
-      <!-- Fixed personalized tips to always show content and not disappear -->
+      <!-- Added personalized recommendations -->
       <div class="card border-0 shadow-sm">
         <div class="card-header bg-transparent border-0 p-4">
           <h6 class="fw-bold mb-0">
             <i class="bi bi-lightbulb me-2 text-warning"></i>Personalized Tips
           </h6>
         </div>
-        <div class="card-body p-4" id="personalizedTipsContent">
-          <!-- Always show at least one tip -->
-          <div class="alert alert-success alert-sm mb-3">
-            <i class="bi bi-trophy me-2"></i>
-            <small>Keep up the great work! You've been active for {{ days_active|default:1 }} days.</small>
-          </div>
-          
+        <div class="card-body p-4">
           {% if calories_progress < 50 %}
           <div class="alert alert-info alert-sm mb-3">
             <i class="bi bi-info-circle me-2"></i>
@@ -431,30 +428,11 @@
             <i class="bi bi-camera me-2"></i>
             <small>Scan a product this week to track your nutrition!</small>
           </div>
-          {% else %}
-          <div class="alert alert-info alert-sm mb-3">
-            <i class="bi bi-graph-up me-2"></i>
-            <small>Great job! You've scanned {{ recent_scans_count }} product{{ recent_scans_count|pluralize }} this week.</small>
-          </div>
           {% endif %}
           
-          <!-- Weekly sugar intake tip -->
-          {% if sugar_progress > 80 %}
-          <div class="alert alert-warning alert-sm mb-3">
-            <i class="bi bi-exclamation-circle me-2"></i>
-            <small>Your sugar intake is high this week. Try choosing low-sugar alternatives.</small>
-          </div>
-          {% elif sugar_progress < 30 %}
-          <div class="alert alert-success alert-sm mb-3">
-            <i class="bi bi-check-circle me-2"></i>
-            <small>Excellent! You're keeping your sugar intake low this week.</small>
-          </div>
-          {% endif %}
-          
-          <!-- Hydration reminder -->
-          <div class="alert alert-info alert-sm">
-            <i class="bi bi-droplet me-2"></i>
-            <small>Remember to stay hydrated! Aim for 8 glasses of water daily.</small>
+          <div class="alert alert-success alert-sm">
+            <i class="bi bi-trophy me-2"></i>
+            <small>Keep up the great work! You've been active for {{ days_active }} days.</small>
           </div>
         </div>
       </div>
@@ -1011,65 +989,113 @@ function updateProgressBars(data) {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('[v0] Dashboard JavaScript loaded');
     
-    // Single updateProgressBars function to avoid conflicts
     function updateProgressBars(data) {
         console.log('[v0] Updating progress bars with data:', data);
         
         if (data.progress) {
-            const nutrients = ['calories', 'protein', 'fat', 'carbs', 'sugar', 'sodium'];
+            // Update calories progress
+            const caloriesBar = document.querySelector('[data-nutrient="calories"] .progress-bar');
+            const caloriesText = document.querySelector('[data-nutrient="calories"] .progress-text');
+            if (caloriesBar && caloriesText) {
+                caloriesBar.style.width = data.progress.calories + '%';
+                caloriesText.textContent = Math.round(data.progress.calories) + '%';
+            }
             
-            nutrients.forEach(nutrient => {
-                const progress = data.progress[nutrient] || 0;
-                const card = document.querySelector(`[data-nutrient="${nutrient}"]`);
-                
-                if (card) {
-                    const progressBar = card.querySelector('.progress-bar');
-                    const progressText = card.querySelector('.progress-text');
-                    const remainingElement = card.querySelector(`[data-remaining="${nutrient}"]`);
-                    
-                    if (progressBar) {
-                        progressBar.style.width = Math.min(progress, 100) + '%';
-                    }
-                    
-                    if (progressText) {
-                        progressText.textContent = Math.round(progress) + '% of goal';
-                    }
-                    
-                    if (remainingElement && data.remaining && data.remaining[nutrient] !== undefined) {
-                        const unit = nutrient === 'calories' ? ' kcal' : 'g';
-                        remainingElement.textContent = data.remaining[nutrient] + unit + ' left';
-                    }
+            // Update protein progress
+            const proteinBar = document.querySelector('[data-nutrient="protein"] .progress-bar');
+            const proteinText = document.querySelector('[data-nutrient="protein"] .progress-text');
+            if (proteinBar && proteinText) {
+                proteinBar.style.width = data.progress.protein + '%';
+                proteinText.textContent = Math.round(data.progress.protein) + '%';
+            }
+            
+            // Update fat progress
+            const fatBar = document.querySelector('[data-nutrient="fat"] .progress-bar');
+            const fatText = document.querySelector('[data-nutrient="fat"] .progress-text');
+            if (fatBar && fatText) {
+                fatBar.style.width = data.progress.fat + '%';
+                fatText.textContent = Math.round(data.progress.fat) + '%';
+            }
+            
+            // Update carbs progress
+            const carbsBar = document.querySelector('[data-nutrient="carbs"] .progress-bar');
+            const carbsText = document.querySelector('[data-nutrient="carbs"] .progress-text');
+            if (carbsBar && carbsText) {
+                carbsBar.style.width = data.progress.carbs + '%';
+                carbsText.textContent = Math.round(data.progress.carbs) + '%';
+            }
+            
+            if (data.progress.sugar !== undefined) {
+                const sugarBar = document.querySelector('[data-nutrient="sugar"] .progress-bar');
+                const sugarText = document.querySelector('[data-nutrient="sugar"] .progress-text');
+                if (sugarBar && sugarText) {
+                    sugarBar.style.width = data.progress.sugar + '%';
+                    sugarText.textContent = Math.round(data.progress.sugar) + '%';
+                }
+            }
+            
+            if (data.progress.sodium !== undefined) {
+                const sodiumBar = document.querySelector('[data-nutrient="sodium"] .progress-bar');
+                const sodiumText = document.querySelector('[data-nutrient="sodium"] .progress-text');
+                if (sodiumBar && sodiumText) {
+                    sodiumBar.style.width = data.progress.sodium + '%';
+                    sodiumText.textContent = Math.round(data.progress.sodium) + '%';
+                }
+            }
+        }
+        
+        // Update remaining amounts if provided
+        if (data.remaining) {
+            const remainingElements = {
+                calories: document.querySelector('[data-remaining="calories"]'),
+                protein: document.querySelector('[data-remaining="protein"]'),
+                fat: document.querySelector('[data-remaining="fat"]'),
+                carbs: document.querySelector('[data-remaining="carbs"]'),
+                sugar: document.querySelector('[data-remaining="sugar"]'),
+                sodium: document.querySelector('[data-remaining="sodium"]')
+            };
+            
+            Object.keys(remainingElements).forEach(nutrient => {
+                const element = remainingElements[nutrient];
+                if (element && data.remaining[nutrient] !== undefined) {
+                    element.textContent = data.remaining[nutrient];
                 }
             });
         }
     }
-
-    // Enhanced goal setting form submission
-    const goalForm = document.getElementById('nutritionGoalsForm');
-    if (goalForm) {
-        goalForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const submitButton = this.querySelector('button[type="submit"]');
-            const originalText = submitButton ? submitButton.innerHTML : '';
-            
-            if (submitButton) {
-                submitButton.disabled = true;
-                submitButton.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Saving...';
-            }
+    
+    const nutritionForm = document.getElementById('nutritionGoalsForm');
+    if (nutritionForm) {
+        nutritionForm.addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent default form submission
             
             const formData = new FormData(this);
+            const submitButton = document.getElementById('saveGoalsBtn');
+            const originalText = submitButton ? submitButton.innerHTML : '';
+            
+            console.log('[v0] Submitting nutrition goals form');
+            
+            // Show loading state
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Saving...';
+            }
+            
+            // Get CSRF token from form
+            const csrfToken = formData.get('csrfmiddlewaretoken');
             
             fetch(this.action, {
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
             })
             .then(response => {
+                console.log('[v0] Response status:', response.status);
                 if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 return response.json();
             })
@@ -1124,6 +1150,35 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+    
+    const presetButtons = document.querySelectorAll('.preset-goal-btn');
+    presetButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const preset = this.dataset.preset;
+            console.log('[v0] Applying preset:', preset);
+            
+            let goals = {};
+            switch(preset) {
+                case 'weight-loss':
+                    goals = {calories: 1500, protein: 120, fat: 50, carbs: 150, sugar: 25, sodium: 1800};
+                    break;
+                case 'maintenance':
+                    goals = {calories: 2000, protein: 80, fat: 70, carbs: 250, sugar: 50, sodium: 2300};
+                    break;
+                case 'muscle-gain':
+                    goals = {calories: 2500, protein: 150, fat: 80, carbs: 350, sugar: 60, sodium: 2500};
+                    break;
+            }
+            
+            // Update form inputs
+            Object.keys(goals).forEach(nutrient => {
+                const input = document.getElementById(nutrient + '_target');
+                if (input) {
+                    input.value = goals[nutrient];
+                }
+            });
+        });
+    });
 });
 </script>
 {% endblock %}
