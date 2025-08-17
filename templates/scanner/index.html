@@ -1,523 +1,933 @@
-{% extends 'base.html' %}
-{% load static %}
-
-{% block title %}Food Facts Scanner - Home{% endblock %}
-
-{% block content %}
+{% extends 'base.html' %} {% load static %} {% block title %}Food Facts Scanner
+- Home{% endblock %} {% block content %}
 <!-- Hero Section -->
-<div class="hero-section text-white py-5 mb-5 rounded" style="background: linear-gradient(135deg, var(--primary-color), var(--accent-color));">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-6">
-                <h1 class="display-4 fw-bold mb-4" style="font-family: 'Work Sans', sans-serif;">
-                    Scan. Discover. Track.
-                </h1>
-                <p class="lead mb-4">
-                    Discover the nutritional information of any food product by simply scanning its barcode. 
-                    Make informed decisions about your diet and health.
-                </p>
-                <div class="d-flex gap-3 flex-wrap">
-                    <a href="{% url 'scanner:scan' %}" class="btn btn-light btn-lg">
-                        <i class="bi bi-camera me-2"></i>Start Scanning
-                    </a>
-                    <a href="{% url 'scanner:search' %}" class="btn btn-outline-light btn-lg">
-                        <i class="bi bi-search me-2"></i>Search Products
-                    </a>
-                </div>
-            </div>
-            <div class="col-lg-6 text-center">
-                <div class="hero-image">
-                    <i class="bi bi-upc-scan display-1"></i>
-                </div>
-            </div>
+<div
+  class="hero-section text-white py-5 mb-5 rounded"
+  style="
+    background: linear-gradient(
+      135deg,
+      var(--primary-color),
+      var(--accent-color)
+    );
+  "
+>
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-6">
+        <h1
+          class="display-4 fw-bold mb-4"
+          style="font-family: 'Work Sans', sans-serif"
+        >
+          Scan. Discover. Track.
+        </h1>
+        <p class="lead mb-4">
+          Discover the nutritional information of any food product by simply
+          scanning its barcode. Make informed decisions about your diet and
+          health.
+        </p>
+        <div class="d-flex gap-3 flex-wrap">
+          <a href="{% url 'scanner:scan' %}" class="btn btn-light btn-lg">
+            <i class="bi bi-camera me-2"></i>Start Scanning
+          </a>
+          <a
+            href="{% url 'scanner:search' %}"
+            class="btn btn-outline-light btn-lg"
+          >
+            <i class="bi bi-search me-2"></i>Search Products
+          </a>
         </div>
+      </div>
+      <div class="col-lg-6 text-center">
+        <div class="hero-image">
+          <i class="bi bi-upc-scan display-1"></i>
+        </div>
+      </div>
     </div>
+  </div>
 </div>
 
 <!-- NOVA Group Educational Section -->
 <div class="container mb-5">
-    <div class="row text-center mb-5">
-        <div class="col-12">
-            <h2 class="display-5 fw-bold mb-3" style="font-family: 'Work Sans', sans-serif; color: var(--text-primary);">Understanding Food Processing</h2>
-            <p class="lead" style="color: var(--text-muted);">Learn about the NOVA classification system and make better food choices</p>
-        </div>
+  <div class="row text-center mb-5">
+    <div class="col-12">
+      <h2
+        class="display-5 fw-bold mb-3"
+        style="font-family: 'Work Sans', sans-serif; color: var(--text-primary)"
+      >
+        Understanding Food Processing
+      </h2>
+      <p class="lead" style="color: var(--text-muted)">
+        Learn about the NOVA classification system and make better food choices
+      </p>
     </div>
-    
-    <div class="row g-4 mb-5">
-        <!-- NOVA Group 1 -->
-        <div class="col-lg-3 col-md-6">
-            <div class="card border-0 shadow-sm h-100" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
-                <div class="card-body p-4 text-center">
-                    <div class="nova-icon mb-3" style="background: rgba(185, 251, 192, 0.2); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
-                        <i class="bi bi-leaf fs-1" style="color: var(--health-excellent);"></i>
-                    </div>
-                    <div class="nova-badge mb-3">
-                        <span class="badge fs-6 px-3 py-2" style="background: var(--health-excellent); color: var(--text-primary);">NOVA 1</span>
-                    </div>
-                    <h5 class="fw-bold mb-3" style="color: var(--text-primary);">Unprocessed</h5>
-                    <p class="text-muted small mb-3">Fresh fruits, vegetables, grains, meat, milk - foods in their natural state</p>
-                    <div class="recommendation p-2 rounded" style="background: var(--bg-secondary);">
-                        <small class="fw-medium" style="color: var(--health-excellent);">✓ Make these 70% of your diet</small>
-                    </div>
-                </div>
-            </div>
+  </div>
+
+  <div class="row g-4 mb-5">
+    <!-- NOVA Group 1 -->
+    <div class="col-lg-3 col-md-6">
+      <div
+        class="card border-0 shadow-sm h-100"
+        style="
+          background: var(--card-bg);
+          border: 1px solid var(--border-color) !important;
+        "
+      >
+        <div class="card-body p-4 text-center">
+          <div
+            class="nova-icon mb-3"
+            style="
+              background: rgba(185, 251, 192, 0.2);
+              width: 80px;
+              height: 80px;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin: 0 auto;
+            "
+          >
+            <i
+              class="bi bi-leaf fs-1"
+              style="color: var(--health-excellent)"
+            ></i>
+          </div>
+          <div class="nova-badge mb-3">
+            <span
+              class="badge fs-6 px-3 py-2"
+              style="
+                background: var(--health-excellent);
+                color: var(--text-primary);
+              "
+              >NOVA 1</span
+            >
+          </div>
+          <h5 class="fw-bold mb-3" style="color: var(--text-primary)">
+            Unprocessed
+          </h5>
+          <p class="text-muted small mb-3">
+            Fresh fruits, vegetables, grains, meat, milk - foods in their
+            natural state
+          </p>
+          <div
+            class="recommendation p-2 rounded"
+            style="background: var(--bg-secondary)"
+          >
+            <small class="fw-medium" style="color: var(--health-excellent)"
+              >✓ Make these 70% of your diet</small
+            >
+          </div>
         </div>
-        
-        <!-- NOVA Group 2 -->
-        <div class="col-lg-3 col-md-6">
-            <div class="card border-0 shadow-sm h-100" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
-                <div class="card-body p-4 text-center">
-                    <div class="nova-icon mb-3" style="background: rgba(255, 195, 160, 0.2); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
-                        <i class="bi bi-droplet fs-1" style="color: var(--accent-color);"></i>
-                    </div>
-                    <div class="nova-badge mb-3">
-                        <span class="badge fs-6 px-3 py-2" style="background: var(--accent-color); color: var(--text-primary);">NOVA 2</span>
-                    </div>
-                    <h5 class="fw-bold mb-3" style="color: var(--text-primary);">Culinary Ingredients</h5>
-                    <p class="text-muted small mb-3">Oils, butter, sugar, salt, flour - used to prepare Group 1 foods</p>
-                    <div class="recommendation p-2 rounded" style="background: var(--bg-secondary);">
-                        <small class="fw-medium" style="color: var(--accent-color);">✓ Use in moderation</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- NOVA Group 3 -->
-        <div class="col-lg-3 col-md-6">
-            <div class="card border-0 shadow-sm h-100" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
-                <div class="card-body p-4 text-center">
-                    <div class="nova-icon mb-3" style="background: rgba(255, 195, 160, 0.3); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
-                        <i class="bi bi-archive fs-1" style="color: var(--health-fair);"></i>
-                    </div>
-                    <div class="nova-badge mb-3">
-                        <span class="badge fs-6 px-3 py-2" style="background: var(--health-fair); color: var(--text-primary);">NOVA 3</span>
-                    </div>
-                    <h5 class="fw-bold mb-3" style="color: var(--text-primary);">Processed</h5>
-                    <p class="text-muted small mb-3">Canned vegetables, cheese, bread - Group 1 foods with added ingredients</p>
-                    <div class="recommendation p-2 rounded" style="background: var(--bg-secondary);">
-                        <small class="fw-medium" style="color: var(--health-fair);">⚠ Consume occasionally</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- NOVA Group 4 -->
-        <div class="col-lg-3 col-md-6">
-            <div class="card border-0 shadow-sm h-100" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
-                <div class="card-body p-4 text-center">
-                    <div class="nova-icon mb-3" style="background: rgba(255, 171, 171, 0.3); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
-                        <i class="bi bi-exclamation-triangle fs-1" style="color: var(--health-poor);"></i>
-                    </div>
-                    <div class="nova-badge mb-3">
-                        <span class="badge fs-6 px-3 py-2" style="background: var(--health-poor); color: var(--text-primary);">NOVA 4</span>
-                    </div>
-                    <h5 class="fw-bold mb-3" style="color: var(--text-primary);">Ultra-processed</h5>
-                    <p class="text-muted small mb-3">Soft drinks, snacks, instant foods - industrial formulations</p>
-                    <div class="recommendation p-2 rounded" style="background: var(--bg-secondary);">
-                        <small class="fw-medium" style="color: var(--health-poor);">✗ Avoid or limit severely</small>
-                    </div>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
-    
-    <!-- NOVA Information Card -->
-    <div class="card border-0 shadow-sm" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
-        <div class="card-body p-4">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h4 class="fw-bold mb-3" style="color: var(--text-primary);">
-                        <i class="bi bi-info-circle me-2" style="color: var(--primary-color);"></i>
-                        What is the NOVA Classification?
-                    </h4>
-                    <p class="mb-3" style="color: var(--text-secondary);">
-                        NOVA is a food classification system developed by researchers at the University of São Paulo, Brazil. 
-                        It groups foods according to the extent and purpose of industrial processing they undergo.
-                    </p>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6 class="fw-semibold mb-2" style="color: var(--text-primary);">Why it matters:</h6>
-                            <ul class="list-unstyled">
-                                <li class="mb-1"><i class="bi bi-check-circle me-2" style="color: var(--health-excellent);"></i>Helps identify healthy foods</li>
-                                <li class="mb-1"><i class="bi bi-check-circle me-2" style="color: var(--health-excellent);"></i>Links processing to health outcomes</li>
-                                <li class="mb-1"><i class="bi bi-check-circle me-2" style="color: var(--health-excellent);"></i>Guides better food choices</li>
-                            </ul>
-                        </div>
-                        <div class="col-md-6">
-                            <h6 class="fw-semibold mb-2" style="color: var(--text-primary);">Health impact:</h6>
-                            <ul class="list-unstyled">
-                                <li class="mb-1"><i class="bi bi-heart me-2" style="color: var(--health-poor);"></i>Ultra-processed foods linked to obesity</li>
-                                <li class="mb-1"><i class="bi bi-heart me-2" style="color: var(--health-poor);"></i>Associated with diabetes risk</li>
-                                <li class="mb-1"><i class="bi bi-heart me-2" style="color: var(--health-poor);"></i>May increase cancer risk</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 text-center">
-                    <div class="nova-chart" style="background: var(--bg-secondary); border-radius: var(--border-radius); padding: 2rem;">
-                        <h6 class="fw-semibold mb-3" style="color: var(--text-primary);">Ideal Diet Composition</h6>
-                        <div class="chart-item mb-2">
-                            <span class="badge me-2" style="background: var(--health-excellent);">70%</span>
-                            <small>NOVA 1</small>
-                        </div>
-                        <div class="chart-item mb-2">
-                            <span class="badge me-2" style="background: var(--accent-color);">20%</span>
-                            <small>NOVA 2</small>
-                        </div>
-                        <div class="chart-item mb-2">
-                            <span class="badge me-2" style="background: var(--health-fair);">8%</span>
-                            <small>NOVA 3</small>
-                        </div>
-                        <div class="chart-item">
-                            <span class="badge me-2" style="background: var(--health-poor);">2%</span>
-                            <small>NOVA 4</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
+
+    <!-- NOVA Group 2 -->
+    <div class="col-lg-3 col-md-6">
+      <div
+        class="card border-0 shadow-sm h-100"
+        style="
+          background: var(--card-bg);
+          border: 1px solid var(--border-color) !important;
+        "
+      >
+        <div class="card-body p-4 text-center">
+          <div
+            class="nova-icon mb-3"
+            style="
+              background: rgba(255, 195, 160, 0.2);
+              width: 80px;
+              height: 80px;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin: 0 auto;
+            "
+          >
+            <i
+              class="bi bi-droplet fs-1"
+              style="color: var(--accent-color)"
+            ></i>
+          </div>
+          <div class="nova-badge mb-3">
+            <span
+              class="badge fs-6 px-3 py-2"
+              style="
+                background: var(--accent-color);
+                color: var(--text-primary);
+              "
+              >NOVA 2</span
+            >
+          </div>
+          <h5 class="fw-bold mb-3" style="color: var(--text-primary)">
+            Culinary Ingredients
+          </h5>
+          <p class="text-muted small mb-3">
+            Oils, butter, sugar, salt, flour - used to prepare Group 1 foods
+          </p>
+          <div
+            class="recommendation p-2 rounded"
+            style="background: var(--bg-secondary)"
+          >
+            <small class="fw-medium" style="color: var(--accent-color)"
+              >✓ Use in moderation</small
+            >
+          </div>
         </div>
+      </div>
     </div>
+
+    <!-- NOVA Group 3 -->
+    <div class="col-lg-3 col-md-6">
+      <div
+        class="card border-0 shadow-sm h-100"
+        style="
+          background: var(--card-bg);
+          border: 1px solid var(--border-color) !important;
+        "
+      >
+        <div class="card-body p-4 text-center">
+          <div
+            class="nova-icon mb-3"
+            style="
+              background: rgba(255, 195, 160, 0.3);
+              width: 80px;
+              height: 80px;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin: 0 auto;
+            "
+          >
+            <i class="bi bi-archive fs-1" style="color: var(--health-fair)"></i>
+          </div>
+          <div class="nova-badge mb-3">
+            <span
+              class="badge fs-6 px-3 py-2"
+              style="background: var(--health-fair); color: var(--text-primary)"
+              >NOVA 3</span
+            >
+          </div>
+          <h5 class="fw-bold mb-3" style="color: var(--text-primary)">
+            Processed
+          </h5>
+          <p class="text-muted small mb-3">
+            Canned vegetables, cheese, bread - Group 1 foods with added
+            ingredients
+          </p>
+          <div
+            class="recommendation p-2 rounded"
+            style="background: var(--bg-secondary)"
+          >
+            <small class="fw-medium" style="color: var(--health-fair)"
+              >⚠ Consume occasionally</small
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOVA Group 4 -->
+    <div class="col-lg-3 col-md-6">
+      <div
+        class="card border-0 shadow-sm h-100"
+        style="
+          background: var(--card-bg);
+          border: 1px solid var(--border-color) !important;
+        "
+      >
+        <div class="card-body p-4 text-center">
+          <div
+            class="nova-icon mb-3"
+            style="
+              background: rgba(255, 171, 171, 0.3);
+              width: 80px;
+              height: 80px;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin: 0 auto;
+            "
+          >
+            <i
+              class="bi bi-exclamation-triangle fs-1"
+              style="color: var(--health-poor)"
+            ></i>
+          </div>
+          <div class="nova-badge mb-3">
+            <span
+              class="badge fs-6 px-3 py-2"
+              style="background: var(--health-poor); color: var(--text-primary)"
+              >NOVA 4</span
+            >
+          </div>
+          <h5 class="fw-bold mb-3" style="color: var(--text-primary)">
+            Ultra-processed
+          </h5>
+          <p class="text-muted small mb-3">
+            Soft drinks, snacks, instant foods - industrial formulations
+          </p>
+          <div
+            class="recommendation p-2 rounded"
+            style="background: var(--bg-secondary)"
+          >
+            <small class="fw-medium" style="color: var(--health-poor)"
+              >✗ Avoid or limit severely</small
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOVA Information Card -->
+  <div
+    class="card border-0 shadow-sm"
+    style="
+      background: var(--card-bg);
+      border: 1px solid var(--border-color) !important;
+    "
+  >
+    <div class="card-body p-4">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <h4 class="fw-bold mb-3" style="color: var(--text-primary)">
+            <i
+              class="bi bi-info-circle me-2"
+              style="color: var(--primary-color)"
+            ></i>
+            What is the NOVA Classification?
+          </h4>
+          <p class="mb-3" style="color: var(--text-secondary)">
+            NOVA is a food classification system developed by researchers at the
+            University of São Paulo, Brazil. It groups foods according to the
+            extent and purpose of industrial processing they undergo.
+          </p>
+          <div class="row">
+            <div class="col-md-6">
+              <h6 class="fw-semibold mb-2" style="color: var(--text-primary)">
+                Why it matters:
+              </h6>
+              <ul class="list-unstyled">
+                <li class="mb-1">
+                  <i
+                    class="bi bi-check-circle me-2"
+                    style="color: var(--health-excellent)"
+                  ></i
+                  >Helps identify healthy foods
+                </li>
+                <li class="mb-1">
+                  <i
+                    class="bi bi-check-circle me-2"
+                    style="color: var(--health-excellent)"
+                  ></i
+                  >Links processing to health outcomes
+                </li>
+                <li class="mb-1">
+                  <i
+                    class="bi bi-check-circle me-2"
+                    style="color: var(--health-excellent)"
+                  ></i
+                  >Guides better food choices
+                </li>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <h6 class="fw-semibold mb-2" style="color: var(--text-primary)">
+                Health impact:
+              </h6>
+              <ul class="list-unstyled">
+                <li class="mb-1">
+                  <i
+                    class="bi bi-heart me-2"
+                    style="color: var(--health-poor)"
+                  ></i
+                  >Ultra-processed foods linked to obesity
+                </li>
+                <li class="mb-1">
+                  <i
+                    class="bi bi-heart me-2"
+                    style="color: var(--health-poor)"
+                  ></i
+                  >Associated with diabetes risk
+                </li>
+                <li class="mb-1">
+                  <i
+                    class="bi bi-heart me-2"
+                    style="color: var(--health-poor)"
+                  ></i
+                  >May increase cancer risk
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 text-center">
+          <div
+            class="nova-chart"
+            style="
+              background: var(--bg-secondary);
+              border-radius: var(--border-radius);
+              padding: 2rem;
+            "
+          >
+            <h6 class="fw-semibold mb-3" style="color: var(--text-primary)">
+              Ideal Diet Composition
+            </h6>
+            <div class="chart-item mb-2">
+              <span
+                class="badge me-2"
+                style="background: var(--health-excellent)"
+                >70%</span
+              >
+              <small>NOVA 1</small>
+            </div>
+            <div class="chart-item mb-2">
+              <span class="badge me-2" style="background: var(--accent-color)"
+                >20%</span
+              >
+              <small>NOVA 2</small>
+            </div>
+            <div class="chart-item mb-2">
+              <span class="badge me-2" style="background: var(--health-fair)"
+                >8%</span
+              >
+              <small>NOVA 3</small>
+            </div>
+            <div class="chart-item">
+              <span class="badge me-2" style="background: var(--health-poor)"
+                >2%</span
+              >
+              <small>NOVA 4</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Features Section -->
 <div class="container mb-5">
-    <div class="row text-center mb-5">
-        <div class="col-12">
-            <h2 class="display-5 fw-bold mb-3" style="font-family: 'Work Sans', sans-serif; color: var(--text-primary);">Why Choose Food Facts Scanner?</h2>
-            <p class="lead" style="color: var(--text-muted);">Everything you need to make informed food choices</p>
-        </div>
+  <div class="row text-center mb-5">
+    <div class="col-12">
+      <h2
+        class="display-5 fw-bold mb-3"
+        style="font-family: 'Work Sans', sans-serif; color: var(--text-primary)"
+      >
+        Why Choose Food Facts Scanner?
+      </h2>
+      <p class="lead" style="color: var(--text-muted)">
+        Everything you need to make informed food choices
+      </p>
     </div>
-    
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100 text-center" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
-                <div class="card-body p-4">
-                    <div class="feature-icon mb-3">
-                        <i class="bi bi-upc-scan display-1" style="color: var(--primary-color);"></i>
-                    </div>
-                    <h4 class="fw-bold mb-3" style="color: var(--text-primary);">Easy Scanning</h4>
-                    <p style="color: var(--text-muted);">
-                        Simply point your camera at any barcode and get instant nutritional information 
-                        from our comprehensive database.
-                    </p>
-                </div>
-            </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div
+        class="card border-0 shadow-sm h-100 text-center"
+        style="
+          background: var(--card-bg);
+          border: 1px solid var(--border-color) !important;
+        "
+      >
+        <div class="card-body p-4">
+          <div class="feature-icon mb-3">
+            <i
+              class="bi bi-upc-scan display-1"
+              style="color: var(--primary-color)"
+            ></i>
+          </div>
+          <h4 class="fw-bold mb-3" style="color: var(--text-primary)">
+            Easy Scanning
+          </h4>
+          <p style="color: var(--text-muted)">
+            Simply point your camera at any barcode and get instant nutritional
+            information from our comprehensive database.
+          </p>
         </div>
-        
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100 text-center" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
-                <div class="card-body p-4">
-                    <div class="feature-icon mb-3">
-                        <i class="bi bi-graph-up display-1" style="color: var(--health-excellent);"></i>
-                    </div>
-                    <h4 class="fw-bold mb-3" style="color: var(--text-primary);">Nutrition Tracking</h4>
-                    <p style="color: var(--text-muted);">
-                        Track your daily nutrition intake with detailed charts and progress monitoring 
-                        to reach your health goals.
-                    </p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100 text-center" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
-                <div class="card-body p-4">
-                    <div class="feature-icon mb-3">
-                        <i class="bi bi-heart-fill display-1" style="color: var(--health-poor);"></i>
-                    </div>
-                    <h4 class="fw-bold mb-3" style="color: var(--text-primary);">Personal Favorites</h4>
-                    <p style="color: var(--text-muted);">
-                        Save your favorite products and write reviews to help others make 
-                        better food choices.
-                    </p>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
+
+    <div class="col-md-4">
+      <div
+        class="card border-0 shadow-sm h-100 text-center"
+        style="
+          background: var(--card-bg);
+          border: 1px solid var(--border-color) !important;
+        "
+      >
+        <div class="card-body p-4">
+          <div class="feature-icon mb-3">
+            <i
+              class="bi bi-graph-up display-1"
+              style="color: var(--health-excellent)"
+            ></i>
+          </div>
+          <h4 class="fw-bold mb-3" style="color: var(--text-primary)">
+            Nutrition Tracking
+          </h4>
+          <p style="color: var(--text-muted)">
+            Track your daily nutrition intake with detailed charts and progress
+            monitoring to reach your health goals.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div
+        class="card border-0 shadow-sm h-100 text-center"
+        style="
+          background: var(--card-bg);
+          border: 1px solid var(--border-color) !important;
+        "
+      >
+        <div class="card-body p-4">
+          <div class="feature-icon mb-3">
+            <i
+              class="bi bi-heart-fill display-1"
+              style="color: var(--health-poor)"
+            ></i>
+          </div>
+          <h4 class="fw-bold mb-3" style="color: var(--text-primary)">
+            Personal Favorites
+          </h4>
+          <p style="color: var(--text-muted)">
+            Save your favorite products and write reviews to help others make
+            better food choices.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- FAQ Section -->
 <div class="container mb-5">
-    <div class="row">
-        <div class="col-lg-5 col-md-6 mb-4">
-            <div class="faq-intro">
-                <h2 class="display-6 fw-bold mb-4" style="color: var(--text-primary); font-family: 'Work Sans', sans-serif;">
-                    Any questions?<br>
-                    We got you.
-                </h2>
-                <p class="mb-4" style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.6;">
-                    Get instant answers about our food scanner app. From barcode scanning to nutrition tracking, 
-                    we've covered everything you need to know to make informed food choices.
-                </p>
-                <a href="#" class="text-decoration-none fw-semibold" style="color: var(--primary-color);">
-                    More FAQs →
-                </a>
-            </div>
-        </div>
-        
-        <div class="col-lg-7 col-md-6">
-            <div class="faq-list">
-                <!-- FAQ Item 1 -->
-                <div class="faq-item border-bottom" style="border-color: var(--border-color) !important;">
-                    <div class="faq-question d-flex justify-content-between align-items-center py-4 cursor-pointer" 
-                         onclick="toggleFAQ(this)" style="cursor: pointer;">
-                        <h5 class="mb-0 fw-semibold" style="color: var(--text-primary);">How accurate is the nutritional information?</h5>
-                        <span class="faq-toggle fs-4 fw-bold" style="color: var(--text-muted);">+</span>
-                    </div>
-                    <div class="faq-answer" style="display: none; max-height: 0; overflow: hidden; transition: all 0.4s ease;">
-                        <div class="answer-content" style="padding-bottom: 1.5rem;">
-                            <p style="color: var(--text-muted); line-height: 1.6;">
-                                Our nutritional data comes from OpenFoodFacts, the world's largest collaborative food database with over 2.8 million products. The information is verified by manufacturers, nutritionists, and community contributors, ensuring 95%+ accuracy for major brands and products.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- FAQ Item 2 -->
-                <div class="faq-item border-bottom" style="border-color: var(--border-color) !important;">
-                    <div class="faq-question d-flex justify-content-between align-items-center py-4 cursor-pointer" 
-                         onclick="toggleFAQ(this)" style="cursor: pointer;">
-                        <h5 class="mb-0 fw-semibold" style="color: var(--text-primary);">What makes your NOVA classification unique?</h5>
-                        <span class="faq-toggle fs-4 fw-bold" style="color: var(--text-muted);">+</span>
-                    </div>
-                    <div class="faq-answer" style="display: none; max-height: 0; overflow: hidden; transition: all 0.4s ease;">
-                        <div class="answer-content" style="padding-bottom: 1.5rem;">
-                            <p style="color: var(--text-muted); line-height: 1.6;">
-                                We use advanced algorithms to analyze ingredient lists and processing methods, providing detailed explanations for each NOVA group classification. Unlike other apps, we show you exactly why a product falls into a specific category and offer healthier alternatives from the same brand or category.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- FAQ Item 3 -->
-                <div class="faq-item border-bottom" style="border-color: var(--border-color) !important;">
-                    <div class="faq-question d-flex justify-content-between align-items-center py-4 cursor-pointer" 
-                         onclick="toggleFAQ(this)" style="cursor: pointer;">
-                        <h5 class="mb-0 fw-semibold" style="color: var(--text-primary);">Can I track my family's nutrition together?</h5>
-                        <span class="faq-toggle fs-4 fw-bold" style="color: var(--text-muted);">+</span>
-                    </div>
-                    <div class="faq-answer" style="display: none; max-height: 0; overflow: hidden; transition: all 0.4s ease;">
-                        <div class="answer-content" style="padding-bottom: 1.5rem;">
-                            <p style="color: var(--text-muted); line-height: 1.6;">
-                                Yes! Create family profiles with age-appropriate nutrition goals for each member. Track everyone's daily intake, set personalized health targets, and get family-friendly meal suggestions. Parents can monitor children's food choices while teaching them about healthy eating habits.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- FAQ Item 4 -->
-                <div class="faq-item border-bottom" style="border-color: var(--border-color) !important;">
-                    <div class="faq-question d-flex justify-content-between align-items-center py-4 cursor-pointer" 
-                         onclick="toggleFAQ(this)" style="cursor: pointer;">
-                        <h5 class="mb-0 fw-semibold" style="color: var(--text-primary);">How does the additives analysis work?</h5>
-                        <span class="faq-toggle fs-4 fw-bold" style="color: var(--text-muted);">+</span>
-                    </div>
-                    <div class="faq-answer" style="display: none; max-height: 0; overflow: hidden; transition: all 0.4s ease;">
-                        <div class="answer-content" style="padding-bottom: 1.5rem;">
-                            <p style="color: var(--text-muted); line-height: 1.6;">
-                                Our system analyzes every E-number and additive in products, providing detailed health impact assessments based on scientific research. We categorize additives by risk level (low, moderate, high) and explain potential effects like allergic reactions, hyperactivity, or long-term health concerns with credible sources.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- FAQ Item 5 -->
-                <div class="faq-item">
-                    <div class="faq-question d-flex justify-content-between align-items-center py-4 cursor-pointer" 
-                         onclick="toggleFAQ(this)" style="cursor: pointer;">
-                        <h5 class="mb-0 fw-semibold" style="color: var(--text-primary);">What if a product isn't in your database?</h5>
-                        <span class="faq-toggle fs-4 fw-bold" style="color: var(--text-muted);">+</span>
-                    </div>
-                    <div class="faq-answer" style="display: none; max-height: 0; overflow: hidden; transition: all 0.4s ease;">
-                        <div class="answer-content" style="padding-bottom: 1.5rem;">
-                            <p style="color: var(--text-muted); line-height: 1.6;">
-                                When you scan an unknown product, you can easily add it to our database by photographing the nutrition label and ingredient list. Our AI assists with data extraction, and the community verifies new entries. You'll also earn points for contributing, helping millions of users worldwide access better food information.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+  <div class="row">
+    <div class="col-lg-5 col-md-6 mb-4">
+      <div class="faq-intro">
+        <h2
+          class="display-6 fw-bold mb-4"
+          style="
+            color: var(--text-primary);
+            font-family: 'Work Sans', sans-serif;
+          "
+        >
+          Any questions?<br />
+          We got you.
+        </h2>
+        <p
+          class="mb-4"
+          style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.6"
+        >
+          Get instant answers about our food scanner app. From barcode scanning
+          to nutrition tracking, we've covered everything you need to know to
+          make informed food choices.
+        </p>
+        <a
+          href="#"
+          class="text-decoration-none fw-semibold"
+          style="color: var(--primary-color)"
+        >
+          More FAQs →
+        </a>
+      </div>
     </div>
+
+    <div class="col-lg-7 col-md-6">
+      <div class="faq-list">
+        <!-- FAQ Item 1 -->
+        <div
+          class="faq-item border-bottom"
+          style="border-color: var(--border-color) !important"
+        >
+          <div
+            class="faq-question d-flex justify-content-between align-items-center py-4 cursor-pointer"
+            onclick="toggleFAQ(this)"
+            style="cursor: pointer"
+          >
+            <h5 class="mb-0 fw-semibold" style="color: var(--text-primary)">
+              How accurate is the nutritional information?
+            </h5>
+            <span
+              class="faq-toggle fs-4 fw-bold"
+              style="color: var(--text-muted)"
+              >+</span
+            >
+          </div>
+          <div
+            class="faq-answer"
+            style="
+              display: none;
+              max-height: 0;
+              overflow: hidden;
+              transition: all 0.4s ease;
+            "
+          >
+            <div class="answer-content" style="padding-bottom: 1.5rem">
+              <p style="color: var(--text-muted); line-height: 1.6">
+                Our nutritional data comes from OpenFoodFacts, the world's
+                largest collaborative food database with over 2.8 million
+                products. The information is verified by manufacturers,
+                nutritionists, and community contributors, ensuring 95%+
+                accuracy for major brands and products.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- FAQ Item 2 -->
+        <div
+          class="faq-item border-bottom"
+          style="border-color: var(--border-color) !important"
+        >
+          <div
+            class="faq-question d-flex justify-content-between align-items-center py-4 cursor-pointer"
+            onclick="toggleFAQ(this)"
+            style="cursor: pointer"
+          >
+            <h5 class="mb-0 fw-semibold" style="color: var(--text-primary)">
+              What makes your NOVA classification unique?
+            </h5>
+            <span
+              class="faq-toggle fs-4 fw-bold"
+              style="color: var(--text-muted)"
+              >+</span
+            >
+          </div>
+          <div
+            class="faq-answer"
+            style="
+              display: none;
+              max-height: 0;
+              overflow: hidden;
+              transition: all 0.4s ease;
+            "
+          >
+            <div class="answer-content" style="padding-bottom: 1.5rem">
+              <p style="color: var(--text-muted); line-height: 1.6">
+                We use advanced algorithms to analyze ingredient lists and
+                processing methods, providing detailed explanations for each
+                NOVA group classification. Unlike other apps, we show you
+                exactly why a product falls into a specific category and offer
+                healthier alternatives from the same brand or category.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- FAQ Item 3 -->
+        <div
+          class="faq-item border-bottom"
+          style="border-color: var(--border-color) !important"
+        >
+          <div
+            class="faq-question d-flex justify-content-between align-items-center py-4 cursor-pointer"
+            onclick="toggleFAQ(this)"
+            style="cursor: pointer"
+          >
+            <h5 class="mb-0 fw-semibold" style="color: var(--text-primary)">
+              Can I track my family's nutrition together?
+            </h5>
+            <span
+              class="faq-toggle fs-4 fw-bold"
+              style="color: var(--text-muted)"
+              >+</span
+            >
+          </div>
+          <div
+            class="faq-answer"
+            style="
+              display: none;
+              max-height: 0;
+              overflow: hidden;
+              transition: all 0.4s ease;
+            "
+          >
+            <div class="answer-content" style="padding-bottom: 1.5rem">
+              <p style="color: var(--text-muted); line-height: 1.6">
+                Yes! Create family profiles with age-appropriate nutrition goals
+                for each member. Track everyone's daily intake, set personalized
+                health targets, and get family-friendly meal suggestions.
+                Parents can monitor children's food choices while teaching them
+                about healthy eating habits.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- FAQ Item 4 -->
+        <div
+          class="faq-item border-bottom"
+          style="border-color: var(--border-color) !important"
+        >
+          <div
+            class="faq-question d-flex justify-content-between align-items-center py-4 cursor-pointer"
+            onclick="toggleFAQ(this)"
+            style="cursor: pointer"
+          >
+            <h5 class="mb-0 fw-semibold" style="color: var(--text-primary)">
+              How does the additives analysis work?
+            </h5>
+            <span
+              class="faq-toggle fs-4 fw-bold"
+              style="color: var(--text-muted)"
+              >+</span
+            >
+          </div>
+          <div
+            class="faq-answer"
+            style="
+              display: none;
+              max-height: 0;
+              overflow: hidden;
+              transition: all 0.4s ease;
+            "
+          >
+            <div class="answer-content" style="padding-bottom: 1.5rem">
+              <p style="color: var(--text-muted); line-height: 1.6">
+                Our system analyzes every E-number and additive in products,
+                providing detailed health impact assessments based on scientific
+                research. We categorize additives by risk level (low, moderate,
+                high) and explain potential effects like allergic reactions,
+                hyperactivity, or long-term health concerns with credible
+                sources.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- FAQ Item 5 -->
+        <div class="faq-item">
+          <div
+            class="faq-question d-flex justify-content-between align-items-center py-4 cursor-pointer"
+            onclick="toggleFAQ(this)"
+            style="cursor: pointer"
+          >
+            <h5 class="mb-0 fw-semibold" style="color: var(--text-primary)">
+              What if a product isn't in your database?
+            </h5>
+            <span
+              class="faq-toggle fs-4 fw-bold"
+              style="color: var(--text-muted)"
+              >+</span
+            >
+          </div>
+          <div
+            class="faq-answer"
+            style="
+              display: none;
+              max-height: 0;
+              overflow: hidden;
+              transition: all 0.4s ease;
+            "
+          >
+            <div class="answer-content" style="padding-bottom: 1.5rem">
+              <p style="color: var(--text-muted); line-height: 1.6">
+                When you scan an unknown product, you can easily add it to our
+                database by photographing the nutrition label and ingredient
+                list. Our AI assists with data extraction, and the community
+                verifies new entries. You'll also earn points for contributing,
+                helping millions of users worldwide access better food
+                information.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- CTA Section -->
-<div class="py-5 rounded" style="background: var(--bg-secondary);">
-    <div class="container text-center">
-        <h2 class="display-6 fw-bold mb-3" style="color: var(--text-primary);">Ready to Start Your Health Journey?</h2>
-        <p class="lead mb-4" style="color: var(--text-muted);">Join thousands of users who are making better food choices every day.</p>
-        <div class="d-flex justify-content-center gap-3 flex-wrap">
-            {% if not user.is_authenticated %}
-                <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-lg">
-                    <i class="bi bi-person-plus me-2"></i>Get Started Free
-                </a>
-            {% endif %}
-            <a href="{% url 'scanner:scan' %}" class="btn btn-outline-primary btn-lg">
-                <i class="bi bi-camera me-2"></i>Try Scanner Now
-            </a>
-        </div>
+<div class="py-5 rounded" style="background: var(--bg-secondary)">
+  <div class="container text-center">
+    <h2 class="display-6 fw-bold mb-3" style="color: var(--text-primary)">
+      Ready to Start Your Health Journey?
+    </h2>
+    <p class="lead mb-4" style="color: var(--text-muted)">
+      Join thousands of users who are making better food choices every day.
+    </p>
+    <div class="d-flex justify-content-center gap-3 flex-wrap">
+      {% if not user.is_authenticated %}
+      <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-lg">
+        <i class="bi bi-person-plus me-2"></i>Get Started Free
+      </a>
+      {% endif %}
+      <a href="{% url 'scanner:scan' %}" class="btn btn-outline-primary btn-lg">
+        <i class="bi bi-camera me-2"></i>Try Scanner Now
+      </a>
     </div>
+  </div>
 </div>
-{% endblock %}
-
-{% block extra_css %}
+{% endblock %} {% block extra_css %}
 <style>
-.product-card {
+  .product-card {
     transition: transform var(--transition-normal);
     cursor: pointer;
-}
+  }
 
-.product-card:hover {
+  .product-card:hover {
     transform: translateY(-4px);
     box-shadow: var(--shadow-lg);
-}
+  }
 
-.feature-icon {
+  .feature-icon {
     height: 80px;
     display: flex;
     align-items: center;
     justify-content: center;
-}
+  }
 
-.nova-icon {
+  .nova-icon {
     transition: transform var(--transition-normal);
-}
+  }
 
-.card:hover .nova-icon {
+  .card:hover .nova-icon {
     transform: scale(1.1);
-}
+  }
 
-.chart-item {
+  .chart-item {
     display: flex;
     align-items: center;
     justify-content: center;
-}
+  }
 
-.recommendation {
+  .recommendation {
     border-left: 3px solid;
-}
+  }
 
-.recommendation:nth-child(1) { border-left-color: var(--health-excellent); }
-.recommendation:nth-child(2) { border-left-color: var(--accent-color); }
-.recommendation:nth-child(3) { border-left-color: var(--health-fair); }
-.recommendation:nth-child(4) { border-left-color: var(--health-poor); }
+  .recommendation:nth-child(1) {
+    border-left-color: var(--health-excellent);
+  }
+  .recommendation:nth-child(2) {
+    border-left-color: var(--accent-color);
+  }
+  .recommendation:nth-child(3) {
+    border-left-color: var(--health-fair);
+  }
+  .recommendation:nth-child(4) {
+    border-left-color: var(--health-poor);
+  }
 
-/* FAQ section styling */
-.faq-intro {
+  /* FAQ section styling */
+  .faq-intro {
     padding-right: 2rem;
-}
+  }
 
-.faq-question {
+  .faq-question {
     transition: all 0.3s ease;
-}
+  }
 
-.faq-question:hover {
+  .faq-question:hover {
     background-color: var(--bg-secondary);
     margin: 0 -1rem;
     padding-left: 1rem !important;
     padding-right: 1rem !important;
     border-radius: var(--border-radius);
-}
+  }
 
-.faq-answer {
+  .faq-answer {
     transition: all 0.3s ease;
     overflow: hidden;
-}
+  }
 
-.faq-toggle {
+  .faq-toggle {
     transition: transform 0.3s ease;
     min-width: 24px;
     text-align: center;
-}
+  }
 
-.faq-item.active .faq-toggle {
+  .faq-item.active .faq-toggle {
     transform: rotate(45deg);
-}
+  }
 
-@media (max-width: 768px) {
+  @media (max-width: 768px) {
     .faq-intro {
-        padding-right: 0;
-        margin-bottom: 2rem;
+      padding-right: 0;
+      margin-bottom: 2rem;
     }
-    
-    .faq-question h5 {
-        font-size: 1.1rem;
-        line-height: 1.4;
-        padding-right: 1rem;
-    }
-}
-</style>
-{% endblock %}
 
-{% block extra_js %}
+    .faq-question h5 {
+      font-size: 1.1rem;
+      line-height: 1.4;
+      padding-right: 1rem;
+    }
+  }
+</style>
+{% endblock %} {% block extra_js %}
 <script>
-function toggleFAQ(element) {
+  function toggleFAQ(element) {
     console.log("[v0] FAQ toggle clicked");
     const faqItem = element.parentElement;
-    const answer = faqItem.querySelector('.faq-answer');
-    const toggle = element.querySelector('.faq-toggle');
-    const answerContent = answer.querySelector('.answer-content');
-    
-    console.log("[v0] FAQ item:", faqItem.classList.contains('active'));
-    
-    // Close all other FAQ items first
-    document.querySelectorAll('.faq-item').forEach(item => {
-        if (item !== faqItem && item.classList.contains('active')) {
-            console.log("[v0] Closing other FAQ item");
-            item.classList.remove('active');
-            const otherAnswer = item.querySelector('.faq-answer');
-            const otherToggle = item.querySelector('.faq-toggle');
-            
-            // Smooth close animation
-            otherAnswer.style.maxHeight = '0';
-            otherToggle.textContent = '+';
-            
-            setTimeout(() => {
-                otherAnswer.style.display = 'none';
-            }, 400);
-        }
-    });
-    
-    // Toggle current FAQ item
-    if (faqItem.classList.contains('active')) {
-        console.log("[v0] Closing current FAQ");
-        // Close current item
-        faqItem.classList.remove('active');
-        answer.style.maxHeight = '0';
-        toggle.textContent = '+';
-        
-        setTimeout(() => {
-            answer.style.display = 'none';
-        }, 400);
-    } else {
-        console.log("[v0] Opening current FAQ");
-        // Open current item
-        faqItem.classList.add('active');
-        answer.style.display = 'block';
-        
-        // Force reflow to ensure display:block is applied
-        answer.offsetHeight;
-        
-        // Calculate the actual height needed
-        const contentHeight = answerContent.offsetHeight;
-        answer.style.maxHeight = contentHeight + 'px';
-        toggle.textContent = '−';
-    }
-}
+    const answer = faqItem.querySelector(".faq-answer");
+    const toggle = element.querySelector(".faq-toggle");
+    const answerContent = answer.querySelector(".answer-content");
 
-// Initialize FAQ items on page load
-document.addEventListener('DOMContentLoaded', function() {
+    console.log("[v0] FAQ item:", faqItem.classList.contains("active"));
+
+    // Close all other FAQ items first
+    document.querySelectorAll(".faq-item").forEach((item) => {
+      if (item !== faqItem && item.classList.contains("active")) {
+        console.log("[v0] Closing other FAQ item");
+        item.classList.remove("active");
+        const otherAnswer = item.querySelector(".faq-answer");
+        const otherToggle = item.querySelector(".faq-toggle");
+
+        // Smooth close animation
+        otherAnswer.style.maxHeight = "0";
+        otherToggle.textContent = "+";
+
+        setTimeout(() => {
+          otherAnswer.style.display = "none";
+        }, 400);
+      }
+    });
+
+    // Toggle current FAQ item
+    if (faqItem.classList.contains("active")) {
+      console.log("[v0] Closing current FAQ");
+      // Close current item
+      faqItem.classList.remove("active");
+      answer.style.maxHeight = "0";
+      toggle.textContent = "+";
+
+      setTimeout(() => {
+        answer.style.display = "none";
+      }, 400);
+    } else {
+      console.log("[v0] Opening current FAQ");
+      // Open current item
+      faqItem.classList.add("active");
+      answer.style.display = "block";
+
+      // Force reflow to ensure display:block is applied
+      answer.offsetHeight;
+
+      // Calculate the actual height needed
+      const contentHeight = answerContent.offsetHeight;
+      answer.style.maxHeight = contentHeight + "px";
+      toggle.textContent = "+";
+    }
+  }
+
+  // Initialize FAQ items on page load
+  document.addEventListener("DOMContentLoaded", function () {
     console.log("[v0] FAQ initialized");
     // Ensure all FAQ items start closed
-    document.querySelectorAll('.faq-item').forEach(item => {
-        const answer = item.querySelector('.faq-answer');
-        const toggle = item.querySelector('.faq-toggle');
-        
-        answer.style.display = 'none';
-        answer.style.maxHeight = '0';
-        toggle.textContent = '+';
-        item.classList.remove('active');
+    document.querySelectorAll(".faq-item").forEach((item) => {
+      const answer = item.querySelector(".faq-answer");
+      const toggle = item.querySelector(".faq-toggle");
+
+      answer.style.display = "none";
+      answer.style.maxHeight = "0";
+      toggle.textContent = "+";
+      item.classList.remove("active");
     });
-});
+  });
 </script>
 {% endblock %}
