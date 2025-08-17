@@ -124,14 +124,10 @@ def dashboard(request):
     # Calculate days active
     days_active = (timezone.now().date() - user.date_joined.date()).days
 
-    personalized_tips = generate_personalized_tips(user, dietary_goals, recent_scans_count, days_active, {
-        'calories_progress': calories_progress,
-        'protein_progress': protein_progress,
-        'fat_progress': fat_progress,
-        'carbs_progress': carbs_progress,
-        'sugar_progress': sugar_progress,
-        'sodium_progress': sodium_progress,
-    })
+    personalized_tips = generate_personalized_tips(
+        dietary_goals, calories_progress, protein_progress, fat_progress, 
+        carbs_progress, sugar_progress, sodium_progress, recent_scans_count, days_active
+    )
 
     context = {
         'user': user,
@@ -154,141 +150,180 @@ def dashboard(request):
         'recent_scans_count': recent_scans_count,
         'days_active': days_active,
         'weekly_logs': weekly_logs,
-        'personalized_tips': personalized_tips,  # Add personalized tips to context
+        'personalized_tips': personalized_tips,
     }
     return render(request, 'accounts/dashboard.html', context)
 
-def generate_personalized_tips(user, dietary_goals, recent_scans_count, days_active, progress_data):
-    """Generate context-aware personalized tips based on user data and activity"""
+def generate_personalized_tips(dietary_goals, calories_progress, protein_progress, fat_progress, 
+                             carbs_progress, sugar_progress, sodium_progress, recent_scans_count, days_active):
+    """Generate dynamic personalized tips based on user's nutrition data and activity"""
     tips = []
     
-    # Priority 1: Critical nutrition gaps (most important)
-    calories_progress = progress_data['calories_progress']
-    protein_progress = progress_data['protein_progress']
-    sugar_progress = progress_data['sugar_progress']
-    sodium_progress = progress_data['sodium_progress']
-    
-    # Critical calorie deficit
-    if calories_progress < 30:
-        calories_deficit = dietary_goals.calories_target - dietary_goals.calories_consumed
+    # Critical tips (red warnings) - highest priority
+    if sugar_progress > 90:
         tips.append({
             'type': 'critical',
             'icon': 'exclamation-triangle',
-            'message': f'You\'re {calories_deficit} calories under your daily goal. Consider adding a nutritious meal or snack.',
+            'color': 'danger',
+            'title': 'Sugar Intake Critical',
+            'message': f'You\'ve consumed {sugar_progress:.0f}% of your daily sugar limit. Consider reducing sugary foods.',
             'priority': 1
         })
     
-    # Critical protein deficiency
-    if protein_progress < 40:
-        protein_deficit = dietary_goals.protein_target - dietary_goals.protein_consumed
+    if sodium_progress > 90:
+        tips.append({
+            'type': 'critical',
+            'icon': 'exclamation-triangle',
+            'color': 'danger',
+            'title': 'High Sodium Alert',
+            'message': f'You\'re at {sodium_progress:.0f}% of your sodium limit. Choose low-sodium alternatives.',
+            'priority': 1
+        })
+    
+    # Warning tips (yellow/orange) - medium priority
+    if protein_progress < 50:
+        protein_needed = dietary_goals.protein_target - dietary_goals.protein_consumed
         tips.append({
             'type': 'warning',
-            'icon': 'shield-exclamation',
-            'message': f'Low protein intake! You need {protein_deficit}g more. Try chicken, fish, beans, or Greek yogurt.',
-            'priority': 1
-        })
-    
-    # Priority 2: Concerning patterns
-    if sugar_progress > 90:
-        tips.append({
-            'type': 'danger',
             'icon': 'exclamation-circle',
-            'message': 'Sugar intake is very high today. Consider choosing low-sugar alternatives for your next meal.',
+            'color': 'warning',
+            'title': 'Boost Your Protein',
+            'message': f'You need {protein_needed:.0f}g more protein today. Try lean meats, beans, or nuts.',
             'priority': 2
         })
     
-    if sodium_progress > 85:
+    if calories_progress < 40:
+        calories_needed = dietary_goals.calories_target - dietary_goals.calories_consumed
         tips.append({
             'type': 'warning',
-            'icon': 'droplet-half',
-            'message': 'Sodium levels are high. Try fresh foods and drink extra water to help balance it out.',
+            'icon': 'info-circle',
+            'color': 'info',
+            'title': 'Calorie Goal Low',
+            'message': f'You\'re {calories_needed:.0f} calories under your goal. Consider adding a healthy snack.',
             'priority': 2
         })
     
-    # Priority 3: Activity and engagement
+    if fat_progress > 85:
+        tips.append({
+            'type': 'warning',
+            'icon': 'exclamation-circle',
+            'color': 'warning',
+            'title': 'Fat Intake High',
+            'message': 'You\'re close to your daily fat limit. Choose lean proteins for remaining meals.',
+            'priority': 2
+        })
+    
+    # Positive reinforcement (green) - encouraging messages
+    if 80 <= calories_progress <= 100:
+        tips.append({
+            'type': 'success',
+            'icon': 'check-circle',
+            'color': 'success',
+            'title': 'Perfect Calorie Balance',
+            'message': 'Excellent! You\'re right on track with your calorie goal today.',
+            'priority': 3
+        })
+    
+    if protein_progress >= 80:
+        tips.append({
+            'type': 'success',
+            'icon': 'check-circle',
+            'color': 'success',
+            'title': 'Protein Goal Achieved',
+            'message': 'Great job meeting your protein target! Your muscles will thank you.',
+            'priority': 3
+        })
+    
+    if sugar_progress <= 30:
+        tips.append({
+            'type': 'success',
+            'icon': 'check-circle',
+            'color': 'success',
+            'title': 'Low Sugar Success',
+            'message': 'Excellent! You\'re keeping your sugar intake low today.',
+            'priority': 3
+        })
+    
+    # Activity-based tips
     if recent_scans_count == 0:
         tips.append({
             'type': 'info',
             'icon': 'camera',
-            'message': 'Start tracking! Scan your first product this week to begin monitoring your nutrition.',
-            'priority': 3
+            'color': 'primary',
+            'title': 'Start Scanning',
+            'message': 'Scan your first product this week to track your nutrition automatically!',
+            'priority': 2
         })
     elif recent_scans_count >= 10:
         tips.append({
             'type': 'success',
-            'icon': 'trophy',
-            'message': f'Amazing! You\'ve scanned {recent_scans_count} products this week. You\'re a nutrition tracking champion!',
+            'icon': 'graph-up',
+            'color': 'success',
+            'title': 'Scanning Champion',
+            'message': f'Amazing! You\'ve scanned {recent_scans_count} products this week. Keep it up!',
             'priority': 3
         })
     elif recent_scans_count >= 5:
         tips.append({
-            'type': 'success',
+            'type': 'info',
             'icon': 'graph-up',
-            'message': f'Great progress! {recent_scans_count} scans this week. Keep up the consistent tracking!',
+            'color': 'info',
+            'title': 'Good Progress',
+            'message': f'You\'ve scanned {recent_scans_count} products this week. Great tracking!',
             'priority': 3
         })
     
-    # Priority 4: Positive reinforcement and streaks
+    # Milestone tips
     if days_active >= 30:
         tips.append({
             'type': 'success',
-            'icon': 'calendar-check',
-            'message': f'Incredible dedication! You\'ve been tracking nutrition for {days_active} days. That\'s building a real habit!',
-            'priority': 4
+            'icon': 'trophy',
+            'color': 'success',
+            'title': 'Monthly Milestone',
+            'message': f'Congratulations! You\'ve been tracking nutrition for {days_active} days.',
+            'priority': 3
         })
     elif days_active >= 7:
         tips.append({
-            'type': 'success',
-            'icon': 'star',
-            'message': f'One week strong! {days_active} days of nutrition awareness is a great start.',
-            'priority': 4
+            'type': 'info',
+            'icon': 'calendar-check',
+            'color': 'info',
+            'title': 'Week Strong',
+            'message': f'You\'ve been consistent for {days_active} days. Keep building the habit!',
+            'priority': 3
         })
     
-    # Priority 5: Balanced nutrition achievements
-    if 80 <= calories_progress <= 100 and 70 <= protein_progress <= 100:
-        tips.append({
-            'type': 'success',
-            'icon': 'check-circle',
-            'message': 'Perfect balance! Your calories and protein are right on target today.',
-            'priority': 5
-        })
-    
-    if sugar_progress <= 50:
-        tips.append({
-            'type': 'success',
-            'icon': 'heart',
-            'message': 'Excellent sugar control! You\'re keeping your intake well within healthy limits.',
-            'priority': 5
-        })
-    
-    # Priority 6: General wellness tips (always show at least one)
-    wellness_tips = [
-        {
-            'type': 'info',
-            'icon': 'droplet',
-            'message': 'Stay hydrated! Aim for 8 glasses of water throughout the day.',
-            'priority': 6
-        },
-        {
-            'type': 'info',
-            'icon': 'sun',
-            'message': 'Don\'t forget to get some sunlight and fresh air for vitamin D and mood boost.',
-            'priority': 6
-        },
-        {
-            'type': 'info',
-            'icon': 'moon',
-            'message': 'Quality sleep supports healthy metabolism. Aim for 7-9 hours tonight.',
-            'priority': 6
-        }
-    ]
-    
-    # Add one wellness tip if we don't have enough tips
+    # General nutrition tips if no specific issues
     if len(tips) < 3:
-        import random
-        tips.append(random.choice(wellness_tips))
+        general_tips = [
+            {
+                'type': 'info',
+                'icon': 'droplet',
+                'color': 'info',
+                'title': 'Stay Hydrated',
+                'message': 'Remember to drink 8 glasses of water throughout the day.',
+                'priority': 4
+            },
+            {
+                'type': 'info',
+                'icon': 'apple',
+                'color': 'info',
+                'title': 'Eat the Rainbow',
+                'message': 'Include colorful fruits and vegetables in your meals for better nutrition.',
+                'priority': 4
+            },
+            {
+                'type': 'info',
+                'icon': 'clock',
+                'color': 'info',
+                'title': 'Meal Timing',
+                'message': 'Try to eat regular meals every 3-4 hours to maintain energy levels.',
+                'priority': 4
+            }
+        ]
+        tips.extend(general_tips)
     
-    # Sort by priority and return top 5 most relevant tips
+    # Sort by priority (1 = highest, 4 = lowest) and limit to 5 tips
     tips.sort(key=lambda x: x['priority'])
     return tips[:5]
 

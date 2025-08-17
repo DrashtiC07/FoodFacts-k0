@@ -200,6 +200,210 @@
   color: var(--health-poor);
 }
 
+/* Added enhanced personalized tips styles for permanent visibility and dynamic updates */
+/* Personalized Tips Styles */
+.tip-item {
+  border-radius: 12px !important;
+  border: 1px solid transparent !important;
+  margin-bottom: 0.75rem !important;
+  padding: 1rem !important;
+  transition: all 0.3s ease !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.tip-item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: currentColor;
+  opacity: 0.3;
+}
+
+.tip-item[data-tip-type="critical"] {
+  background: rgba(220, 53, 69, 0.1) !important;
+  border-color: rgba(220, 53, 69, 0.3) !important;
+  animation: pulse-critical 2s infinite;
+}
+
+.tip-item[data-tip-type="warning"] {
+  background: rgba(255, 193, 7, 0.1) !important;
+  border-color: rgba(255, 193, 7, 0.3) !important;
+}
+
+.tip-item[data-tip-type="success"] {
+  background: rgba(25, 135, 84, 0.1) !important;
+  border-color: rgba(25, 135, 84, 0.3) !important;
+}
+
+.tip-item[data-tip-type="info"] {
+  background: rgba(13, 110, 253, 0.1) !important;
+  border-color: rgba(13, 110, 253, 0.3) !important;
+}
+
+.tip-item:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.tip-item .bi {
+  font-size: 1.1em;
+  margin-right: 0.5rem;
+  flex-shrink: 0;
+}
+
+.tip-item strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+.tip-item small {
+  line-height: 1.4;
+  opacity: 0.9;
+}
+
+@keyframes pulse-critical {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(220, 53, 69, 0);
+  }
+}
+
+/* Nutrition Goal Cards Enhanced */
+.nutrition-goal-card {
+  padding: 1.5rem !important;
+  background: var(--card-bg) !important;
+  border-radius: 12px !important;
+  border: 1px solid var(--border-color) !important;
+  transition: all 0.3s ease !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.nutrition-goal-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+  opacity: 0.6;
+}
+
+.nutrition-goal-card:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+  border-color: var(--primary-color) !important;
+}
+
+.nutrition-bar {
+  height: 14px !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  background: var(--bg-tertiary) !important;
+  position: relative !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+.nutrition-bar .progress-fill {
+  height: 100% !important;
+  border-radius: 8px !important;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.nutrition-bar .progress-fill::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Enhanced Progress Bar Colors */
+.calories-progress {
+  background: linear-gradient(90deg, #3b82f6, #1d4ed8) !important;
+}
+
+.protein-progress {
+  background: linear-gradient(90deg, #0ea5e9, #0284c7) !important;
+}
+
+.fat-progress {
+  background: linear-gradient(90deg, #f59e0b, #d97706) !important;
+}
+
+.carbs-progress {
+  background: linear-gradient(90deg, #10b981, #059669) !important;
+}
+
+.sugar-progress {
+  background: linear-gradient(90deg, #f97316, #ea580c) !important;
+}
+
+.sodium-progress {
+  background: linear-gradient(90deg, #8b5cf6, #7c3aed) !important;
+}
+
+/* Added interactive card animations and modern alert styles */
+.interactive-card {
+  cursor: pointer !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.interactive-card:hover {
+  transform: translateY(-6px) scale(1.02) !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1) !important;
+  border-color: var(--primary-color) !important;
+}
+
+/* Modern Alert Styles */
+.alert-modern {
+  border: none !important;
+  border-radius: 12px !important;
+  padding: 1rem 1.25rem !important;
+  margin-bottom: 1rem !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  backdrop-filter: blur(10px) !important;
+  animation: slideInRight 0.3s ease-out !important;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
 /* Profile Section */
 .profile-header {
   text-align: center;
@@ -269,6 +473,7 @@
   letter-spacing: 0.5px;
 }
 
+/* Added responsive enhancements and mobile optimizations */
 /* Responsive Dashboard */
 @media (max-width: 768px) {
   .dashboard-stats {
@@ -286,5 +491,91 @@
 
   .stat-number {
     font-size: 2rem;
+  }
+
+  .nutrition-goal-card {
+    padding: 1rem !important;
+  }
+
+  .tip-item {
+    padding: 0.75rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  .tip-item strong {
+    font-size: 0.9rem;
+  }
+
+  .tip-item small {
+    font-size: 0.8rem;
+  }
+
+  .interactive-card:hover {
+    transform: translateY(-3px) scale(1.01) !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .nutrition-bar {
+    height: 12px !important;
+  }
+
+  .tip-item {
+    padding: 0.5rem !important;
+  }
+
+  .nutrition-goal-card {
+    padding: 0.75rem !important;
+  }
+}
+
+/* Added utility classes for enhanced user experience */
+/* Utility Classes */
+.spin {
+  animation: spin 1s linear infinite !important;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in !important;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.bounce-in {
+  animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) !important;
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
   }
 }

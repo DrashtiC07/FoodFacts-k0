@@ -484,30 +484,31 @@
       <!-- Fixed personalized tips to always show content and not disappear -->
       <!-- Enhanced personalized tips section to be always visible and dynamic -->
       <div class="card border-0 shadow-sm">
-        <div class="card-header bg-transparent border-0 p-4">
+        <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
           <h6 class="fw-bold mb-0">
             <i class="bi bi-lightbulb me-2 text-warning"></i>Personalized Tips
           </h6>
+          <button class="btn btn-sm btn-outline-secondary" onclick="refreshPersonalizedTips()" title="Refresh Tips">
+            <i class="bi bi-arrow-clockwise"></i>
+          </button>
         </div>
         <div class="card-body p-4" id="personalizedTipsContent">
-          {% if personalized_tips %}
-            {% for tip in personalized_tips %}
-              <div class="alert alert-{{ tip.type }} alert-sm mb-3 persistent-tip" data-priority="{{ tip.priority }}">
-                <i class="bi bi-{{ tip.icon }} me-2"></i>
+          {% for tip in personalized_tips %}
+          <div class="alert alert-{{ tip.color }} alert-sm mb-3 tip-item" data-tip-type="{{ tip.type }}" data-priority="{{ tip.priority }}">
+            <div class="d-flex align-items-start">
+              <i class="bi bi-{{ tip.icon }} me-2 flex-shrink-0 mt-1"></i>
+              <div>
+                <strong>{{ tip.title }}</strong><br>
                 <small>{{ tip.message }}</small>
               </div>
-            {% endfor %}
-          {% else %}
-            <!-- Fallback tips if no dynamic tips are generated -->
-            <div class="alert alert-info alert-sm mb-3 persistent-tip">
-              <i class="bi bi-info-circle me-2"></i>
-              <small>Welcome to your nutrition dashboard! Start scanning products to get personalized tips.</small>
             </div>
-            <div class="alert alert-success alert-sm mb-3 persistent-tip">
-              <i class="bi bi-droplet me-2"></i>
-              <small>Remember to stay hydrated! Aim for 8 glasses of water daily.</small>
-            </div>
-          {% endif %}
+          </div>
+          {% empty %}
+          <div class="alert alert-info alert-sm mb-3">
+            <i class="bi bi-info-circle me-2"></i>
+            <small>Keep tracking your nutrition to get personalized tips!</small>
+          </div>
+          {% endfor %}
         </div>
       </div>
     </div>
@@ -1002,6 +1003,15 @@
     padding: 1.5rem !important;
   }
 }
+
+.spin {
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
 </style>
 {% endblock %}
 
@@ -1031,31 +1041,59 @@ document.addEventListener('DOMContentLoaded', function() {
         }, duration);
     }
     
-    // Update personalized tips dynamically
     function updatePersonalizedTips(progressData) {
-        // Tips are now generated server-side and remain persistent
-        // This function ensures they stay visible and can be updated via AJAX if needed
-        const tipsContainer = document.getElementById('personalizedTipsContent');
-        if (tipsContainer) {
-            const tips = tipsContainer.querySelectorAll('.persistent-tip');
-            tips.forEach(tip => {
-                // Ensure all persistent tips remain visible
-                tip.style.display = 'block';
-                tip.style.opacity = '1';
-            });
+        // This function now only updates tip visibility based on current data
+        // Tips are generated server-side and remain permanently visible
+        console.log('[v0] Updating personalized tips with progress data:', progressData);
+        
+        // Update tip relevance based on current progress
+        const tips = document.querySelectorAll('.tip-item');
+        tips.forEach(tip => {
+            const tipType = tip.getAttribute('data-tip-type');
+            const priority = parseInt(tip.getAttribute('data-priority'));
+            
+            // Ensure all tips remain visible - never hide them
+            tip.style.display = 'block';
+            tip.style.opacity = '1';
+            
+            // Add visual emphasis for critical tips
+            if (tipType === 'critical') {
+                tip.classList.add('border-danger');
+                tip.style.borderWidth = '2px';
+            } else if (tipType === 'success') {
+                tip.classList.add('border-success');
+            }
+        });
+    }
+
+    function refreshPersonalizedTips() {
+        console.log('[v0] Refreshing personalized tips');
+        
+        // Show loading state
+        const tipsContent = document.getElementById('personalizedTipsContent');
+        if (tipsContent) {
+            const originalContent = tipsContent.innerHTML;
+            tipsContent.innerHTML = '<div class="text-center p-3"><i class="bi bi-arrow-clockwise spin"></i> Refreshing tips...</div>';
+            
+            // Reload the page to get fresh tips after a short delay
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
         }
     }
-    
-    const personalizedTipsContent = document.getElementById('personalizedTipsContent');
-    if (personalizedTipsContent) {
-        // Create a robust MutationObserver to prevent any hiding of tips
+
+    function protectPersonalizedTips() {
+        const tipsContainer = document.getElementById('personalizedTipsContent');
+        if (!tipsContainer) return;
+        
+        // Create multiple layers of protection
         const observer = new MutationObserver(function(mutations) {
             mutations.forEach(function(mutation) {
                 if (mutation.type === 'childList' || mutation.type === 'attributes') {
-                    // Ensure all persistent tips remain visible
-                    const persistentTips = personalizedTipsContent.querySelectorAll('.persistent-tip');
-                    persistentTips.forEach(tip => {
-                        if (tip.style.display === 'none' || tip.style.visibility === 'hidden' || tip.style.opacity === '0') {
+                    // Ensure all tips remain visible
+                    const tips = tipsContainer.querySelectorAll('.tip-item');
+                    tips.forEach(tip => {
+                        if (tip.style.display === 'none' || tip.style.visibility === 'hidden') {
                             tip.style.display = 'block';
                             tip.style.visibility = 'visible';
                             tip.style.opacity = '1';
@@ -1065,16 +1103,16 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
         
-        observer.observe(personalizedTipsContent, {
+        observer.observe(tipsContainer, {
             childList: true,
             subtree: true,
             attributes: true,
-            attributeFilter: ['style', 'class', 'hidden']
+            attributeFilter: ['style', 'class']
         });
         
-        // Additional protection: prevent any JavaScript from hiding tips
+        // Additional protection with interval check
         setInterval(() => {
-            const tips = personalizedTipsContent.querySelectorAll('.persistent-tip');
+            const tips = tipsContainer.querySelectorAll('.tip-item');
             tips.forEach(tip => {
                 if (tip.style.display === 'none' || tip.style.visibility === 'hidden' || tip.style.opacity === '0') {
                     tip.style.display = 'block';
@@ -1082,9 +1120,25 @@ document.addEventListener('DOMContentLoaded', function() {
                     tip.style.opacity = '1';
                 }
             });
-        }, 1000);
+        }, 2000);
+        
+        console.log('[v0] Personalized tips protection activated');
     }
 
+    document.addEventListener('DOMContentLoaded', function() {
+        protectPersonalizedTips();
+        
+        // Ensure tips are visible on initial load
+        setTimeout(() => {
+            const tips = document.querySelectorAll('.tip-item');
+            tips.forEach(tip => {
+                tip.style.display = 'block';
+                tip.style.visibility = 'visible';
+                tip.style.opacity = '1';
+            });
+        }, 500);
+    });
+    
     // Enhanced preset functionality with proper AJAX calls
     const presetButtons = document.querySelectorAll('.preset-goal-btn');
     const presetModal = new bootstrap.Modal(document.getElementById('presetConfirmModal'));
