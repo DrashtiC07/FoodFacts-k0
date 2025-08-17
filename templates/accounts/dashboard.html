@@ -1029,8 +1029,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     if (progressBar) {
                         progressBar.style.width = Math.min(progress, 100) + '%';
-                        progressBar.style.display = 'block';
-                        progressBar.style.opacity = '1';
                     }
                     
                     if (progressText) {
@@ -1038,51 +1036,29 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     
                     if (remainingElement && data.remaining && data.remaining[nutrient] !== undefined) {
-                        const unit = nutrient === 'calories' ? 'kcal' : 'g';
-                        remainingElement.textContent = data.remaining[nutrient] + ' ' + unit + ' left';
+                        const unit = nutrient === 'calories' ? ' kcal' : 'g';
+                        remainingElement.textContent = data.remaining[nutrient] + unit + ' left';
                     }
                 }
             });
         }
     }
 
-    const tipsContainer = document.getElementById('personalizedTipsContent');
-    if (tipsContainer) {
-        // Remove any existing fade-out or hide animations
-        tipsContainer.style.opacity = '1';
-        tipsContainer.style.display = 'block';
-        tipsContainer.style.visibility = 'visible';
-        
-        // Prevent any future hiding
-        const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                if (mutation.type === 'attributes' && 
-                    (mutation.attributeName === 'style' || mutation.attributeName === 'class')) {
-                    if (tipsContainer.style.display === 'none' || 
-                        tipsContainer.style.visibility === 'hidden' ||
-                        tipsContainer.style.opacity === '0') {
-                        tipsContainer.style.opacity = '1';
-                        tipsContainer.style.display = 'block';
-                        tipsContainer.style.visibility = 'visible';
-                    }
-                }
-            });
-        });
-        observer.observe(tipsContainer, { attributes: true });
-    }
-
-    // Enhanced nutrition goals form submission
-    const nutritionForm = document.getElementById('nutritionGoalsForm');
-    if (nutritionForm) {
-        nutritionForm.addEventListener('submit', function(e) {
+    // Enhanced goal setting form submission
+    const goalForm = document.getElementById('nutritionGoalsForm');
+    if (goalForm) {
+        goalForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const formData = new FormData(this);
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.textContent;
+            const submitButton = this.querySelector('button[type="submit"]');
+            const originalText = submitButton ? submitButton.innerHTML : '';
             
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Saving...';
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Saving...';
+            }
+            
+            const formData = new FormData(this);
             
             fetch(this.action, {
                 method: 'POST',
@@ -1091,11 +1067,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     'X-Requested-With': 'XMLHttpRequest',
                 }
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
+                console.log('[v0] Response data:', data);
                 if (data.success) {
-                    console.log('[v0] Goals saved successfully');
-                    
+                    // Update progress bars immediately
                     updateProgressBars(data);
                     
                     // Close modal
@@ -1107,12 +1088,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Show success message
                     const alertDiv = document.createElement('div');
                     alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed';
-                    alertDiv.style.top = '20px';
-                    alertDiv.style.right = '20px';
-                    alertDiv.style.zIndex = '9999';
+                    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
                     alertDiv.innerHTML = `
-                        <i class="bi bi-check-circle me-2"></i>
-                        Nutrition goals updated successfully!
+                        <i class="bi bi-check-circle me-2"></i>${data.message}
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     `;
                     document.body.appendChild(alertDiv);
@@ -1124,46 +1102,28 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }, 5000);
                     
-                    // Update the displayed values in the cards directly
-                    const nutrients = ['calories', 'protein', 'fat', 'carbs', 'sugar', 'sodium'];
-                    nutrients.forEach(nutrient => {
-                        const card = document.querySelector(`[data-nutrient="${nutrient}"]`);
-                        if (card && data.goals && data.goals[nutrient + '_target']) {
-                            const badge = card.querySelector('.badge');
-                            if (badge) {
-                                const consumed = data.goals[nutrient + '_consumed'] || 0;
-                                const target = data.goals[nutrient + '_target'];
-                                const unit = nutrient === 'calories' ? 'kcal' : 'g';
-                                badge.textContent = `${consumed}/${target}${unit === 'kcal' ? '' : unit}`;
-                            }
-                        }
-                    });
-                    
+                    // Reload page after short delay to show updated values
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
                 } else {
                     console.error('[v0] Server error:', data.error);
-                    alert('Error saving goals: ' + (data.error || 'Unknown error'));
+                    alert('Error: ' + (data.error || 'Failed to save goals'));
                 }
             })
             .catch(error => {
-                console.error('[v0] Network error:', error);
-                alert('Network error. Please try again.');
+                console.error('[v0] Fetch error:', error);
+                alert('An error occurred while saving goals. Please try again.');
             })
             .finally(() => {
-                submitBtn.disabled = false;
-                submitBtn.textContent = originalText;
+                // Reset button state
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalText;
+                }
             });
         });
     }
-
-    setTimeout(() => {
-        const progressBars = document.querySelectorAll('.progress-bar');
-        progressBars.forEach(bar => {
-            if (bar.style.width && parseFloat(bar.style.width) > 0) {
-                bar.style.display = 'block';
-                bar.style.opacity = '1';
-            }
-        });
-    }, 100);
 });
 </script>
 {% endblock %}
