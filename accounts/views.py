@@ -85,14 +85,37 @@ def dashboard(request):
         }
     )
 
-    dietary_goals.reset_daily_if_needed()
+    try:
+        dietary_goals.reset_daily_if_needed()
+    except AttributeError:
+        # If method doesn't exist, manually reset if needed
+        today = timezone.now().date()
+        if not hasattr(dietary_goals, 'last_reset_date') or dietary_goals.last_reset_date < today:
+            dietary_goals.calories_consumed = 0
+            dietary_goals.protein_consumed = 0
+            dietary_goals.fat_consumed = 0
+            dietary_goals.carbs_consumed = 0
+            if hasattr(dietary_goals, 'sugar_consumed'):
+                dietary_goals.sugar_consumed = 0
+                dietary_goals.sodium_consumed = 0
+                dietary_goals.fiber_consumed = 0
+                dietary_goals.saturated_fat_consumed = 0
+            dietary_goals.last_reset_date = today
+            dietary_goals.save()
 
     nutrients = ['calories', 'protein', 'fat', 'carbs', 'sugar', 'sodium', 'fiber', 'saturated_fat']
     progress_data = {}
     remaining_data = {}
     
     for nutrient in nutrients:
-        progress_data[f"{nutrient}_progress"] = dietary_goals.get_progress_percentage(nutrient)
+        try:
+            progress_data[f"{nutrient}_progress"] = dietary_goals.get_progress_percentage(nutrient)
+        except AttributeError:
+            # Fallback calculation if method doesn't exist
+            consumed = getattr(dietary_goals, f"{nutrient}_consumed", 0)
+            target = getattr(dietary_goals, f"{nutrient}_target", 1)
+            progress_data[f"{nutrient}_progress"] = min((consumed / target * 100), 100) if target > 0 else 0
+        
         consumed = getattr(dietary_goals, f"{nutrient}_consumed", 0)
         target = getattr(dietary_goals, f"{nutrient}_target", 0)
         remaining_data[f"{nutrient}_remaining"] = max(0, target - consumed)
