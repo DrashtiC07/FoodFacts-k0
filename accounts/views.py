@@ -151,7 +151,7 @@ def dashboard(request):
 @login_required
 @require_POST
 def update_nutrition_goals(request):
-    """Update user's nutrition goals via AJAX with enhanced error handling"""
+    """Update user's nutrition goals with proper redirect handling"""
     try:
         dietary_goals, created = DietaryGoal.objects.get_or_create(user=request.user)
         
@@ -165,19 +165,47 @@ def update_nutrition_goals(request):
         
         # Validate ranges
         if not (500 <= calories_target <= 5000):
-            return JsonResponse({'success': False, 'error': 'Calories target must be between 500 and 5000'})
+            error_msg = 'Calories target must be between 500 and 5000'
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': error_msg})
+            messages.error(request, error_msg)
+            return redirect('accounts:dashboard')
+            
         if not (10 <= protein_target <= 300):
-            return JsonResponse({'success': False, 'error': 'Protein target must be between 10 and 300g'})
+            error_msg = 'Protein target must be between 10 and 300g'
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': error_msg})
+            messages.error(request, error_msg)
+            return redirect('accounts:dashboard')
+            
         if not (10 <= fat_target <= 200):
-            return JsonResponse({'success': False, 'error': 'Fat target must be between 10 and 200g'})
+            error_msg = 'Fat target must be between 10 and 200g'
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': error_msg})
+            messages.error(request, error_msg)
+            return redirect('accounts:dashboard')
+            
         if not (50 <= carbs_target <= 800):
-            return JsonResponse({'success': False, 'error': 'Carbs target must be between 50 and 800g'})
+            error_msg = 'Carbs target must be between 50 and 800g'
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': error_msg})
+            messages.error(request, error_msg)
+            return redirect('accounts:dashboard')
+            
         if not (10 <= sugar_target <= 200):
-            return JsonResponse({'success': False, 'error': 'Sugar target must be between 10 and 200g'})
+            error_msg = 'Sugar target must be between 10 and 200g'
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': error_msg})
+            messages.error(request, error_msg)
+            return redirect('accounts:dashboard')
+            
         if not (500 <= sodium_target <= 5000):
-            return JsonResponse({'success': False, 'error': 'Sodium target must be between 500 and 5000mg'})
+            error_msg = 'Sodium target must be between 500 and 5000mg'
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': error_msg})
+            messages.error(request, error_msg)
+            return redirect('accounts:dashboard')
         
-        # Update goals
         dietary_goals.calories_target = calories_target
         dietary_goals.protein_target = protein_target
         dietary_goals.fat_target = fat_target
@@ -186,39 +214,51 @@ def update_nutrition_goals(request):
         dietary_goals.sodium_target = sodium_target
         dietary_goals.save()
         
-        # Calculate new progress percentages for response
-        calories_progress = min((dietary_goals.calories_consumed / dietary_goals.calories_target * 100), 100) if dietary_goals.calories_target > 0 else 0
-        protein_progress = min((dietary_goals.protein_consumed / dietary_goals.protein_target * 100), 100) if dietary_goals.protein_target > 0 else 0
-        fat_progress = min((dietary_goals.fat_consumed / dietary_goals.fat_target * 100), 100) if dietary_goals.fat_target > 0 else 0
-        carbs_progress = min((dietary_goals.carbs_consumed / dietary_goals.carbs_target * 100), 100) if dietary_goals.carbs_target > 0 else 0
-        sugar_progress = min((dietary_goals.sugar_consumed / dietary_goals.sugar_target * 100), 100) if dietary_goals.sugar_target > 0 else 0
-        sodium_progress = min((dietary_goals.sodium_consumed / dietary_goals.sodium_target * 100), 100) if dietary_goals.sodium_target > 0 else 0
-        
-        return JsonResponse({
-            'success': True,
-            'message': 'Your nutrition goals have been updated successfully!',
-            'progress': {
-                'calories': calories_progress,
-                'protein': protein_progress,
-                'fat': fat_progress,
-                'carbs': carbs_progress,
-                'sugar': sugar_progress,
-                'sodium': sodium_progress
-            },
-            'remaining': {
-                'calories': max(0, dietary_goals.calories_target - dietary_goals.calories_consumed),
-                'protein': max(0, dietary_goals.protein_target - dietary_goals.protein_consumed),
-                'fat': max(0, dietary_goals.fat_target - dietary_goals.fat_consumed),
-                'carbs': max(0, dietary_goals.carbs_target - dietary_goals.carbs_consumed),
-                'sugar': max(0, dietary_goals.sugar_target - dietary_goals.sugar_consumed),
-                'sodium': max(0, dietary_goals.sodium_target - dietary_goals.sodium_consumed)
-            }
-        })
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            # Return JSON for AJAX requests
+            calories_progress = min((dietary_goals.calories_consumed / dietary_goals.calories_target * 100), 100) if dietary_goals.calories_target > 0 else 0
+            protein_progress = min((dietary_goals.protein_consumed / dietary_goals.protein_target * 100), 100) if dietary_goals.protein_target > 0 else 0
+            fat_progress = min((dietary_goals.fat_consumed / dietary_goals.fat_target * 100), 100) if dietary_goals.fat_target > 0 else 0
+            carbs_progress = min((dietary_goals.carbs_consumed / dietary_goals.carbs_target * 100), 100) if dietary_goals.carbs_target > 0 else 0
+            sugar_progress = min((dietary_goals.sugar_consumed / dietary_goals.sugar_target * 100), 100) if dietary_goals.sugar_target > 0 else 0
+            sodium_progress = min((dietary_goals.sodium_consumed / dietary_goals.sodium_target * 100), 100) if dietary_goals.sodium_target > 0 else 0
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Your nutrition goals have been updated successfully!',
+                'progress': {
+                    'calories': calories_progress,
+                    'protein': protein_progress,
+                    'fat': fat_progress,
+                    'carbs': carbs_progress,
+                    'sugar': sugar_progress,
+                    'sodium': sodium_progress
+                },
+                'remaining': {
+                    'calories': max(0, dietary_goals.calories_target - dietary_goals.calories_consumed),
+                    'protein': max(0, dietary_goals.protein_target - dietary_goals.protein_consumed),
+                    'fat': max(0, dietary_goals.fat_target - dietary_goals.fat_consumed),
+                    'carbs': max(0, dietary_goals.carbs_target - dietary_goals.carbs_consumed),
+                    'sugar': max(0, dietary_goals.sugar_target - dietary_goals.sugar_consumed),
+                    'sodium': max(0, dietary_goals.sodium_target - dietary_goals.sodium_consumed)
+                }
+            })
+        else:
+            messages.success(request, 'Your nutrition goals have been updated successfully!')
+            return redirect('accounts:dashboard')
         
     except (ValueError, TypeError) as e:
-        return JsonResponse({'success': False, 'error': 'Invalid input values. Please enter valid numbers.'})
+        error_msg = 'Invalid input values. Please enter valid numbers.'
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'success': False, 'error': error_msg})
+        messages.error(request, error_msg)
+        return redirect('accounts:dashboard')
     except Exception as e:
-        return JsonResponse({'success': False, 'error': f'An error occurred: {str(e)}'})
+        error_msg = f'An error occurred: {str(e)}'
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'success': False, 'error': error_msg})
+        messages.error(request, error_msg)
+        return redirect('accounts:dashboard')
 
 @login_required
 @require_POST
