@@ -479,6 +479,7 @@
       </div>
 
       <!-- Fixed personalized tips to always show content and not disappear -->
+      <!-- Enhanced personalized tips section to be always visible and dynamic -->
       <div class="card border-0 shadow-sm">
         <div class="card-header bg-transparent border-0 p-4">
           <h6 class="fw-bold mb-0">
@@ -486,53 +487,43 @@
           </h6>
         </div>
         <div class="card-body p-4" id="personalizedTipsContent">
-          <!-- Always show at least one tip -->
-          <div class="alert alert-success alert-sm mb-3">
+          <!-- Always show dynamic tips based on user activity -->
+          <div class="alert alert-success alert-sm mb-3" id="activityTip">
             <i class="bi bi-trophy me-2"></i>
             <small>Keep up the great work! You've been active for {{ days_active|default:1 }} days.</small>
           </div>
           
-          {% if calories_progress < 50 %}
-          <div class="alert alert-info alert-sm mb-3">
+          <div class="alert alert-info alert-sm mb-3" id="calorieTip" {% if calories_progress >= 50 %}style="display: none;"{% endif %}>
             <i class="bi bi-info-circle me-2"></i>
             <small>You're under your calorie goal. Consider adding a healthy snack!</small>
           </div>
-          {% endif %}
           
-          {% if protein_progress < 70 %}
-          <div class="alert alert-warning alert-sm mb-3">
+          <div class="alert alert-warning alert-sm mb-3" id="proteinTip" {% if protein_progress >= 70 %}style="display: none;"{% endif %}>
             <i class="bi bi-exclamation-triangle me-2"></i>
             <small>Boost your protein intake with lean meats, beans, or nuts.</small>
           </div>
-          {% endif %}
           
-          {% if recent_scans_count == 0 %}
-          <div class="alert alert-primary alert-sm mb-3">
+          <div class="alert alert-primary alert-sm mb-3" id="scanTip" {% if recent_scans_count > 0 %}style="display: none;"{% endif %}>
             <i class="bi bi-camera me-2"></i>
             <small>Scan a product this week to track your nutrition!</small>
           </div>
-          {% else %}
-          <div class="alert alert-info alert-sm mb-3">
+          
+          <div class="alert alert-info alert-sm mb-3" id="scanSuccessTip" {% if recent_scans_count == 0 %}style="display: none;"{% endif %}>
             <i class="bi bi-graph-up me-2"></i>
             <small>Great job! You've scanned {{ recent_scans_count }} product{{ recent_scans_count|pluralize }} this week.</small>
           </div>
-          {% endif %}
           
-          <!-- Weekly sugar intake tip -->
-          {% if sugar_progress > 80 %}
-          <div class="alert alert-warning alert-sm mb-3">
+          <div class="alert alert-warning alert-sm mb-3" id="sugarHighTip" {% if sugar_progress <= 80 %}style="display: none;"{% endif %}>
             <i class="bi bi-exclamation-circle me-2"></i>
             <small>Your sugar intake is high this week. Try choosing low-sugar alternatives.</small>
           </div>
-          {% elif sugar_progress < 30 %}
-          <div class="alert alert-success alert-sm mb-3">
+          
+          <div class="alert alert-success alert-sm mb-3" id="sugarLowTip" {% if sugar_progress >= 30 %}style="display: none;"{% endif %}>
             <i class="bi bi-check-circle me-2"></i>
             <small>Excellent! You're keeping your sugar intake low this week.</small>
           </div>
-          {% endif %}
           
-          <!-- Hydration reminder -->
-          <div class="alert alert-info alert-sm">
+          <div class="alert alert-info alert-sm" id="hydrationTip">
             <i class="bi bi-droplet me-2"></i>
             <small>Remember to stay hydrated! Aim for 8 glasses of water daily.</small>
           </div>
@@ -884,7 +875,7 @@
 </div>
 
 <!-- Added Preset Confirmation Modal -->
-<!-- Preset Confirmation Modal -->
+<!-- Enhanced preset confirmation modal with better styling -->
 <div class="modal fade" id="presetConfirmModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content border-0 shadow-lg">
@@ -1033,217 +1024,196 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize tooltips
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-
-function resetDailyGoals() {
-    if (confirm('Are you sure you want to reset today\'s nutrition tracking? This will set all consumed values to zero.')) {
-        fetch('{% url "accounts:reset_daily_goals" %}', {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                'Content-Type': 'application/json',
-            },
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Error: ' + data.error);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while resetting goals.');
-        });
-    }
-}
-
-function exportNutritionData() {
-    const data = {
-        user: '{{ user.username }}',
-        goals: {
-            calories: {{ dietary_goals.calories_target|default:0 }},
-            protein: {{ dietary_goals.protein_target|default:0 }},
-            fat: {{ dietary_goals.fat_target|default:0 }},
-            carbs: {{ dietary_goals.carbs_target|default:0 }}
-        },
-        consumed: {
-            calories: {{ dietary_goals.calories_consumed|default:0 }},
-            protein: {{ dietary_goals.protein_consumed|default:0 }},
-            fat: {{ dietary_goals.fat_consumed|default:0 }},
-            carbs: {{ dietary_goals.carbs_consumed|default:0 }}
-        },
-        stats: {
-            totalScans: {{ scan_history|length }},
-            favorites: {{ favorite_products|length }},
-            reviews: {{ user_reviews|length }},
-            daysActive: {{ days_active }}
-        }
-    };
-    
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'nutrition-data-{{ user.username }}.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-}
-
-function updateProgressBars(data) {
-    // Update progress bars with new values
-    const nutrients = ['calories', 'protein', 'fat', 'carbs'];
-    
-    nutrients.forEach(nutrient => {
-        const progress = data.progress[nutrient] || 0;
-        const remaining = data.remaining[nutrient] || 0;
-        const target = data.targets ? data.targets[nutrient] : 0;
-        
-        // Update progress bar width
-        const progressBar = document.querySelector(`.nutrition-bar .progress-fill.bg-${nutrient === 'calories' ? 'primary' : nutrient === 'protein' ? 'info' : nutrient === 'fat' ? 'warning' : 'success'}`);
-        if (progressBar) {
-            progressBar.style.width = Math.min(progress, 100) + '%';
-        }
-        
-        // Update badge with current/target values
-        const badge = document.querySelector(`.badge:contains("${nutrient}")`);
-        if (badge && target) {
-            const consumed = target - remaining;
-            const unit = nutrient === 'calories' ? '' : 'g';
-            badge.textContent = `${consumed}/${target}${unit}`;
-        }
-        
-        // Update percentage text
-        const percentageText = document.querySelector(`.text-muted:contains("% of goal")`);
-        if (percentageText) {
-            percentageText.textContent = `${Math.round(progress)}% of goal`;
-        }
-        
-        // Update remaining text
-        const remainingText = document.querySelector(`.text-muted:contains("left")`);
-        if (remainingText) {
-            const unit = nutrient === 'calories' ? ' kcal' : 'g';
-            remainingText.textContent = `${remaining}${unit} left`;
-        }
-    });
-}
-
-// Enhanced goal setting with preset options and AJAX form submission
-document.addEventListener('DOMContentLoaded', function() {
     console.log('[v0] Dashboard JavaScript loaded');
     
-    // Handle Quick Preset button clicks
-    const presetButtons = document.querySelectorAll('.preset-goal-btn');
-    presetButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const preset = this.getAttribute('data-preset');
-            console.log('[v0] Preset button clicked:', preset);
-            
-            // Remove active state from all preset buttons
-            presetButtons.forEach(btn => btn.classList.remove('btn-primary', 'active'));
-            presetButtons.forEach(btn => btn.classList.add('btn-outline-primary'));
-            
-            // Add active state to clicked button
-            this.classList.remove('btn-outline-primary');
-            this.classList.add('btn-primary', 'active');
-            
-            // Set preset values based on selection
-            let presetValues = {};
-            
-            switch(preset) {
-                case 'weight-loss':
-                    presetValues = {
-                        calories: 1500,
-                        protein: 120,
-                        fat: 50,
-                        carbs: 150,
-                        sugar: 25,
-                        sodium: 2000,
-                        fiber: 25
-                    };
-                    break;
-                case 'maintenance':
-                    presetValues = {
-                        calories: 2000,
-                        protein: 100,
-                        fat: 65,
-                        carbs: 250,
-                        sugar: 50,
-                        sodium: 2300,
-                        fiber: 25
-                    };
-                    break;
-                case 'muscle-gain':
-                    presetValues = {
-                        calories: 2500,
-                        protein: 150,
-                        fat: 85,
-                        carbs: 300,
-                        sugar: 60,
-                        sodium: 2300,
-                        fiber: 30
-                    };
-                    break;
+    // Modern alert function
+    function showModernAlert(message, type = 'success', duration = 5000) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+        
+        const icon = type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-triangle' : 'info-circle';
+        alertDiv.innerHTML = `
+            <i class="bi bi-${icon} me-2"></i>${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(alertDiv);
+        
+        // Auto-remove alert after duration
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
             }
-            
-            // Update form fields with preset values
-            Object.keys(presetValues).forEach(nutrient => {
-                const input = document.getElementById(`id_${nutrient}_target`);
-                if (input) {
-                    input.value = presetValues[nutrient];
-                    // Trigger input event to update any listeners
-                    input.dispatchEvent(new Event('input', { bubbles: true }));
-                }
-            });
-            
-            console.log('[v0] Applied preset values:', presetValues);
-        });
-    });
+        }, duration);
+    }
     
-    // Single updateProgressBars function to avoid conflicts
+    // Update personalized tips dynamically
+    function updatePersonalizedTips(data) {
+        const calorieProgress = data.calories_progress || 0;
+        const proteinProgress = data.protein_progress || 0;
+        const sugarProgress = data.sugar_progress || 0;
+        
+        // Update calorie tip
+        const calorieTip = document.getElementById('calorieTip');
+        if (calorieTip) {
+            calorieTip.style.display = calorieProgress >= 50 ? 'none' : 'block';
+        }
+        
+        // Update protein tip
+        const proteinTip = document.getElementById('proteinTip');
+        if (proteinTip) {
+            proteinTip.style.display = proteinProgress >= 70 ? 'none' : 'block';
+        }
+        
+        // Update sugar tips
+        const sugarHighTip = document.getElementById('sugarHighTip');
+        const sugarLowTip = document.getElementById('sugarLowTip');
+        if (sugarHighTip && sugarLowTip) {
+            sugarHighTip.style.display = sugarProgress > 80 ? 'block' : 'none';
+            sugarLowTip.style.display = sugarProgress < 30 ? 'block' : 'none';
+        }
+    }
+    
+    // Enhanced updateProgressBars function
     function updateProgressBars(data) {
         console.log('[v0] Updating progress bars with data:', data);
         
-        if (data.progress) {
-            const nutrients = ['calories', 'protein', 'fat', 'carbs', 'sugar', 'sodium'];
+        const nutrients = ['calories', 'protein', 'fat', 'carbs'];
+        
+        nutrients.forEach(nutrient => {
+            const progressBar = document.querySelector(`[data-nutrient="${nutrient}"] .progress-bar`);
+            const percentageSpan = document.querySelector(`[data-nutrient="${nutrient}"] .percentage`);
+            const remainingSpan = document.querySelector(`[data-nutrient="${nutrient}"] .remaining`);
             
-            nutrients.forEach(nutrient => {
-                const progress = data.progress[nutrient] || 0;
-                const card = document.querySelector(`[data-nutrient="${nutrient}"]`);
+            if (data.progress && data.progress[nutrient] !== undefined) {
+                const percentage = Math.min(data.progress[nutrient], 100);
                 
-                if (card) {
-                    const progressBar = card.querySelector('.progress-bar');
-                    const progressText = card.querySelector('.progress-text');
-                    const remainingElement = card.querySelector(`[data-remaining="${nutrient}"]`);
+                if (progressBar) {
+                    progressBar.style.width = percentage + '%';
                     
-                    if (progressBar) {
-                        progressBar.style.width = Math.min(progress, 100) + '%';
-                    }
-                    
-                    if (progressText) {
-                        progressText.textContent = Math.round(progress) + '% of goal';
-                    }
-                    
-                    if (remainingElement && data.remaining && data.remaining[nutrient] !== undefined) {
-                        const unit = nutrient === 'calories' ? ' kcal' : 'g';
-                        remainingElement.textContent = data.remaining[nutrient] + unit + ' left';
+                    // Set color based on completion
+                    progressBar.className = 'progress-bar';
+                    if (percentage < 50) {
+                        progressBar.classList.add('bg-danger');
+                    } else if (percentage < 80) {
+                        progressBar.classList.add('bg-warning');
+                    } else {
+                        progressBar.classList.add('bg-success');
                     }
                 }
-            });
-        }
+                
+                if (percentageSpan) {
+                    percentageSpan.textContent = Math.round(percentage) + '% of goal';
+                }
+            }
+            
+            if (data.remaining && data.remaining[nutrient] !== undefined && remainingSpan) {
+                const unit = nutrient === 'calories' ? 'kcal' : 'g';
+                remainingSpan.textContent = Math.max(0, data.remaining[nutrient]) + unit + ' left';
+            }
+        });
+        
+        // Update personalized tips
+        updatePersonalizedTips(data.progress || {});
     }
-
-    // Enhanced goal setting form submission
-    const goalForm = document.getElementById('nutritionGoalsForm');
-    if (goalForm) {
-        goalForm.addEventListener('submit', function(e) {
+    
+    // Enhanced preset functionality
+    const presetButtons = document.querySelectorAll('.preset-goal-btn');
+    const presetModal = new bootstrap.Modal(document.getElementById('presetConfirmModal'));
+    let selectedPreset = null;
+    
+    const presetData = {
+        'weight-loss': {
+            name: 'Weight Loss',
+            calories: 1500,
+            protein: 120,
+            fat: 50,
+            carbs: 150,
+            sugar: 25,
+            sodium: 1800,
+            fiber: 25
+        },
+        'maintenance': {
+            name: 'Maintenance',
+            calories: 2000,
+            protein: 100,
+            fat: 67,
+            carbs: 250,
+            sugar: 50,
+            sodium: 2000,
+            fiber: 25
+        },
+        'muscle-gain': {
+            name: 'Muscle Gain',
+            calories: 2500,
+            protein: 150,
+            fat: 83,
+            carbs: 313,
+            sugar: 60,
+            sodium: 2200,
+            fiber: 30
+        }
+    };
+    
+    presetButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const presetType = this.dataset.preset;
+            selectedPreset = presetData[presetType];
+            
+            if (selectedPreset) {
+                // Update modal content
+                document.getElementById('presetTypeName').textContent = selectedPreset.name;
+                document.getElementById('presetCalories').textContent = selectedPreset.calories;
+                document.getElementById('presetProtein').textContent = selectedPreset.protein;
+                document.getElementById('presetFat').textContent = selectedPreset.fat;
+                document.getElementById('presetCarbs').textContent = selectedPreset.carbs;
+                document.getElementById('presetSugar').textContent = selectedPreset.sugar;
+                document.getElementById('presetSodium').textContent = selectedPreset.sodium;
+                
+                // Show confirmation modal
+                presetModal.show();
+            }
+        });
+    });
+    
+    // Confirm preset application
+    document.getElementById('confirmPresetBtn').addEventListener('click', function() {
+        if (selectedPreset) {
+            // Fill form fields
+            document.getElementById('id_calories_target').value = selectedPreset.calories;
+            document.getElementById('id_protein_target').value = selectedPreset.protein;
+            document.getElementById('id_fat_target').value = selectedPreset.fat;
+            document.getElementById('id_carbs_target').value = selectedPreset.carbs;
+            document.getElementById('id_sugar_target').value = selectedPreset.sugar;
+            document.getElementById('id_sodium_target').value = selectedPreset.sodium;
+            if (document.getElementById('id_fiber_target')) {
+                document.getElementById('id_fiber_target').value = selectedPreset.fiber;
+            }
+            
+            // Hide modal
+            presetModal.hide();
+            
+            // Show success message
+            showModernAlert(`${selectedPreset.name} preset applied! Click "Save Goals" to confirm changes.`, 'info');
+            
+            // Highlight the Save Goals button
+            const saveButton = document.querySelector('#nutritionGoalsModal .btn-primary');
+            if (saveButton) {
+                saveButton.classList.add('btn-warning');
+                saveButton.innerHTML = '<i class="bi bi-exclamation-circle me-1"></i>Save Goals (Modified)';
+                setTimeout(() => {
+                    saveButton.classList.remove('btn-warning');
+                    saveButton.innerHTML = '<i class="bi bi-check-circle me-1"></i>Save Goals';
+                }, 3000);
+            }
+        }
+    });
+    
+    // Enhanced nutrition goals form submission
+    const nutritionForm = document.getElementById('nutritionGoalsForm');
+    if (nutritionForm) {
+        nutritionForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
             const submitButton = this.querySelector('button[type="submit"]');
@@ -1281,35 +1251,21 @@ document.addEventListener('DOMContentLoaded', function() {
                         modal.hide();
                     }
                     
-                    // Show success message
-                    const alertDiv = document.createElement('div');
-                    alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed';
-                    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-                    alertDiv.innerHTML = `
-                        <i class="bi bi-check-circle me-2"></i>${data.message}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    `;
-                    document.body.appendChild(alertDiv);
-                    
-                    // Auto-remove alert after 5 seconds
-                    setTimeout(() => {
-                        if (alertDiv.parentNode) {
-                            alertDiv.remove();
-                        }
-                    }, 5000);
+                    // Show modern success alert
+                    showModernAlert(data.message || 'Your nutrition goals have been updated successfully!', 'success');
                     
                     // Reload page after short delay to show updated values
                     setTimeout(() => {
                         location.reload();
-                    }, 1000);
+                    }, 1500);
                 } else {
                     console.error('[v0] Server error:', data.error);
-                    alert('Error: ' + (data.error || 'Failed to save goals'));
+                    showModernAlert('Error: ' + (data.error || 'Failed to save goals'), 'danger');
                 }
             })
             .catch(error => {
                 console.error('[v0] Fetch error:', error);
-                alert('An error occurred while saving goals. Please try again.');
+                showModernAlert('An error occurred while saving goals. Please try again.', 'danger');
             })
             .finally(() => {
                 // Reset button state
@@ -1320,8 +1276,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-});
-    // Manual nutrition form submission
+    
+    // Enhanced manual nutrition form
     const manualForm = document.getElementById('manualNutritionForm');
     if (manualForm) {
         manualForm.addEventListener('submit', function(e) {
@@ -1333,7 +1289,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const carbs = parseFloat(document.getElementById('manualCarbs').value) || 0;
             
             if (calories === 0 && protein === 0 && fat === 0 && carbs === 0) {
-                alert('Please enter at least one nutrition value.');
+                showModernAlert('Please enter at least one nutrition value.', 'warning');
                 return;
             }
             
@@ -1355,179 +1311,48 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 if (data.success) {
                     // Update progress bars without page reload
-                    updateProgressBarsFromData(data.updated_goals);
+                    updateProgressBars(data);
                     
                     // Clear form
                     manualForm.reset();
                     
-                    // Show success message
-                    showSuccessMessage('Nutrition added successfully!');
+                    // Show modern success message
+                    showModernAlert('Nutrition added successfully!', 'success');
                 } else {
-                    alert('Error adding nutrition: ' + (data.error || 'Unknown error'));
+                    showModernAlert('Error adding nutrition: ' + (data.error || 'Unknown error'), 'danger');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Error adding nutrition. Please try again.');
+                showModernAlert('Error adding nutrition. Please try again.', 'danger');
             });
         });
     }
-
-    // Enhanced preset functionality with confirmation
-    const presetButtons = document.querySelectorAll('.preset-goal-btn');
-    const presetModal = new bootstrap.Modal(document.getElementById('presetConfirmModal'));
-    let selectedPreset = null;
     
-    const presetData = {
-        'weight-loss': {
-            name: 'Weight Loss',
-            calories: 1500,
-            protein: 120,
-            fat: 50,
-            carbs: 150,
-            sugar: 25,
-            sodium: 1800
-        },
-        'maintenance': {
-            name: 'Maintenance',
-            calories: 2000,
-            protein: 100,
-            fat: 67,
-            carbs: 250,
-            sugar: 50,
-            sodium: 2000
-        },
-        'muscle-gain': {
-            name: 'Muscle Gain',
-            calories: 2500,
-            protein: 150,
-            fat: 83,
-            carbs: 313,
-            sugar: 60,
-            sodium: 2200
-        }
-    };
-    
-    presetButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const presetType = this.dataset.preset;
-            selectedPreset = presetData[presetType];
-            
-            if (selectedPreset) {
-                // Update modal content
-                document.getElementById('presetTypeName').textContent = selectedPreset.name;
-                document.getElementById('presetCalories').textContent = selectedPreset.calories;
-                document.getElementById('presetProtein').textContent = selectedPreset.protein;
-                document.getElementById('presetFat').textContent = selectedPreset.fat;
-                document.getElementById('presetCarbs').textContent = selectedPreset.carbs;
-                document.getElementById('presetSugar').textContent = selectedPreset.sugar;
-                document.getElementById('presetSodium').textContent = selectedPreset.sodium;
-                
-                // Show confirmation modal
-                presetModal.show();
-            }
-        });
-    });
-    
-    // Confirm preset application
-    document.getElementById('confirmPresetBtn').addEventListener('click', function() {
-        if (selectedPreset) {
-            // Fill form fields
-            document.getElementById('id_calories_target').value = selectedPreset.calories;
-            document.getElementById('id_protein_target').value = selectedPreset.protein;
-            document.getElementById('id_fat_target').value = selectedPreset.fat;
-            document.getElementById('id_carbs_target').value = selectedPreset.carbs;
-            document.getElementById('id_sugar_target').value = selectedPreset.sugar;
-            document.getElementById('id_sodium_target').value = selectedPreset.sodium;
-            
-            // Highlight active preset button
-            presetButtons.forEach(btn => btn.classList.remove('active'));
-            document.querySelector(`[data-preset="${Object.keys(presetData).find(key => presetData[key] === selectedPreset)}"]`).classList.add('active');
-            
-            // Hide modal
-            presetModal.hide();
-            
-            showSuccessMessage(`${selectedPreset.name} preset applied! Don't forget to save your goals.`);
-        }
-    });
-
-    // Helper functions
-    function updateProgressBarsFromData(goals) {
-        // Update calories
-        const caloriesProgress = (goals.calories_consumed / goals.calories_target) * 100;
-        updateProgressBar('calories', caloriesProgress, goals.calories_consumed, goals.calories_target, 'kcal');
-        
-        // Update protein
-        const proteinProgress = (goals.protein_consumed / goals.protein_target) * 100;
-        updateProgressBar('protein', proteinProgress, goals.calories_consumed, goals.calories_target, 'g');
-        
-        // Update fat
-        const fatProgress = (goals.fat_consumed / goals.fat_target) * 100;
-        updateProgressBar('fat', fatProgress, goals.fat_consumed, goals.fat_target, 'g');
-        
-        // Update carbs
-        const carbsProgress = (goals.carbs_consumed / goals.carbs_target) * 100;
-        updateProgressBar('carbs', carbsProgress, goals.carbs_consumed, goals.carbs_target, 'g');
-    }
-    
-    function updateProgressBar(nutrient, progress, consumed, target, unit) {
-        const card = document.querySelector(`[data-nutrient="${nutrient}"]`);
-        if (card) {
-            const progressBar = card.querySelector('.progress-fill');
-            const badge = card.querySelector('.badge');
-            const progressText = card.querySelector('.progress-text');
-            const remainingText = card.querySelector(`[data-remaining="${nutrient}"]`);
-            
-            if (progressBar) {
-                progressBar.style.width = Math.min(progress, 100) + '%';
-                
-                // Update color based on progress
-                let color;
-                if (progress < 50) {
-                    color = 'linear-gradient(90deg, #dc3545, #fd7e14)';
-                } else if (progress <= 80) {
-                    color = nutrient === 'calories' ? 'linear-gradient(90deg, #ffc107, #fd7e14)' :
-                           nutrient === 'protein' ? 'linear-gradient(90deg, #0ea5e9, #06b6d4)' :
-                           nutrient === 'fat' ? 'linear-gradient(90deg, #ffc107, #f59e0b)' :
-                           'linear-gradient(90deg, #198754, #10b981)';
-                } else {
-                    color = 'linear-gradient(90deg, #198754, #20c997)';
+    // Prevent tips from disappearing by protecting the tips container
+    const tipsContainer = document.getElementById('personalizedTipsContent');
+    if (tipsContainer) {
+        // Create a MutationObserver to prevent tips from being hidden
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList' || mutation.type === 'attributes') {
+                    // Ensure tips remain visible
+                    const tips = tipsContainer.querySelectorAll('.alert');
+                    tips.forEach(tip => {
+                        if (tip.style.display === 'none' && !tip.hasAttribute('data-should-hide')) {
+                            tip.style.display = 'block';
+                        }
+                    });
                 }
-                progressBar.style.background = color;
-            }
-            
-            if (badge) {
-                badge.textContent = `${consumed}/${target}${unit === 'kcal' ? '' : unit}`;
-            }
-            
-            if (progressText) {
-                progressText.textContent = `${Math.round(progress)}% of goal`;
-            }
-            
-            if (remainingText) {
-                const remaining = Math.max(0, target - consumed);
-                remainingText.textContent = `${remaining}${unit === 'kcal' ? ' kcal' : unit} left`;
-            }
-        }
-    }
-    
-    function showSuccessMessage(message) {
-        // Create and show a temporary success alert
-        const alert = document.createElement('div');
-        alert.className = 'alert alert-success alert-dismissible fade show position-fixed';
-        alert.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-        alert.innerHTML = `
-            <i class="bi bi-check-circle me-2"></i>${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        document.body.appendChild(alert);
+            });
+        });
         
-        // Auto-remove after 3 seconds
-        setTimeout(() => {
-            if (alert.parentNode) {
-                alert.remove();
-            }
-        }, 3000);
+        observer.observe(tipsContainer, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['style', 'class']
+        });
     }
 });
 </script>
