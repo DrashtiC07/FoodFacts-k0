@@ -205,20 +205,27 @@ class PersonalizedTip(models.Model):
         if not self.trigger_condition:
             return True
             
-        # Parse trigger condition and evaluate against current data
         try:
             # Simple evaluation for common conditions
             if 'sugar_progress > 90' in self.trigger_condition:
-                return current_nutrition_data.get('sugar_progress', 0) > 90
+                return current_nutrition_data.get('sugar_progress', 0) > 85  # Slightly lower threshold
             elif 'sodium_progress > 90' in self.trigger_condition:
-                return current_nutrition_data.get('sodium_progress', 0) > 90
+                return current_nutrition_data.get('sodium_progress', 0) > 85
             elif 'protein_progress < 50' in self.trigger_condition:
-                return current_nutrition_data.get('protein_progress', 0) < 50
+                return current_nutrition_data.get('protein_progress', 0) < 60  # Slightly higher threshold
             elif 'calories_progress < 40' in self.trigger_condition:
-                return current_nutrition_data.get('calories_progress', 0) < 40
+                return current_nutrition_data.get('calories_progress', 0) < 50
             elif 'fat_progress > 85' in self.trigger_condition:
-                return current_nutrition_data.get('fat_progress', 0) > 85
-            # Add more conditions as needed
+                return current_nutrition_data.get('fat_progress', 0) > 80
+            elif 'recent_scans >= 10' in self.trigger_condition:
+                return current_nutrition_data.get('recent_scans_count', 0) >= 8
+            elif 'recent_scans == 0' in self.trigger_condition:
+                return current_nutrition_data.get('recent_scans_count', 0) <= 1
+            elif 'days_active >= 30' in self.trigger_condition:
+                return current_nutrition_data.get('days_active', 0) >= 25
+            # General tips are always relevant
+            elif 'general_tip' in self.trigger_condition:
+                return True
             return True
         except:
             return True
