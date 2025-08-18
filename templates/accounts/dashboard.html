@@ -651,7 +651,91 @@
               <h6 class="fw-semibold mb-2">No favorites yet</h6>
               <p class="text-muted mb-3">Add products to your favorites to see them here</p>
               <a href="{% url 'scanner:search' %}" class="btn btn-outline-primary">
-                <i class="bi bi-search me-1"></i>Discover Products
+                <i class="bi bi-search me-1"></i>Browse Products
+              </a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Added Tracked Items panel for nutrition tracker visibility -->
+  <!-- Tracked Items Panel -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0 p-4">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0" style="font-family: 'Manrope', sans-serif;">
+              <i class="bi bi-clipboard-check me-2 text-success"></i>Tracked Items
+            </h5>
+            <span class="badge bg-primary">{{ tracked_items|length }} item{{ tracked_items|length|pluralize }}</span>
+          </div>
+        </div>
+        <div class="card-body p-4">
+          {% if tracked_items %}
+            <div class="row g-3">
+              {% for item in tracked_items %}
+              <div class="col-md-6 col-lg-4">
+                <div class="tracked-item-card p-3 rounded-3 border bg-light bg-opacity-50 h-100">
+                  <div class="d-flex align-items-start mb-2">
+                    <div class="product-image me-3">
+                      {% if item.product.image_url %}
+                      <img
+                        src="{{ item.product.image_url }}"
+                        alt="{{ item.product.name }}"
+                        class="rounded-3"
+                        width="50"
+                        height="50"
+                        style="object-fit: cover"
+                      />
+                      {% else %}
+                      <div class="bg-white rounded-3 d-flex align-items-center justify-content-center border" style="width: 50px; height: 50px">
+                        <i class="bi bi-image text-muted"></i>
+                      </div>
+                      {% endif %}
+                    </div>
+                    <div class="flex-grow-1">
+                      <h6 class="mb-1 fw-semibold">
+                        <a href="{% url 'scanner:product_detail' item.product.barcode %}" class="text-decoration-none text-dark">
+                          {{ item.product.name|truncatechars:25 }}
+                        </a>
+                      </h6>
+                      <div class="d-flex align-items-center gap-2 mb-1">
+                        {% if item.product.health_score %}
+                        <span class="badge bg-{% if item.product.health_score >= 70 %}success{% elif item.product.health_score >= 40 %}warning{% else %}danger{% endif %} badge-sm">
+                          {{ item.product.health_score }}
+                        </span>
+                        {% endif %}
+                        {% if item.product.nova_group %}
+                        <span class="badge bg-{% if item.product.nova_group == 1 %}success{% elif item.product.nova_group == 2 %}info{% elif item.product.nova_group == 3 %}warning{% else %}danger{% endif %} badge-sm">
+                          NOVA {{ item.product.nova_group }}
+                        </span>
+                        {% endif %}
+                      </div>
+                      <small class="text-muted">{{ item.serving_size }}g serving</small>
+                    </div>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                      <i class="bi bi-clock me-1"></i>{{ item.added_at|timesince }} ago
+                    </small>
+                    <button class="btn btn-sm btn-outline-danger" onclick="removeTrackedItem({{ item.id }})" title="Remove from tracker">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-center py-5">
+              <i class="bi bi-clipboard-check display-1 text-muted mb-3"></i>
+              <h6 class="fw-semibold mb-2">No tracked items yet</h6>
+              <p class="text-muted mb-3">Add products to your nutrition tracker to see them here</p>
+              <a href="{% url 'scanner:search' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i>Start Tracking
               </a>
             </div>
           {% endif %}
@@ -1112,6 +1196,69 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Error refreshing tips:', error);
             });
         }
+    }
+
+    function removeTrackedItem(itemId) {
+        if (!confirm('Remove this item from your nutrition tracker?')) {
+            return;
+        }
+        
+        fetch('{% url "accounts:remove_tracked_item" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}',
+            },
+            body: JSON.stringify({'item_id': itemId})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message and reload to update the display
+                showToast(data.message, 'success');
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                showToast(data.error || 'Failed to remove item', 'error');
+            }
+        })
+        .catch(error => {
+            showToast('Failed to remove item from tracker', 'error');
+        });
+    }
+
+    function showToast(message, type = 'info') {
+        const toastContainer = document.getElementById('toast-container') || createToastContainer();
+        
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'primary'} border-0`;
+        toast.setAttribute('role', 'alert');
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'error' ? 'x-circle' : 'info-circle'} me-2"></i>
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        
+        toastContainer.appendChild(toast);
+        
+        const bsToast = new bootstrap.Toast(toast, {delay: 3000});
+        bsToast.show();
+        
+        toast.addEventListener('hidden.bs.toast', () => {
+            toast.remove();
+        });
+    }
+
+    function createToastContainer() {
+        const container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'toast-container position-fixed top-0 end-0 p-3';
+        container.style.zIndex = '1055';
+        document.body.appendChild(container);
+        return container;
     }
 
     function protectPersonalizedTips() {

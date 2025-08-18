@@ -100,7 +100,8 @@
                                 {% if is_favorite %}Remove from Favorites{% else %}Add to Favorites{% endif %}
                             </button>
                         </form>
-                        <button class="btn btn-outline-primary btn-lg" onclick="addToNutritionTracker()">
+                        <!-- Enhanced nutrition tracker button with confirmation toast -->
+                        <button class="btn btn-outline-primary btn-lg" onclick="addToNutritionTracker('{{ product.barcode }}', '{{ product.name }}')">
                             <i class="bi bi-plus-circle me-2"></i>Add to Nutrition Tracker
                         </button>
                     </div>
@@ -291,17 +292,47 @@
                         <i class="bi bi-info-circle me-2" style="color: var(--accent-color);"></i>Processing Level (NOVA {{ product.nova_group }})
                     </h4>
                 </div>
+                <!-- Enhanced NOVA section with collapsible details -->
                 <div class="card-body p-4">
                     {% if nova_info %}
                     <div class="row align-items-center">
                         <div class="col-md-8">
                             <h5 class="fw-semibold mb-2" style="color: var(--text-primary);">{{ nova_info.name }}</h5>
                             <p class="mb-3" style="color: var(--text-secondary);">{{ nova_info.description }}</p>
-                            <div class="mb-3">
-                                <h6 class="fw-semibold mb-2" style="color: var(--text-primary);">Health Impact:</h6>
-                                <p class="mb-0" style="color: var(--text-secondary);">{{ nova_info.health_impact }}</p>
+                            
+                            <!-- Collapsible section for detailed NOVA information -->
+                            <div class="accordion" id="novaAccordion">
+                                <div class="accordion-item border-0" style="background: var(--bg-secondary);">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                                data-bs-target="#novaDetails" style="background: var(--bg-secondary); color: var(--text-primary); border: none;">
+                                            <i class="bi bi-chevron-down me-2"></i>Learn More About NOVA {{ product.nova_group }}
+                                        </button>
+                                    </h2>
+                                    <div id="novaDetails" class="accordion-collapse collapse" data-bs-parent="#novaAccordion">
+                                        <div class="accordion-body">
+                                            <div class="mb-3">
+                                                <h6 class="fw-semibold mb-2" style="color: var(--text-primary);">Health Impact:</h6>
+                                                <p class="mb-0" style="color: var(--text-secondary);">{{ nova_info.health_impact }}</p>
+                                            </div>
+                                            <div class="mb-3">
+                                                <h6 class="fw-semibold mb-2" style="color: var(--text-primary);">Examples:</h6>
+                                                <ul class="mb-0" style="color: var(--text-secondary);">
+                                                    {% for example in nova_info.examples %}
+                                                    <li>{{ example }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </div>
+                                            <div class="mb-3">
+                                                <h6 class="fw-semibold mb-2" style="color: var(--text-primary);">Environmental Impact:</h6>
+                                                <p class="mb-0" style="color: var(--text-secondary);">{{ nova_info.environmental_impact }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="recommendation p-3 rounded" style="background: var(--bg-secondary); border-left: 4px solid {% if product.nova_group == 1 %}var(--health-excellent){% elif product.nova_group == 2 %}var(--accent-color){% elif product.nova_group == 3 %}var(--health-fair){% else %}var(--health-poor){% endif %};">
+                            
+                            <div class="recommendation p-3 rounded mt-3" style="background: var(--bg-secondary); border-left: 4px solid {% if product.nova_group == 1 %}var(--health-excellent){% elif product.nova_group == 2 %}var(--accent-color){% elif product.nova_group == 3 %}var(--health-fair){% else %}var(--health-poor){% endif %};">
                                 <small class="fw-medium" style="color: var(--text-primary);">
                                     <i class="bi bi-{{ nova_info.icon }} me-2"></i>{{ nova_info.recommendation }}
                                 </small>
@@ -317,6 +348,25 @@
                         </div>
                     </div>
                     {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <!-- Show unknown NOVA classification with auto-detect suggestion -->
+            <div class="card border-0 shadow-sm mb-4" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
+                <div class="card-header bg-transparent border-0 p-4">
+                    <h4 class="fw-bold mb-0" style="font-family: 'Work Sans', sans-serif; color: var(--text-primary);">
+                        <i class="bi bi-question-circle me-2" style="color: var(--text-muted);"></i>Processing Level (Unknown)
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="text-center py-3">
+                        <i class="bi bi-search" style="font-size: 2rem; color: var(--text-muted);"></i>
+                        <h6 class="mt-2 mb-2" style="color: var(--text-primary);">NOVA Classification Unknown</h6>
+                        <p class="mb-3" style="color: var(--text-muted);">We're analyzing the ingredients to determine the processing level.</p>
+                        <button class="btn btn-outline-primary btn-sm" onclick="suggestNovaGroup('{{ product.barcode }}')">
+                            <i class="bi bi-cpu me-1"></i>Auto-Detect Processing Level
+                        </button>
+                    </div>
                 </div>
             </div>
             {% endif %}
@@ -418,6 +468,22 @@
                 </div>
                 <div class="card-body p-4">
                     {% if additives_analysis.total_additives > 0 %}
+                    
+                    <!-- High Risk Additives Section -->
+                    {% if additives_analysis.controversial_count > 0 %}
+                    <div class="alert alert-warning mb-4" style="border-left: 4px solid var(--health-poor);">
+                        <h6 class="fw-bold mb-2" style="color: var(--health-poor);">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>⚠️ High Risk Additives Detected
+                        </h6>
+                        <p class="mb-2" style="color: var(--text-secondary);">
+                            This product contains {{ additives_analysis.controversial_count }} controversial additive{{ additives_analysis.controversial_count|pluralize }} that may have health concerns.
+                        </p>
+                        <button class="btn btn-outline-danger btn-sm" data-bs-toggle="collapse" data-bs-target="#highRiskAdditives">
+                            <i class="bi bi-info-circle me-1"></i>Learn More About Health Effects
+                        </button>
+                    </div>
+                    {% endif %}
+
                     <!-- Additives Summary -->
                     <div class="row mb-4">
                         <div class="col-md-6">
@@ -703,10 +769,106 @@ document.querySelectorAll('.star-label').forEach((star, index) => {
     });
 });
 
-// Add to nutrition tracker function
-function addToNutritionTracker() {
-    // Implementation for adding to nutrition tracker
-    alert('Added to nutrition tracker!');
+function addToNutritionTracker(barcode, productName) {
+    const servingSize = prompt(`Enter serving size in grams for "${productName}":`, '100');
+    
+    if (servingSize && !isNaN(servingSize) && servingSize > 0) {
+        fetch('{% url "accounts:add_to_nutrition_tracker" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                'barcode': barcode,
+                'serving_size': parseFloat(servingSize)
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success toast
+                showToast(data.message, 'success');
+                
+                // Show additional product info if available
+                if (data.product_info) {
+                    const info = data.product_info;
+                    const nutritionInfo = data.nutrition_added;
+                    
+                    setTimeout(() => {
+                        showToast(
+                            `Added: ${nutritionInfo.calories} cal, ${nutritionInfo.protein}g protein, ${nutritionInfo.fat}g fat, ${nutritionInfo.carbs}g carbs`,
+                            'info'
+                        );
+                    }, 2000);
+                }
+            } else {
+                showToast(data.error, 'error');
+            }
+        })
+        .catch(error => {
+            showToast('Failed to add to nutrition tracker', 'error');
+        });
+    }
+}
+
+function suggestNovaGroup(barcode) {
+    fetch('{% url "scanner:suggest_nova_group" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({'barcode': barcode})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(`Suggested NOVA Group: ${data.nova_group} - ${data.description}`, 'info');
+            // Optionally reload the page to show updated classification
+            setTimeout(() => location.reload(), 2000);
+        } else {
+            showToast(data.error, 'error');
+        }
+    })
+    .catch(error => {
+        showToast('Failed to analyze processing level', 'error');
+    });
+}
+
+function showToast(message, type = 'info') {
+    const toastContainer = document.getElementById('toast-container') || createToastContainer();
+    
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'primary'} border-0`;
+    toast.setAttribute('role', 'alert');
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'error' ? 'x-circle' : 'info-circle'} me-2"></i>
+                ${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    
+    toastContainer.appendChild(toast);
+    
+    const bsToast = new bootstrap.Toast(toast, {delay: 5000});
+    bsToast.show();
+    
+    toast.addEventListener('hidden.bs.toast', () => {
+        toast.remove();
+    });
+}
+
+function createToastContainer() {
+    const container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'toast-container position-fixed top-0 end-0 p-3';
+    container.style.zIndex = '1055';
+    document.body.appendChild(container);
+    return container;
 }
 </script>
 {% endblock %}

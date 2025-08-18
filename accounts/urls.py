@@ -14,6 +14,7 @@ urlpatterns = [
     path('update_nutrition_goals/', views.update_nutrition_goals, name='update_nutrition_goals'),
     path('reset_daily_goals/', views.reset_daily_goals, name='reset_daily_goals'),
     path('add_to_nutrition_tracker/', views.add_to_nutrition_tracker, name='add_to_nutrition_tracker'),
+    path('remove_tracked_item/', views.remove_tracked_item, name='remove_tracked_item'),
     path('add_manual_nutrition/', views.add_manual_nutrition, name='add_manual_nutrition'),
     path('toggle-theme/', views.toggle_theme, name='toggle_theme'),
     path('weekly-report/', views.weekly_nutrition_report, name='weekly_nutrition_report'),

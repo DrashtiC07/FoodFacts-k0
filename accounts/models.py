@@ -45,6 +45,34 @@ class FavoriteProduct(models.Model):
     def __str__(self):
         return f"{self.user.username}'s favorite: {self.product.name}"
 
+class TrackedItem(models.Model):
+    """Items added to user's nutrition tracker"""
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='tracked_items')
+    product = models.ForeignKey('scanner.Product', on_delete=models.CASCADE, related_name='tracked_by')
+    serving_size = models.FloatField(default=100.0, help_text="Serving size in grams")
+    added_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-added_at']
+    
+    @property
+    def calculated_nutrition(self):
+        """Calculate nutrition values based on serving size"""
+        if not self.product.nutrition_info:
+            return None
+        
+        multiplier = self.serving_size / 100  # Nutrition info is per 100g
+        nutrition = {}
+        
+        for key, value in self.product.nutrition_info.items():
+            if isinstance(value, (int, float)):
+                nutrition[key] = value * multiplier
+        
+        return nutrition
+    
+    def __str__(self):
+        return f"{self.user.username} tracked {self.product.name} ({self.serving_size}g)"
+
 class DietaryGoal(models.Model):
     """User's dietary goals and tracking"""
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='dietary_goals')

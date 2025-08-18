@@ -163,7 +163,7 @@ API <lambda> failed: HTTPSConnectionPool(host='api.upcitemdb.com', port=443): Re
 [v0] Loaded 0 reviews
 [v0] Successfully prepared all product data, rendering template
 [v0] Attempting to load product with barcode: 0050000029730
-[v0] Product found: Nestlé Sweet Cream All-Natural Creamer
+[v0] Product found: Nestlï¿½ Sweet Cream All-Natural Creamer
 [v0] Nutrition facts parsed from product info
 [v0] NOVA info loaded for group 4
 [v0] Additives analysis completed: 0 additives found

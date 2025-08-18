@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 import json
 
 from .forms import CustomUserCreationForm, LoginForm
-from .models import CustomUser, ProductReview, FavoriteProduct, DietaryGoal, WeeklyNutritionLog, PersonalizedTip
+from .models import CustomUser, ProductReview, FavoriteProduct, DietaryGoal, WeeklyNutritionLog, PersonalizedTip, TrackedItem
 from scanner.models import Product, ScanHistory
 
 def register(request):
@@ -68,6 +68,8 @@ def dashboard(request):
         product__barcode__gt=''
     ).select_related('product')[:10]
     print(f"[DEBUG] Dashboard - Favorite products count: {favorite_products.count()}")
+
+    tracked_items = TrackedItem.objects.filter(user=user).select_related('product')[:10]
 
     # Fetch user's reviews
     user_reviews = ProductReview.objects.filter(user=user).select_related('product').order_by('-created_at')[:5]
@@ -133,6 +135,7 @@ def dashboard(request):
         'user': user,
         'scan_history': scan_history,
         'favorite_products': favorite_products,
+        'tracked_items': tracked_items,
         'user_reviews': user_reviews,
         'dietary_goals': dietary_goals,
         'calories_progress': min(calories_progress, 100),
@@ -601,7 +604,7 @@ def add_review(request, barcode):
 @login_required
 @require_POST
 def add_to_nutrition_tracker(request):
-    """Add product nutrition to user's daily tracking"""
+    """Add product nutrition to user's daily tracking with confirmation toast"""
     try:
         data = json.loads(request.body)
         barcode = data.get('barcode')
@@ -609,6 +612,12 @@ def add_to_nutrition_tracker(request):
         
         product = get_object_or_404(Product, barcode=barcode)
         dietary_goals, created = DietaryGoal.objects.get_or_create(user=request.user)
+        
+        tracked_item = TrackedItem.objects.create(
+            user=request.user,
+            product=product,
+            serving_size=serving_size
+        )
         
         # Calculate nutrition values based on serving size
         if product.nutrition_info:
@@ -626,7 +635,19 @@ def add_to_nutrition_tracker(request):
             
             return JsonResponse({
                 'success': True,
-                'message': f'Added {product.name} to your nutrition tracker!'
+                'message': f'✅ Added {product.name} to your nutrition tracker!',
+                'product_info': {
+                    'name': product.name,
+                    'health_score': product.health_score,
+                    'nova_group': product.nova_group,
+                    'serving_size': serving_size
+                },
+                'nutrition_added': {
+                    'calories': int(nutrition.get('energy-kcal_100g', 0) * multiplier),
+                    'protein': int(nutrition.get('proteins_100g', 0) * multiplier),
+                    'fat': int(nutrition.get('fat_100g', 0) * multiplier),
+                    'carbs': int(nutrition.get('carbohydrates_100g', 0) * multiplier)
+                }
             })
         else:
             return JsonResponse({
@@ -634,6 +655,48 @@ def add_to_nutrition_tracker(request):
                 'error': 'No nutrition information available for this product'
             })
             
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
+@require_POST
+def remove_tracked_item(request):
+    """Remove item from nutrition tracker"""
+    try:
+        data = json.loads(request.body)
+        item_id = data.get('item_id')
+        
+        tracked_item = get_object_or_404(TrackedItem, id=item_id, user=request.user)
+        
+        # Remove nutrition from daily goals
+        dietary_goals = DietaryGoal.objects.get(user=request.user)
+        calculated_nutrition = tracked_item.calculated_nutrition
+        
+        if calculated_nutrition:
+            dietary_goals.calories_consumed -= int(calculated_nutrition.get('energy-kcal_100g', 0))
+            dietary_goals.protein_consumed -= int(calculated_nutrition.get('proteins_100g', 0))
+            dietary_goals.fat_consumed -= int(calculated_nutrition.get('fat_100g', 0))
+            dietary_goals.carbs_consumed -= int(calculated_nutrition.get('carbohydrates_100g', 0))
+            dietary_goals.sugar_consumed -= int(calculated_nutrition.get('sugars_100g', 0))
+            dietary_goals.sodium_consumed -= int(calculated_nutrition.get('sodium_100g', 0))
+            
+            # Ensure values don't go negative
+            dietary_goals.calories_consumed = max(0, dietary_goals.calories_consumed)
+            dietary_goals.protein_consumed = max(0, dietary_goals.protein_consumed)
+            dietary_goals.fat_consumed = max(0, dietary_goals.fat_consumed)
+            dietary_goals.carbs_consumed = max(0, dietary_goals.carbs_consumed)
+            dietary_goals.sugar_consumed = max(0, dietary_goals.sugar_consumed)
+            dietary_goals.sodium_consumed = max(0, dietary_goals.sodium_consumed)
+            
+            dietary_goals.save()
+        
+        tracked_item.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Removed {tracked_item.product.name} from tracker'
+        })
+        
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
 
@@ -759,7 +822,7 @@ def weekly_nutrition_report(request):
     weekly_logs = WeeklyNutritionLog.objects.filter(
         user=user,
         week_start_date__gte=four_weeks_ago
-    ).order_by('-week_start_date')
+    ).order_by('-week_start_date')[:4]
     
     # Get current dietary goals
     dietary_goals = DietaryGoal.objects.filter(user=user).first()

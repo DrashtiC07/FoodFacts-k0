@@ -305,57 +305,64 @@ class NovaGroupAnalyzer:
     
     @staticmethod
     def predict_nova_group(ingredients: str, category: str = '') -> int:
-        """Predict NOVA group based on ingredients and category"""
+        """Predict NOVA group based on ingredients and category with enhanced auto-detection"""
         if not ingredients:
             return 1  # Default to unprocessed if no ingredients info
         
         ingredients_lower = ingredients.lower()
         
-        # Ultra-processed indicators (Group 4)
         ultra_processed_indicators = [
             'high fructose corn syrup', 'hydrogenated', 'modified starch',
             'artificial flavor', 'artificial color', 'preservative',
             'emulsifier', 'stabilizer', 'thickener', 'anti-caking agent',
             'flavor enhancer', 'sweetener', 'acidity regulator',
             'monosodium glutamate', 'msg', 'sodium benzoate',
-            'potassium sorbate', 'calcium propionate'
+            'potassium sorbate', 'calcium propionate', 'tartrazine',
+            'aspartame', 'sucralose', 'carrageenan', 'xanthan gum',
+            'polyphosphate', 'maltodextrin', 'dextrose', 'glucose syrup'
         ]
         
-        # Processed indicators (Group 3)
         processed_indicators = [
             'added sugar', 'added salt', 'oil', 'vinegar',
-            'canned', 'smoked', 'cured', 'salted'
+            'canned', 'smoked', 'cured', 'salted', 'pickled',
+            'concentrated', 'refined', 'pasteurized'
         ]
         
-        # Check for ultra-processed indicators
+        whole_food_indicators = [
+            'fresh', 'raw', 'whole', 'natural', 'organic',
+            'unprocessed', 'pure', 'single ingredient'
+        ]
+        
+        # Count indicators
         ultra_count = sum(1 for indicator in ultra_processed_indicators 
                          if indicator in ingredients_lower)
-        
-        if ultra_count >= 2:
-            return 4
-        elif ultra_count >= 1:
-            return 4
-        
-        # Check for processed indicators
         processed_count = sum(1 for indicator in processed_indicators 
                             if indicator in ingredients_lower)
+        whole_food_count = sum(1 for indicator in whole_food_indicators 
+                              if indicator in ingredients_lower)
         
-        if processed_count >= 2:
-            return 3
-        elif processed_count >= 1:
-            return 3
+        ingredient_list = [i.strip() for i in ingredients.split(',') if i.strip()]
+        ingredient_count = len(ingredient_list)
         
-        # Check ingredient count (more ingredients often means more processed)
-        ingredient_count = len([i.strip() for i in ingredients.split(',') if i.strip()])
-        
-        if ingredient_count > 15:
+        # Auto-detect logic based on requirements
+        if ultra_count >= 5 or ingredient_count > 15:
+            return 4  # Ultra-processed
+        elif ultra_count >= 2:
             return 4
-        elif ingredient_count > 8:
+        elif ultra_count >= 1 and ingredient_count > 8:
+            return 4
+        elif processed_count >= 3 or (processed_count >= 1 and ingredient_count > 10):
+            return 3  # Processed
+        elif processed_count >= 1 and ingredient_count > 5:
             return 3
-        elif ingredient_count > 3:
-            return 2
-        else:
+        elif whole_food_count >= 2 and ingredient_count <= 3:
+            return 1  # Unprocessed/minimally processed
+        elif ingredient_count <= 2:
             return 1
+        elif ingredient_count <= 5:
+            return 2  # Processed culinary ingredients
+        else:
+            return 3  # Default to processed for ambiguous cases
 
 # Initialize global predictor instance
 eco_predictor = EcoScorePredictor()
