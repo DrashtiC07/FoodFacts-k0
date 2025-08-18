@@ -20,3 +20,153 @@ API <lambda> failed: 404 Client Error: Not Found for url: https://world.openfood
 Manual entry error for barcode 2345678901234: Product() got unexpected keyword arguments: 'fssai', 'source'
 Scan error: Product() got unexpected keyword arguments: 'fssai', 'source'
 Product detail error: Reverse for 'add_review' not found. 'add_review' is not a valid view function or pattern name.
+[v0] Attempting to load product with barcode: 8901207025365
+[v0] Product found: Honey
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8901262020015
+[v0] Product found: Cheese slices
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 2 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 6291100213146
+[v0] Product found: Khajoor Fard {date Crown} 500 GM
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8904335600336
+[v0] Product found: Muesli+
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8904004400731
+[v0] Product found: Aloo bhujia
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8901808000068
+[v0] Product found: weikfield custard powder vanilla
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8901058009705
+[v0] Product found: Veg atta noodles
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8901207005374
+[v0] Product found: Honey
+[v0] Nutrition facts parsed from product info
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8906007283144
+[v0] Product found: Fortune Soya Chunks-225g
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8904004401011
+[v0] Product found: mixture
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8906019270019
+[v0] Product found: Yakult
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 7622201762193
+[v0] Product found: Dairy Milk Silk Oreo
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8901491000772
+[v0] Product found: American Style Cream & Onion Flavour
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8906143890107
+[v0] Product found: dark chocolate peanut butter
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8901030535048
+[v0] Product found: Kissan Mix Fruit Jam
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 2 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8901207004421
+[v0] Product found: Real fruits juss anar
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Loading scan history for user: shiv (ID: 1)
+[v0] Scan history for user shiv: 31 scans found
+[v0] Scan 1: Real fruits juss anar by user shiv at 2025-08-17 06:59:27.906369+00:00
+[v0] Scan 2: Kissan Mix Fruit Jam by user shiv at 2025-08-17 06:57:31.466807+00:00
+[v0] Scan 3: dark chocolate peanut butter by user shiv at 2025-08-17 06:56:57.070494+00:00
+[v0] Loading scan history for user: shiv (ID: 1)
+[v0] Scan history for user shiv: 31 scans found
+[v0] Scan 1: Real fruits juss anar by user shiv at 2025-08-17 06:59:27.906369+00:00
+[v0] Scan 2: Kissan Mix Fruit Jam by user shiv at 2025-08-17 06:57:31.466807+00:00
+[v0] Scan 3: dark chocolate peanut butter by user shiv at 2025-08-17 06:56:57.070494+00:00
+[v0] Attempting to load product with barcode: 0075779311145
+[v0] Product found: Organic Raw Cane Sugar
+[v0] Nutrition facts loaded from database
+[v0] NOVA info loaded for group 2
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+API <lambda> failed: HTTPSConnectionPool(host='in.openfoodfacts.org', port=443): Read timed out. (read timeout=5)
+API <lambda> failed: HTTPSConnectionPool(host='world.openfoodfacts.org', port=443): Read timed out. (read timeout=5)
+API <lambda> failed: HTTPSConnectionPool(host='api.upcitemdb.com', port=443): Read timed out. (read timeout=5)
+API <lambda> failed: HTTPSConnectionPool(host='in.openfoodfacts.org', port=443): Read timed out. (read timeout=5)
+API <lambda> failed: HTTPSConnectionPool(host='world.openfoodfacts.org', port=443): Read timed out. (read timeout=5)
+API <lambda> failed: HTTPSConnectionPool(host='api.upcitemdb.com', port=443): Read timed out. (read timeout=5)
+[v0] Attempting to load product with barcode: 8906001387114
+[v0] Product found: Multi Grain High Fibre Bread
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 0050000029730
+[v0] Product found: Nestlé Sweet Cream All-Natural Creamer
+[v0] Nutrition facts parsed from product info
+[v0] NOVA info loaded for group 4
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 1 reviews
+[v0] Successfully prepared all product data, rendering template
