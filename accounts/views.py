@@ -106,6 +106,14 @@ def dashboard(request):
     sugar_progress = (dietary_goals.sugar_consumed / dietary_goals.sugar_target * 100) if dietary_goals.sugar_target > 0 else 0
     sodium_progress = (dietary_goals.sodium_consumed / dietary_goals.sodium_target * 100) if dietary_goals.sodium_target > 0 else 0
 
+    # Calculate remaining amounts
+    calories_remaining = max(0, dietary_goals.calories_target - dietary_goals.calories_consumed)
+    protein_remaining = max(0, dietary_goals.protein_target - dietary_goals.protein_consumed)
+    fat_remaining = max(0, dietary_goals.fat_target - dietary_goals.fat_consumed)
+    carbs_remaining = max(0, dietary_goals.carbs_target - dietary_goals.carbs_consumed)
+    sugar_remaining = max(0, dietary_goals.sugar_target - dietary_goals.sugar_consumed)
+    sodium_remaining = max(0, dietary_goals.sodium_target - dietary_goals.sodium_consumed)
+
     week_ago = today - timedelta(days=7)
     weekly_logs = WeeklyNutritionLog.objects.filter(
         user=user, 
@@ -136,12 +144,12 @@ def dashboard(request):
         'carbs_progress': min(carbs_progress, 100),
         'sugar_progress': min(sugar_progress, 100),
         'sodium_progress': min(sodium_progress, 100),
-        'calories_remaining': max(0, dietary_goals.calories_target - dietary_goals.calories_consumed),
-        'protein_remaining': max(0, dietary_goals.protein_target - dietary_goals.protein_consumed),
-        'fat_remaining': max(0, dietary_goals.fat_target - dietary_goals.fat_consumed),
-        'carbs_remaining': max(0, dietary_goals.carbs_target - dietary_goals.carbs_consumed),
-        'sugar_remaining': max(0, dietary_goals.sugar_target - dietary_goals.sugar_consumed),
-        'sodium_remaining': max(0, dietary_goals.sodium_target - dietary_goals.sodium_consumed),
+        'calories_remaining': calories_remaining,
+        'protein_remaining': protein_remaining,
+        'fat_remaining': fat_remaining,
+        'carbs_remaining': carbs_remaining,
+        'sugar_remaining': sugar_remaining,
+        'sodium_remaining': sodium_remaining,
         'recent_scans_count': recent_scans_count,
         'days_active': days_active,
         'weekly_logs': weekly_logs,
@@ -203,7 +211,7 @@ def get_or_create_persistent_tips(user, dietary_goals, calories_progress, protei
             tip.last_nutrition_snapshot = current_nutrition_data
             tip.updated_at = timezone.now()
             tip.save()
-
+    
     # Return active tips ordered by priority
     active_tips = PersonalizedTip.objects.filter(user=user, is_active=True).order_by('priority', '-created_at')[:5]
     
