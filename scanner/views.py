@@ -1355,3 +1355,101 @@ def scan_history(request):
         'user_scans_only': True,  # Flag to indicate user-specific filtering
         'current_user': request.user.username  # For debugging in template
     })
+
+@login_required
+def suggest_nova_group(request):
+    """Auto-detect NOVA group based on ingredients analysis"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            barcode = data.get('barcode')
+            
+            if not barcode:
+                return JsonResponse({'success': False, 'error': 'Barcode is required'})
+            
+            product = get_object_or_404(Product, barcode=barcode)
+            
+            if not product.ingredients:
+                return JsonResponse({'success': False, 'error': 'No ingredients available for analysis'})
+            
+            nova_group = auto_detect_nova_group(product.ingredients)
+            nova_info = get_nova_group_info(nova_group)
+            
+            # Update product with suggested NOVA group
+            product.nova_group = nova_group
+            product.save()
+            
+            return JsonResponse({
+                'success': True,
+                'nova_group': nova_group,
+                'description': nova_info['name'] if nova_info else f'NOVA Group {nova_group}',
+                'recommendation': nova_info['recommendation'] if nova_info else 'Processing level updated'
+            })
+            
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'error': 'Invalid JSON data'})
+        except Product.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Product not found'})
+        except Exception as e:
+            logger.error(f"NOVA group suggestion error: {str(e)}")
+            return JsonResponse({'success': False, 'error': 'Analysis failed'})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+def auto_detect_nova_group(ingredients_text):
+    """
+    Auto-detect NOVA group based on ingredients analysis
+    NOVA 1: Unprocessed or minimally processed foods
+    NOVA 2: Processed culinary ingredients  
+    NOVA 3: Processed foods
+    NOVA 4: Ultra-processed foods
+    """
+    if not ingredients_text:
+        return 4  # Default to ultra-processed if no ingredients
+    
+    ingredients_lower = ingredients_text.lower()
+    
+    # Count industrial additives (E-numbers and chemical names)
+    industrial_additives = [
+        'e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7', 'e8', 'e9',  # E-numbers
+        'sodium benzoate', 'potassium sorbate', 'calcium propionate',
+        'monosodium glutamate', 'msg', 'high fructose corn syrup',
+        'artificial flavor', 'artificial colour', 'artificial color',
+        'modified starch', 'hydrolyzed protein', 'maltodextrin',
+        'carrageenan', 'xanthan gum', 'guar gum', 'lecithin',
+        'tartrazine', 'sunset yellow', 'brilliant blue', 'allura red'
+    ]
+    
+    additive_count = sum(1 for additive in industrial_additives if additive in ingredients_lower)
+    
+    # Check for whole food indicators
+    whole_foods = [
+        'almonds', 'cashews', 'peanuts', 'walnuts', 'rice', 'wheat', 'oats',
+        'tomatoes', 'onions', 'garlic', 'ginger', 'turmeric', 'cumin',
+        'milk', 'cream', 'butter', 'cheese', 'yogurt', 'eggs',
+        'chicken', 'beef', 'fish', 'lentils', 'chickpeas', 'beans'
+    ]
+    
+    whole_food_count = sum(1 for food in whole_foods if food in ingredients_lower)
+    
+    # Check for processing indicators
+    processing_terms = [
+        'concentrate', 'isolate', 'extract', 'powder', 'syrup',
+        'modified', 'hydrolyzed', 'refined', 'enriched', 'fortified'
+    ]
+    
+    processing_count = sum(1 for term in processing_terms if term in ingredients_lower)
+    
+    # NOVA classification logic
+    if additive_count >= 5:
+        return 4  # Ultra-processed: >5 industrial additives
+    elif whole_food_count >= 3 and additive_count == 0:
+        return 1  # Minimally processed: mostly whole foods, no additives
+    elif processing_count >= 2 or additive_count >= 2:
+        return 4  # Ultra-processed: significant processing or additives
+    elif 'canned' in ingredients_lower or 'preserved' in ingredients_lower:
+        return 3  # Processed: canned or preserved foods
+    elif whole_food_count >= 1 and additive_count <= 1:
+        return 2  # Processed culinary ingredients
+    else:
+        return 3  # Default to processed for ambiguous cases
