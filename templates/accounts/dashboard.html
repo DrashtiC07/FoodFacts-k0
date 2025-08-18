@@ -486,29 +486,77 @@
       <div class="card border-0 shadow-sm">
         <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
           <h6 class="fw-bold mb-0">
-            <i class="bi bi-lightbulb me-2 text-warning"></i>Personalized Tips
+            <i class="bi bi-lightbulb-fill me-2 text-warning"></i>Personalized Tips
+            <small class="text-muted ms-2">(Always Visible)</small>
           </h6>
-          <button class="btn btn-sm btn-outline-secondary" onclick="refreshPersonalizedTips()" title="Refresh Tips">
+          <button class="btn btn-sm btn-outline-secondary" onclick="refreshPersonalizedTips()" title="Refresh Tips" id="refreshTipsBtn">
             <i class="bi bi-arrow-clockwise"></i>
+            <span class="d-none d-md-inline ms-1">Refresh</span>
           </button>
         </div>
         <div class="card-body p-4" id="personalizedTipsContent">
           {% for tip in personalized_tips %}
-          <div class="alert alert-{{ tip.color }} alert-sm mb-3 tip-item" data-tip-type="{{ tip.type }}" data-priority="{{ tip.priority }}">
+          <div class="alert alert-{{ tip.color }} alert-sm mb-3 tip-item border-start border-4" 
+               data-tip-type="{{ tip.type }}" 
+               data-priority="{{ tip.priority }}"
+               style="border-left-color: var(--bs-{{ tip.color }}) !important;">
             <div class="d-flex align-items-start">
-              <i class="bi bi-{{ tip.icon }} me-2 flex-shrink-0 mt-1"></i>
-              <div>
-                <strong>{{ tip.title }}</strong><br>
-                <small>{{ tip.message }}</small>
+              <!-- Enhanced visual indicators with filled icons -->
+              <div class="me-3 flex-shrink-0">
+                {% if tip.type == 'critical' %}
+                  <i class="bi bi-{{ tip.icon }} fs-5 text-danger"></i>
+                {% elif tip.type == 'warning' %}
+                  <i class="bi bi-{{ tip.icon }} fs-5 text-warning"></i>
+                {% elif tip.type == 'success' %}
+                  <i class="bi bi-{{ tip.icon }} fs-5 text-success"></i>
+                {% else %}
+                  <i class="bi bi-{{ tip.icon }} fs-5 text-primary"></i>
+                {% endif %}
+              </div>
+              <div class="flex-grow-1">
+                <div class="d-flex justify-content-between align-items-start mb-1">
+                  <strong class="fw-semibold">{{ tip.title }}</strong>
+                  <!-- Added priority indicator -->
+                  {% if tip.priority == 1 %}
+                    <span class="badge bg-danger ms-2">Critical</span>
+                  {% elif tip.priority == 2 %}
+                    <span class="badge bg-warning ms-2">High</span>
+                  {% elif tip.priority == 3 %}
+                    <span class="badge bg-success ms-2">Medium</span>
+                  {% else %}
+                    <span class="badge bg-info ms-2">Low</span>
+                  {% endif %}
+                </div>
+                <div class="small">{{ tip.message }}</div>
+                <!-- Added timestamp for when tip was created -->
+                {% if tip.created_at %}
+                <div class="text-muted mt-1" style="font-size: 0.75rem;">
+                  <i class="bi bi-clock me-1"></i>Active since {{ tip.created_at|date:"M j, g:i A" }}
+                </div>
+                {% endif %}
               </div>
             </div>
           </div>
           {% empty %}
-          <div class="alert alert-info alert-sm mb-3">
-            <i class="bi bi-info-circle me-2"></i>
-            <small>Keep tracking your nutrition to get personalized tips!</small>
+          <!-- Enhanced empty state with better messaging -->
+          <div class="alert alert-info alert-sm mb-3 border-start border-4" style="border-left-color: var(--bs-info) !important;">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-info-circle-fill me-3 fs-5 text-info"></i>
+              <div>
+                <strong>Getting Started</strong><br>
+                <small>Keep tracking your nutrition to receive personalized, data-driven tips that will help you reach your health goals!</small>
+              </div>
+            </div>
           </div>
           {% endfor %}
+          
+          <!-- Added tip about permanence -->
+          <div class="mt-3 p-3 bg-light rounded-3 border">
+            <div class="d-flex align-items-center text-muted small">
+              <i class="bi bi-shield-check me-2"></i>
+              <span><strong>Persistent Tips:</strong> These tips remain visible until your nutrition data changes significantly. They update automatically when you scan products or modify your goals.</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1067,36 +1115,67 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function refreshPersonalizedTips() {
-        console.log('[v0] Refreshing personalized tips');
+        console.log('[v0] Manually refreshing personalized tips');
+        
+        const refreshBtn = document.getElementById('refreshTipsBtn');
+        const originalContent = refreshBtn.innerHTML;
         
         // Show loading state
-        const tipsContent = document.getElementById('personalizedTipsContent');
-        if (tipsContent) {
-            const originalContent = tipsContent.innerHTML;
-            tipsContent.innerHTML = '<div class="text-center p-3"><i class="bi bi-arrow-clockwise spin"></i> Refreshing tips...</div>';
+        refreshBtn.innerHTML = '<i class="bi bi-arrow-clockwise spin"></i> <span class="d-none d-md-inline ms-1">Refreshing...</span>';
+        refreshBtn.disabled = true;
+        
+        // Send AJAX request to refresh tips
+        fetch('{% url "accounts:refresh_tips" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message briefly, then reload
+                refreshBtn.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i> <span class="d-none d-md-inline ms-1">Updated!</span>';
+                
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                throw new Error(data.error || 'Failed to refresh tips');
+            }
+        })
+        .catch(error => {
+            console.error('Error refreshing tips:', error);
+            refreshBtn.innerHTML = '<i class="bi bi-exclamation-triangle text-danger"></i> <span class="d-none d-md-inline ms-1">Error</span>';
             
-            // Reload the page to get fresh tips after a short delay
             setTimeout(() => {
-                window.location.reload();
-            }, 1000);
-        }
+                refreshBtn.innerHTML = originalContent;
+                refreshBtn.disabled = false;
+            }, 2000);
+        });
     }
 
     function protectPersonalizedTips() {
         const tipsContainer = document.getElementById('personalizedTipsContent');
         if (!tipsContainer) return;
         
-        // Create multiple layers of protection
         const observer = new MutationObserver(function(mutations) {
             mutations.forEach(function(mutation) {
                 if (mutation.type === 'childList' || mutation.type === 'attributes') {
-                    // Ensure all tips remain visible
+                    // Ensure all tips remain visible and properly styled
                     const tips = tipsContainer.querySelectorAll('.tip-item');
                     tips.forEach(tip => {
                         if (tip.style.display === 'none' || tip.style.visibility === 'hidden') {
                             tip.style.display = 'block';
                             tip.style.visibility = 'visible';
                             tip.style.opacity = '1';
+                            console.log('[v0] Restored hidden tip visibility');
+                        }
+                        
+                        // Ensure proper styling is maintained
+                        if (!tip.classList.contains('alert')) {
+                            tip.classList.add('alert');
                         }
                     });
                 }
@@ -1107,7 +1186,7 @@ document.addEventListener('DOMContentLoaded', function() {
             childList: true,
             subtree: true,
             attributes: true,
-            attributeFilter: ['style', 'class']
+            attributeFilter: ['style', 'class', 'hidden']
         });
         
         // Additional protection with interval check
@@ -1118,25 +1197,30 @@ document.addEventListener('DOMContentLoaded', function() {
                     tip.style.display = 'block';
                     tip.style.visibility = 'visible';
                     tip.style.opacity = '1';
+                    console.log('[v0] Interval check: Restored tip visibility');
                 }
             });
-        }, 2000);
+        }, 3000);
         
-        console.log('[v0] Personalized tips protection activated');
+        console.log('[v0] Enhanced personalized tips protection activated');
     }
 
     document.addEventListener('DOMContentLoaded', function() {
         protectPersonalizedTips();
         
-        // Ensure tips are visible on initial load
-        setTimeout(() => {
-            const tips = document.querySelectorAll('.tip-item');
-            tips.forEach(tip => {
-                tip.style.display = 'block';
-                tip.style.visibility = 'visible';
-                tip.style.opacity = '1';
-            });
-        }, 500);
+        const style = document.createElement('style');
+        style.textContent = `
+            .spin {
+                animation: spin 1s linear infinite;
+            }
+            @keyframes spin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        console.log('[v0] Persistent tips system initialized');
     });
     
     // Enhanced preset functionality with proper AJAX calls
