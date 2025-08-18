@@ -104,6 +104,20 @@ def dashboard(request):
     sugar_progress = (dietary_goals.sugar_consumed / dietary_goals.sugar_target * 100) if dietary_goals.sugar_target > 0 else 0
     sodium_progress = (dietary_goals.sodium_consumed / dietary_goals.sodium_target * 100) if dietary_goals.sodium_target > 0 else 0
 
+    # Calculate remaining amounts
+    calories_remaining = max(0, dietary_goals.calories_target - dietary_goals.calories_consumed)
+    protein_remaining = max(0, dietary_goals.protein_target - dietary_goals.protein_consumed)
+    fat_remaining = max(0, dietary_goals.fat_target - dietary_goals.fat_consumed)
+    carbs_remaining = max(0, dietary_goals.carbs_target - dietary_goals.carbs_consumed)
+    sugar_remaining = max(0, dietary_goals.sugar_target - dietary_goals.sugar_consumed)
+    sodium_remaining = max(0, dietary_goals.sodium_target - dietary_goals.sodium_consumed)
+
+    week_ago = today - timedelta(days=7)
+    weekly_logs = WeeklyNutritionLog.objects.filter(
+        user=user, 
+        week_start_date__gte=week_ago
+    ).order_by('-week_start_date')[:4]
+
     # Calculate recent activity stats
     recent_scans_count = ScanHistory.objects.filter(user=user, scanned_at__gte=timezone.now() - timedelta(days=7)).count()
     
@@ -111,17 +125,8 @@ def dashboard(request):
     days_active = (timezone.now().date() - user.date_joined.date()).days
 
     personalized_tips = get_or_create_persistent_tips(
-        user, dietary_goals, {
-            'calories_progress': calories_progress,
-            'protein_progress': protein_progress,
-            'fat_progress': fat_progress,
-            'carbs_progress': carbs_progress,
-            'sugar_progress': sugar_progress,
-            'sodium_progress': sodium_progress,
-        }, {
-            'recent_scans_count': recent_scans_count,
-            'days_active': days_active
-        }
+        user, dietary_goals, calories_progress, protein_progress, fat_progress, 
+        carbs_progress, sugar_progress, sodium_progress, recent_scans_count, days_active
     )
 
     context = {
@@ -136,6 +141,12 @@ def dashboard(request):
         'carbs_progress': min(carbs_progress, 100),
         'sugar_progress': min(sugar_progress, 100),
         'sodium_progress': min(sodium_progress, 100),
+        'calories_remaining': calories_remaining,
+        'protein_remaining': protein_remaining,
+        'fat_remaining': fat_remaining,
+        'carbs_remaining': carbs_remaining,
+        'sugar_remaining': sugar_remaining,
+        'sodium_remaining': sodium_remaining,
         'recent_scans_count': recent_scans_count,
         'days_active': days_active,
         'weekly_logs': weekly_logs,
@@ -143,33 +154,44 @@ def dashboard(request):
     }
     return render(request, 'accounts/dashboard.html', context)
 
-def get_or_create_persistent_tips(user, dietary_goals, progress_data, activity_data):
-    """Get or create persistent personalized tips that remain until conditions change"""
+def get_or_create_persistent_tips(user, dietary_goals, calories_progress, protein_progress, fat_progress, 
+                                carbs_progress, sugar_progress, sodium_progress, recent_scans_count, days_active):
+    """Get existing persistent tips or create new ones based on current nutrition data"""
     
-    # Update existing tips relevance
+    current_nutrition_data = {
+        'calories_progress': calories_progress,
+        'protein_progress': protein_progress,
+        'fat_progress': fat_progress,
+        'carbs_progress': carbs_progress,
+        'sugar_progress': sugar_progress,
+        'sodium_progress': sodium_progress,
+        'recent_scans_count': recent_scans_count,
+        'days_active': days_active
+    }
+    
+    # Get existing active tips
     existing_tips = PersonalizedTip.objects.filter(user=user, is_active=True)
+    
+    # Check if existing tips are still relevant
     for tip in existing_tips:
-        if not tip.is_still_relevant(dietary_goals, progress_data, activity_data):
+        if not tip.is_still_relevant(current_nutrition_data):
             tip.is_active = False
             tip.save()
-        else:
-            # Update supporting data with current values
-            tip.update_supporting_data({
-                'current_progress': progress_data,
-                'current_activity': activity_data,
-                'updated_at': timezone.now().isoformat()
-            })
     
     # Generate new tips based on current conditions
-    new_tips_data = generate_persistent_tips_data(dietary_goals, progress_data, activity_data)
+    new_tips_data = generate_personalized_tips(
+        dietary_goals, calories_progress, protein_progress, fat_progress, 
+        carbs_progress, sugar_progress, sodium_progress, recent_scans_count, days_active
+    )
     
+    # Create or update persistent tips
     for tip_data in new_tips_data:
-        condition = tip_data['trigger_condition']
+        trigger_condition = get_trigger_condition(tip_data)
         
-        # Check if we already have an active tip for this condition
+        # Check if we already have this tip
         existing_tip = PersonalizedTip.objects.filter(
             user=user, 
-            trigger_condition=condition, 
+            trigger_condition=trigger_condition,
             is_active=True
         ).first()
         
@@ -179,25 +201,26 @@ def get_or_create_persistent_tips(user, dietary_goals, progress_data, activity_d
                 user=user,
                 tip_type=tip_data['type'],
                 priority=tip_data['priority'],
-                title=tip_data['title'],
-                message=tip_data['message'],
                 icon=tip_data['icon'],
                 color=tip_data['color'],
-                trigger_condition=condition,
-                supporting_data={
-                    'creation_progress': progress_data,
-                    'creation_activity': activity_data,
-                    'created_at': timezone.now().isoformat()
-                }
+                title=tip_data['title'],
+                message=tip_data['message'],
+                trigger_condition=trigger_condition,
+                last_nutrition_snapshot=current_nutrition_data
             )
+        else:
+            # Update existing tip with current data
+            existing_tip.message = tip_data['message']
+            existing_tip.last_nutrition_snapshot = current_nutrition_data
+            existing_tip.updated_at = timezone.now()
+            existing_tip.save()
     
     # Return active tips ordered by priority
     active_tips = PersonalizedTip.objects.filter(user=user, is_active=True).order_by('priority', '-created_at')[:5]
     
     # Convert to format expected by template
-    tips_for_template = []
-    for tip in active_tips:
-        tips_for_template.append({
+    return [
+        {
             'type': tip.tip_type,
             'icon': tip.icon,
             'color': tip.color,
@@ -205,172 +228,76 @@ def get_or_create_persistent_tips(user, dietary_goals, progress_data, activity_d
             'message': tip.message,
             'priority': tip.priority,
             'created_at': tip.created_at,
-            'supporting_data': tip.supporting_data
-        })
-    
-    return tips_for_template
+            'updated_at': tip.updated_at
+        }
+        for tip in active_tips
+    ]
 
-def generate_persistent_tips_data(dietary_goals, progress_data, activity_data):
-    """Generate tip data for persistent storage"""
-    tips = []
+def get_trigger_condition(tip_data):
+    """Generate trigger condition string based on tip data"""
+    title = tip_data['title'].lower()
     
-    calories_progress = progress_data['calories_progress']
-    protein_progress = progress_data['protein_progress']
-    fat_progress = progress_data['fat_progress']
-    carbs_progress = progress_data['carbs_progress']
-    sugar_progress = progress_data['sugar_progress']
-    sodium_progress = progress_data['sodium_progress']
-    recent_scans_count = activity_data['recent_scans_count']
-    days_active = activity_data['days_active']
-    
-    # Critical tips (red warnings) - highest priority
-    if sugar_progress > 90:
-        tips.append({
-            'type': 'critical',
-            'icon': 'exclamation-triangle-fill',
-            'color': 'danger',
-            'title': 'Sugar Intake Critical',
-            'message': f'You\'ve consumed {sugar_progress:.0f}% of your daily sugar limit. Reduce sugary foods immediately.',
-            'priority': 1,
-            'trigger_condition': 'sugar_critical'
+    if 'sugar' in title and 'critical' in title:
+        return 'sugar_progress > 90'
+    elif 'sodium' in title and 'alert' in title:
+        return 'sodium_progress > 90'
+    elif 'protein' in title and 'boost' in title:
+        return 'protein_progress < 50'
+    elif 'calorie' in title and 'low' in title:
+        return 'calories_progress < 40'
+    elif 'fat' in title and 'high' in title:
+        return 'fat_progress > 85'
+    elif 'scanning' in title and 'champion' in title:
+        return f'recent_scans >= 10'
+    elif 'start scanning' in title:
+        return 'recent_scans == 0'
+    elif 'milestone' in title:
+        return f'days_active >= 30'
+    else:
+        return f'general_tip_{tip_data["priority"]}'
+
+@login_required
+@require_POST
+def refresh_personalized_tips(request):
+    """Manually refresh personalized tips"""
+    try:
+        user = request.user
+        
+        # Get current dietary goals and progress
+        dietary_goals = DietaryGoal.objects.get(user=user)
+        
+        # Calculate current progress
+        calories_progress = (dietary_goals.calories_consumed / dietary_goals.calories_target * 100) if dietary_goals.calories_target > 0 else 0
+        protein_progress = (dietary_goals.protein_consumed / dietary_goals.protein_target * 100) if dietary_goals.protein_target > 0 else 0
+        fat_progress = (dietary_goals.fat_consumed / dietary_goals.fat_target * 100) if dietary_goals.fat_target > 0 else 0
+        carbs_progress = (dietary_goals.carbs_consumed / dietary_goals.carbs_target * 100) if dietary_goals.carbs_target > 0 else 0
+        sugar_progress = (dietary_goals.sugar_consumed / dietary_goals.sugar_target * 100) if dietary_goals.sugar_target > 0 else 0
+        sodium_progress = (dietary_goals.sodium_consumed / dietary_goals.sodium_target * 100) if dietary_goals.sodium_target > 0 else 0
+        
+        # Get activity stats
+        recent_scans_count = ScanHistory.objects.filter(user=user, scanned_at__gte=timezone.now() - timedelta(days=7)).count()
+        days_active = (timezone.now().date() - user.date_joined.date()).days
+        
+        # Force refresh tips by deactivating old ones and creating new ones
+        PersonalizedTip.objects.filter(user=user, is_active=True).update(is_active=False)
+        
+        # Generate fresh tips
+        refreshed_tips = get_or_create_persistent_tips(
+            user, dietary_goals, calories_progress, protein_progress, fat_progress, 
+            carbs_progress, sugar_progress, sodium_progress, recent_scans_count, days_active
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Personalized tips refreshed successfully!',
+            'tips_count': len(refreshed_tips)
         })
-    
-    if sodium_progress > 90:
-        tips.append({
-            'type': 'critical',
-            'icon': 'exclamation-triangle-fill',
-            'color': 'danger',
-            'title': 'High Sodium Alert',
-            'message': f'You\'re at {sodium_progress:.0f}% of your sodium limit. Choose low-sodium alternatives for remaining meals.',
-            'priority': 1,
-            'trigger_condition': 'sodium_critical'
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': f'Failed to refresh tips: {str(e)}'
         })
-    
-    # Warning tips (yellow/orange) - medium priority
-    if protein_progress < 50:
-        protein_needed = dietary_goals.protein_target - dietary_goals.protein_consumed
-        tips.append({
-            'type': 'warning',
-            'icon': 'exclamation-circle-fill',
-            'color': 'warning',
-            'title': 'Boost Your Protein',
-            'message': f'You need {protein_needed:.0f}g more protein today. Try lean meats, beans, eggs, or protein shakes.',
-            'priority': 2,
-            'trigger_condition': 'protein_low'
-        })
-    
-    if calories_progress < 40:
-        calories_needed = dietary_goals.calories_target - dietary_goals.calories_consumed
-        tips.append({
-            'type': 'warning',
-            'icon': 'info-circle-fill',
-            'color': 'info',
-            'title': 'Calorie Goal Low',
-            'message': f'You\'re {calories_needed:.0f} calories under your goal. Add a healthy snack or larger portions.',
-            'priority': 2,
-            'trigger_condition': 'calories_low'
-        })
-    
-    if fat_progress > 85:
-        tips.append({
-            'type': 'warning',
-            'icon': 'exclamation-circle-fill',
-            'color': 'warning',
-            'title': 'Fat Intake High',
-            'message': 'You\'re close to your daily fat limit. Choose lean proteins and avoid fried foods.',
-            'priority': 2,
-            'trigger_condition': 'fat_high'
-        })
-    
-    # Positive reinforcement (green) - encouraging messages
-    if 80 <= calories_progress <= 100:
-        tips.append({
-            'type': 'success',
-            'icon': 'check-circle-fill',
-            'color': 'success',
-            'title': 'Perfect Calorie Balance',
-            'message': 'Excellent! You\'re hitting your calorie target perfectly. Keep up the great work!',
-            'priority': 3,
-            'trigger_condition': 'calories_perfect'
-        })
-    
-    if protein_progress >= 80:
-        tips.append({
-            'type': 'success',
-            'icon': 'check-circle-fill',
-            'color': 'success',
-            'title': 'Protein Goal Achieved',
-            'message': 'Outstanding! You\'ve met your protein target. Your muscles are getting proper nutrition.',
-            'priority': 3,
-            'trigger_condition': 'protein_achieved'
-        })
-    
-    if sugar_progress <= 30:
-        tips.append({
-            'type': 'success',
-            'icon': 'check-circle-fill',
-            'color': 'success',
-            'title': 'Low Sugar Success',
-            'message': 'Fantastic! You\'re keeping sugar intake low. This supports stable energy levels.',
-            'priority': 3,
-            'trigger_condition': 'sugar_low'
-        })
-    
-    # Activity-based tips
-    if recent_scans_count == 0:
-        tips.append({
-            'type': 'info',
-            'icon': 'camera-fill',
-            'color': 'primary',
-            'title': 'Start Scanning Products',
-            'message': 'Scan your first product this week to automatically track nutrition and get better insights!',
-            'priority': 2,
-            'trigger_condition': 'no_scans'
-        })
-    elif recent_scans_count >= 10:
-        tips.append({
-            'type': 'success',
-            'icon': 'graph-up-arrow',
-            'color': 'success',
-            'title': 'Scanning Champion',
-            'message': f'Amazing! You\'ve scanned {recent_scans_count} products this week. You\'re building excellent tracking habits!',
-            'priority': 3,
-            'trigger_condition': 'high_activity'
-        })
-    elif recent_scans_count >= 5:
-        tips.append({
-            'type': 'info',
-            'icon': 'graph-up',
-            'color': 'info',
-            'title': 'Good Tracking Progress',
-            'message': f'Great job! {recent_scans_count} scans this week shows consistent nutrition tracking.',
-            'priority': 3,
-            'trigger_condition': 'moderate_activity'
-        })
-    
-    # Milestone tips
-    if days_active >= 30:
-        tips.append({
-            'type': 'success',
-            'icon': 'trophy-fill',
-            'color': 'success',
-            'title': 'Monthly Milestone Achieved',
-            'message': f'Congratulations! {days_active} days of nutrition tracking shows real commitment to your health.',
-            'priority': 3,
-            'trigger_condition': 'monthly_milestone'
-        })
-    elif days_active >= 7:
-        tips.append({
-            'type': 'info',
-            'icon': 'calendar-check-fill',
-            'color': 'info',
-            'title': 'Week Strong',
-            'message': f'Excellent! {days_active} days of consistent tracking. You\'re building a healthy habit.',
-            'priority': 3,
-            'trigger_condition': 'weekly_milestone'
-        })
-    
-    return tips
 
 @login_required
 @require_POST
@@ -844,51 +771,175 @@ def weekly_nutrition_report(request):
     }
     return render(request, 'accounts/weekly_report.html', context)
 
-@login_required
-@require_POST
-def refresh_personalized_tips(request):
-    """Manually refresh personalized tips based on current data"""
-    try:
-        user = request.user
-        
-        # Get current dietary goals and progress
-        dietary_goals = DietaryGoal.objects.get(user=user)
-        
-        # Calculate current progress
-        calories_progress = (dietary_goals.calories_consumed / dietary_goals.calories_target * 100) if dietary_goals.calories_target > 0 else 0
-        protein_progress = (dietary_goals.protein_consumed / dietary_goals.protein_target * 100) if dietary_goals.protein_target > 0 else 0
-        fat_progress = (dietary_goals.fat_consumed / dietary_goals.fat_target * 100) if dietary_goals.fat_target > 0 else 0
-        carbs_progress = (dietary_goals.carbs_consumed / dietary_goals.carbs_target * 100) if dietary_goals.carbs_target > 0 else 0
-        sugar_progress = (dietary_goals.sugar_consumed / dietary_goals.sugar_target * 100) if dietary_goals.sugar_target > 0 else 0
-        sodium_progress = (dietary_goals.sodium_consumed / dietary_goals.sodium_target * 100) if dietary_goals.sodium_target > 0 else 0
-        
-        # Calculate activity data
-        recent_scans_count = ScanHistory.objects.filter(user=user, scanned_at__gte=timezone.now() - timedelta(days=7)).count()
-        days_active = (timezone.now().date() - user.date_joined.date()).days
-        
-        # Force refresh of tips
-        PersonalizedTip.objects.filter(user=user).update(is_active=False)
-        
-        # Generate fresh tips
-        personalized_tips = get_or_create_persistent_tips(
-            user, dietary_goals, {
-                'calories_progress': calories_progress,
-                'protein_progress': protein_progress,
-                'fat_progress': fat_progress,
-                'carbs_progress': carbs_progress,
-                'sugar_progress': sugar_progress,
-                'sodium_progress': sodium_progress,
-            }, {
-                'recent_scans_count': recent_scans_count,
-                'days_active': days_active
-            }
-        )
-        
-        return JsonResponse({
-            'success': True,
-            'message': 'Personalized tips refreshed successfully!',
-            'tips_count': len(personalized_tips)
+def generate_personalized_tips(dietary_goals, calories_progress, protein_progress, fat_progress, 
+                             carbs_progress, sugar_progress, sodium_progress, recent_scans_count, days_active):
+    """Generate dynamic personalized tips based on user's nutrition data and activity"""
+    tips = []
+    
+    # Critical tips (red warnings) - highest priority
+    if sugar_progress > 90:
+        tips.append({
+            'type': 'critical',
+            'icon': 'exclamation-triangle',
+            'color': 'danger',
+            'title': 'Sugar Intake Critical',
+            'message': f'You\'ve consumed {sugar_progress:.0f}% of your daily sugar limit. Consider reducing sugary foods.',
+            'priority': 1
         })
-        
-    except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)})
+    
+    if sodium_progress > 90:
+        tips.append({
+            'type': 'critical',
+            'icon': 'exclamation-triangle',
+            'color': 'danger',
+            'title': 'High Sodium Alert',
+            'message': f'You\'re at {sodium_progress:.0f}% of your sodium limit. Choose low-sodium alternatives.',
+            'priority': 1
+        })
+    
+    # Warning tips (yellow/orange) - medium priority
+    if protein_progress < 50:
+        protein_needed = dietary_goals.protein_target - dietary_goals.protein_consumed
+        tips.append({
+            'type': 'warning',
+            'icon': 'exclamation-circle',
+            'color': 'warning',
+            'title': 'Boost Your Protein',
+            'message': f'You need {protein_needed:.0f}g more protein today. Try lean meats, beans, or nuts.',
+            'priority': 2
+        })
+    
+    if calories_progress < 40:
+        calories_needed = dietary_goals.calories_target - dietary_goals.calories_consumed
+        tips.append({
+            'type': 'warning',
+            'icon': 'info-circle',
+            'color': 'info',
+            'title': 'Calorie Goal Low',
+            'message': f'You\'re {calories_needed:.0f} calories under your goal. Consider adding a healthy snack.',
+            'priority': 2
+        })
+    
+    if fat_progress > 85:
+        tips.append({
+            'type': 'warning',
+            'icon': 'exclamation-circle',
+            'color': 'warning',
+            'title': 'Fat Intake High',
+            'message': 'You\'re close to your daily fat limit. Choose lean proteins for remaining meals.',
+            'priority': 2
+        })
+    
+    # Positive reinforcement (green) - encouraging messages
+    if 80 <= calories_progress <= 100:
+        tips.append({
+            'type': 'success',
+            'icon': 'check-circle',
+            'color': 'success',
+            'title': 'Perfect Calorie Balance',
+            'message': 'Excellent! You\'re right on track with your calorie goal today.',
+            'priority': 3
+        })
+    
+    if protein_progress >= 80:
+        tips.append({
+            'type': 'success',
+            'icon': 'check-circle',
+            'color': 'success',
+            'title': 'Protein Goal Achieved',
+            'message': 'Great job meeting your protein target! Your muscles will thank you.',
+            'priority': 3
+        })
+    
+    if sugar_progress <= 30:
+        tips.append({
+            'type': 'success',
+            'icon': 'check-circle',
+            'color': 'success',
+            'title': 'Low Sugar Success',
+            'message': 'Excellent! You\'re keeping your sugar intake low today.',
+            'priority': 3
+        })
+    
+    # Activity-based tips
+    if recent_scans_count == 0:
+        tips.append({
+            'type': 'info',
+            'icon': 'camera',
+            'color': 'primary',
+            'title': 'Start Scanning',
+            'message': 'Scan your first product this week to track your nutrition automatically!',
+            'priority': 2
+        })
+    elif recent_scans_count >= 10:
+        tips.append({
+            'type': 'success',
+            'icon': 'graph-up',
+            'color': 'success',
+            'title': 'Scanning Champion',
+            'message': f'Amazing! You\'ve scanned {recent_scans_count} products this week. Keep it up!',
+            'priority': 3
+        })
+    elif recent_scans_count >= 5:
+        tips.append({
+            'type': 'info',
+            'icon': 'graph-up',
+            'color': 'info',
+            'title': 'Good Progress',
+            'message': f'You\'ve scanned {recent_scans_count} products this week. Great tracking!',
+            'priority': 3
+        })
+    
+    # Milestone tips
+    if days_active >= 30:
+        tips.append({
+            'type': 'success',
+            'icon': 'trophy',
+            'color': 'success',
+            'title': 'Monthly Milestone',
+            'message': f'Congratulations! You\'ve been tracking nutrition for {days_active} days.',
+            'priority': 3
+        })
+    elif days_active >= 7:
+        tips.append({
+            'type': 'info',
+            'icon': 'calendar-check',
+            'color': 'info',
+            'title': 'Week Strong',
+            'message': f'You\'ve been consistent for {days_active} days. Keep building the habit!',
+            'priority': 3
+        })
+    
+    # General nutrition tips if no specific issues
+    if len(tips) < 3:
+        general_tips = [
+            {
+                'type': 'info',
+                'icon': 'droplet',
+                'color': 'info',
+                'title': 'Stay Hydrated',
+                'message': 'Remember to drink 8 glasses of water throughout the day.',
+                'priority': 4
+            },
+            {
+                'type': 'info',
+                'icon': 'apple',
+                'color': 'info',
+                'title': 'Eat the Rainbow',
+                'message': 'Include colorful fruits and vegetables in your meals for better nutrition.',
+                'priority': 4
+            },
+            {
+                'type': 'info',
+                'icon': 'clock',
+                'color': 'info',
+                'title': 'Meal Timing',
+                'message': 'Try to eat regular meals every 3-4 hours to maintain energy levels.',
+                'priority': 4
+            }
+        ]
+        tips.extend(general_tips)
+    
+    # Sort by priority (1 = highest, 4 = lowest) and limit to 5 tips
+    tips.sort(key=lambda x: x['priority'])
+    return tips[:5]

@@ -161,7 +161,7 @@ class DailyNutritionSnapshot(models.Model):
         return f"{self.user.username}'s nutrition for {self.date}"
 
 class PersonalizedTip(models.Model):
-    """Persistent personalized tips that remain visible until conditions change"""
+    """Persistent personalized tips that remain visible until updated"""
     TIP_TYPES = [
         ('critical', 'Critical Alert'),
         ('warning', 'Warning'),
@@ -177,67 +177,48 @@ class PersonalizedTip(models.Model):
     ]
     
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='personalized_tips')
-    tip_type = models.CharField(max_length=20, choices=TIP_TYPES)
+    tip_type = models.CharField(max_length=20, choices=TIP_TYPES, default='info')
     priority = models.IntegerField(choices=PRIORITY_LEVELS, default=3)
-    
-    title = models.CharField(max_length=100)
-    message = models.TextField()
     icon = models.CharField(max_length=50, default='info-circle')
     color = models.CharField(max_length=20, default='info')
-    
-    # Conditions for tip relevance
-    trigger_condition = models.CharField(max_length=100, help_text="Condition that triggered this tip")
-    is_active = models.BooleanField(default=True)
+    title = models.CharField(max_length=100)
+    message = models.TextField()
     
     # Tracking fields
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    last_relevant_date = models.DateTimeField(auto_now=True)
+    last_nutrition_snapshot = models.JSONField(default=dict, blank=True)  # Store nutrition data when tip was created
+    is_active = models.BooleanField(default=True)
     
-    # Supporting data
-    supporting_data = models.JSONField(default=dict, blank=True, help_text="Data that supports this tip")
+    # Conditions for tip relevance
+    trigger_condition = models.CharField(max_length=100, blank=True)  # e.g., 'sugar_progress > 90'
     
     class Meta:
         ordering = ['priority', '-created_at']
-        unique_together = ('user', 'trigger_condition')
+        unique_together = ('user', 'trigger_condition')  # Prevent duplicate tips for same condition
     
     def __str__(self):
         return f"{self.user.username} - {self.title} ({self.get_tip_type_display()})"
     
-    def is_still_relevant(self, dietary_goals, progress_data, activity_data):
-        """Check if this tip is still relevant based on current user data"""
-        condition = self.trigger_condition
-        
-        # Critical conditions
-        if condition == 'sugar_critical' and progress_data.get('sugar_progress', 0) <= 85:
-            return False
-        if condition == 'sodium_critical' and progress_data.get('sodium_progress', 0) <= 85:
-            return False
+    def is_still_relevant(self, current_nutrition_data):
+        """Check if tip is still relevant based on current nutrition data"""
+        if not self.trigger_condition:
+            return True
             
-        # Warning conditions
-        if condition == 'protein_low' and progress_data.get('protein_progress', 0) >= 60:
-            return False
-        if condition == 'calories_low' and progress_data.get('calories_progress', 0) >= 50:
-            return False
-        if condition == 'fat_high' and progress_data.get('fat_progress', 0) <= 75:
-            return False
-            
-        # Success conditions (keep longer)
-        if condition == 'calories_perfect' and not (75 <= progress_data.get('calories_progress', 0) <= 105):
-            return False
-        if condition == 'protein_achieved' and progress_data.get('protein_progress', 0) < 70:
-            return False
-        if condition == 'sugar_low' and progress_data.get('sugar_progress', 0) > 40:
-            return False
-            
-        # Activity conditions
-        if condition == 'no_scans' and activity_data.get('recent_scans_count', 0) > 0:
-            return False
-            
-        return True
-    
-    def update_supporting_data(self, new_data):
-        """Update supporting data with current values"""
-        self.supporting_data.update(new_data)
-        self.last_relevant_date = timezone.now()
-        self.save()
+        # Parse trigger condition and evaluate against current data
+        try:
+            # Simple evaluation for common conditions
+            if 'sugar_progress > 90' in self.trigger_condition:
+                return current_nutrition_data.get('sugar_progress', 0) > 90
+            elif 'sodium_progress > 90' in self.trigger_condition:
+                return current_nutrition_data.get('sodium_progress', 0) > 90
+            elif 'protein_progress < 50' in self.trigger_condition:
+                return current_nutrition_data.get('protein_progress', 0) < 50
+            elif 'calories_progress < 40' in self.trigger_condition:
+                return current_nutrition_data.get('calories_progress', 0) < 40
+            elif 'fat_progress > 85' in self.trigger_condition:
+                return current_nutrition_data.get('fat_progress', 0) > 85
+            # Add more conditions as needed
+            return True
+        except:
+            return True
