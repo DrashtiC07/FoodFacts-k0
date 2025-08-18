@@ -487,7 +487,6 @@
         <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
           <h6 class="fw-bold mb-0">
             <i class="bi bi-lightbulb me-2 text-warning"></i>Personalized Tips
-            <span class="badge bg-primary ms-2">Always Visible</span>
           </h6>
           <button class="btn btn-sm btn-outline-secondary" onclick="refreshPersonalizedTips()" title="Refresh Tips">
             <i class="bi bi-arrow-clockwise"></i>
@@ -495,59 +494,32 @@
         </div>
         <div class="card-body p-4" id="personalizedTipsContent">
           {% for tip in personalized_tips %}
-          <div class="alert alert-{{ tip.color }} alert-sm mb-3 tip-item permanent-tip" 
-               data-tip-type="{{ tip.type }}" 
-               data-priority="{{ tip.priority }}"
-               data-permanent="true">
+          <div class="alert alert-{{ tip.color }} alert-sm mb-3 tip-item" data-tip-type="{{ tip.type }}" data-priority="{{ tip.priority }}">
             <div class="d-flex align-items-start">
-              <!-- Enhanced visual indicators with priority-based styling -->
-              {% if tip.type == 'critical' %}
-                <i class="bi bi-{{ tip.icon }} me-2 flex-shrink-0 mt-1 text-danger fs-5"></i>
-              {% elif tip.type == 'warning' %}
-                <i class="bi bi-{{ tip.icon }} me-2 flex-shrink-0 mt-1 text-warning fs-5"></i>
-              {% elif tip.type == 'success' %}
-                <i class="bi bi-{{ tip.icon }}-fill me-2 flex-shrink-0 mt-1 text-success fs-5"></i>
-              {% else %}
-                <i class="bi bi-{{ tip.icon }} me-2 flex-shrink-0 mt-1 text-info fs-5"></i>
-              {% endif %}
-              <div class="flex-grow-1">
-                <strong>{{ tip.title }}</strong>
-                {% if tip.priority == 1 %}
-                  <span class="badge bg-danger ms-2">Critical</span>
-                {% elif tip.priority == 2 %}
-                  <span class="badge bg-warning ms-2">High</span>
-                {% endif %}
-                <br>
+              <i class="bi bi-{{ tip.icon }} me-2 flex-shrink-0 mt-1"></i>
+              <div>
+                <strong>{{ tip.title }}</strong><br>
                 <small>{{ tip.message }}</small>
-                <!-- Enhanced timestamp display with persistence indicator -->
+                <!-- Added timestamp for tip persistence tracking -->
                 {% if tip.updated_at %}
-                <div class="text-muted mt-2 d-flex align-items-center justify-content-between" style="font-size: 0.75rem;">
-                  <span>
-                    <i class="bi bi-clock me-1"></i>Updated {{ tip.updated_at|timesince }} ago
-                  </span>
-                  <span class="badge bg-secondary">Persistent</span>
+                <div class="text-muted mt-1" style="font-size: 0.75rem;">
+                  <i class="bi bi-clock me-1"></i>Updated {{ tip.updated_at|timesince }} ago
                 </div>
                 {% endif %}
               </div>
             </div>
           </div>
           {% empty %}
-          <!-- Enhanced fallback message with loading indicator -->
-          <div class="alert alert-info alert-sm mb-3 permanent-tip" data-permanent="true">
-            <div class="d-flex align-items-center">
-              <i class="bi bi-info-circle me-2"></i>
-              <div>
-                <small><strong>Loading your personalized tips...</strong></small><br>
-                <small class="text-muted">Tips will appear based on your nutrition tracking data.</small>
-              </div>
-            </div>
+          <div class="alert alert-info alert-sm mb-3">
+            <i class="bi bi-info-circle me-2"></i>
+            <small>Keep tracking your nutrition to get personalized tips!</small>
           </div>
           {% endfor %}
           
-          <!-- Enhanced visual indicator for tip persistence with better styling -->
-          <div class="text-center mt-3 pt-3 border-top">
-            <small class="text-muted d-flex align-items-center justify-content-center">
-              <i class="bi bi-shield-check me-2 text-success"></i>
+          <!-- Added visual indicator for tip persistence -->
+          <div class="text-center mt-3">
+            <small class="text-muted">
+              <i class="bi bi-shield-check me-1"></i>
               Tips remain visible until your nutrition data changes significantly
             </small>
           </div>
@@ -1084,6 +1056,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function updatePersonalizedTips(progressData) {
+        // This function now only updates tip visibility based on current data
+        // Tips are generated server-side and remain permanently visible
         console.log('[v0] Updating personalized tips with progress data:', progressData);
         
         // Update tip relevance based on current progress
@@ -1091,24 +1065,17 @@ document.addEventListener('DOMContentLoaded', function() {
         tips.forEach(tip => {
             const tipType = tip.getAttribute('data-tip-type');
             const priority = parseInt(tip.getAttribute('data-priority'));
-            const isPermanent = tip.getAttribute('data-permanent') === 'true';
             
-            // Ensure all permanent tips remain visible - never hide them
-            if (isPermanent) {
-                tip.style.display = 'block';
-                tip.style.visibility = 'visible';
-                tip.style.opacity = '1';
-                tip.classList.remove('d-none', 'hidden');
-            }
+            // Ensure all tips remain visible - never hide them
+            tip.style.display = 'block';
+            tip.style.opacity = '1';
             
             // Add visual emphasis for critical tips
             if (tipType === 'critical') {
                 tip.classList.add('border-danger');
                 tip.style.borderWidth = '2px';
-                tip.style.borderLeftWidth = '5px';
             } else if (tipType === 'success') {
                 tip.classList.add('border-success');
-                tip.style.borderLeftWidth = '3px';
             }
         });
     }
@@ -1120,15 +1087,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const tipsContent = document.getElementById('personalizedTipsContent');
         if (tipsContent) {
             const originalContent = tipsContent.innerHTML;
-            tipsContent.innerHTML = `
-                <div class="text-center p-4">
-                    <div class="spinner-border text-primary mb-3" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <div><strong>Refreshing your personalized tips...</strong></div>
-                    <small class="text-muted">Analyzing your latest nutrition data</small>
-                </div>
-            `;
+            tipsContent.innerHTML = '<div class="text-center p-3"><i class="bi bi-arrow-clockwise spin"></i> Refreshing tips...</div>';
             
             fetch('{% url "accounts:refresh_personalized_tips" %}', {
                 method: 'POST',
@@ -1141,15 +1100,8 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Show success message briefly before reload
-                    tipsContent.innerHTML = `
-                        <div class="text-center p-4">
-                            <i class="bi bi-check-circle text-success fs-1 mb-3"></i>
-                            <div><strong>Tips refreshed successfully!</strong></div>
-                            <small class="text-muted">Reloading to show updated tips...</small>
-                        </div>
-                    `;
-                    setTimeout(() => window.location.reload(), 1500);
+                    // Reload the page to show fresh tips
+                    window.location.reload();
                 } else {
                     tipsContent.innerHTML = originalContent;
                     console.error('Failed to refresh tips:', data.error);
@@ -1166,24 +1118,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const tipsContainer = document.getElementById('personalizedTipsContent');
         if (!tipsContainer) return;
         
+        // Create multiple layers of protection
         const observer = new MutationObserver(function(mutations) {
             mutations.forEach(function(mutation) {
                 if (mutation.type === 'childList' || mutation.type === 'attributes') {
-                    // Ensure all permanent tips remain visible
-                    const permanentTips = tipsContainer.querySelectorAll('.permanent-tip');
-                    permanentTips.forEach(tip => {
-                        if (tip.style.display === 'none' || 
-                            tip.style.visibility === 'hidden' || 
-                            tip.style.opacity === '0' ||
-                            tip.classList.contains('d-none') ||
-                            tip.classList.contains('hidden')) {
-                            
+                    // Ensure all tips remain visible
+                    const tips = tipsContainer.querySelectorAll('.tip-item');
+                    tips.forEach(tip => {
+                        if (tip.style.display === 'none' || tip.style.visibility === 'hidden') {
                             tip.style.display = 'block';
                             tip.style.visibility = 'visible';
                             tip.style.opacity = '1';
-                            tip.classList.remove('d-none', 'hidden');
-                            
-                            console.log('[v0] Restored visibility for permanent tip:', tip);
                         }
                     });
                 }
@@ -1197,25 +1142,19 @@ document.addEventListener('DOMContentLoaded', function() {
             attributeFilter: ['style', 'class']
         });
         
-        // Additional protection with more frequent checks
+        // Additional protection with interval check
         setInterval(() => {
-            const permanentTips = tipsContainer.querySelectorAll('.permanent-tip');
-            permanentTips.forEach(tip => {
-                if (tip.style.display === 'none' || 
-                    tip.style.visibility === 'hidden' || 
-                    tip.style.opacity === '0' ||
-                    tip.classList.contains('d-none') ||
-                    tip.classList.contains('hidden')) {
-                    
+            const tips = tipsContainer.querySelectorAll('.tip-item');
+            tips.forEach(tip => {
+                if (tip.style.display === 'none' || tip.style.visibility === 'hidden' || tip.style.opacity === '0') {
                     tip.style.display = 'block';
                     tip.style.visibility = 'visible';
                     tip.style.opacity = '1';
-                    tip.classList.remove('d-none', 'hidden');
                 }
             });
-        }, 1000); // Check every second
+        }, 2000);
         
-        console.log('[v0] Enhanced personalized tips protection activated');
+        console.log('[v0] Personalized tips protection activated');
     }
 
     document.addEventListener('DOMContentLoaded', function() {

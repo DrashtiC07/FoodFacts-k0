@@ -169,24 +169,14 @@ def get_or_create_persistent_tips(user, dietary_goals, calories_progress, protei
         'days_active': days_active
     }
     
+    # Get existing active tips
     existing_tips = PersonalizedTip.objects.filter(user=user, is_active=True)
     
-    # Check if existing tips are still relevant with stricter criteria
+    # Check if existing tips are still relevant
     for tip in existing_tips:
         if not tip.is_still_relevant(current_nutrition_data):
-            # Only deactivate if the underlying condition has changed by more than 20%
-            old_data = tip.last_nutrition_snapshot
-            significant_change = False
-            
-            for key, current_value in current_nutrition_data.items():
-                old_value = old_data.get(key, 0)
-                if abs(current_value - old_value) > 20:  # 20% threshold for change
-                    significant_change = True
-                    break
-            
-            if significant_change:
-                tip.is_active = False
-                tip.save()
+            tip.is_active = False
+            tip.save()
     
     # Generate new tips based on current conditions
     new_tips_data = generate_personalized_tips(
@@ -219,34 +209,14 @@ def get_or_create_persistent_tips(user, dietary_goals, calories_progress, protei
                 last_nutrition_snapshot=current_nutrition_data
             )
         else:
+            # Update existing tip with current data
             existing_tip.message = tip_data['message']
             existing_tip.last_nutrition_snapshot = current_nutrition_data
             existing_tip.updated_at = timezone.now()
             existing_tip.save()
     
-    active_tips = PersonalizedTip.objects.filter(user=user, is_active=True).order_by('priority', '-created_at')
-    
-    # If we have fewer than 3 tips, add general wellness tips
-    if active_tips.count() < 3:
-        general_tips_data = get_general_wellness_tips(user, current_nutrition_data)
-        for tip_data in general_tips_data:
-            trigger_condition = get_trigger_condition(tip_data)
-            PersonalizedTip.objects.get_or_create(
-                user=user,
-                trigger_condition=trigger_condition,
-                defaults={
-                    'tip_type': tip_data['type'],
-                    'priority': tip_data['priority'],
-                    'icon': tip_data['icon'],
-                    'color': tip_data['color'],
-                    'title': tip_data['title'],
-                    'message': tip_data['message'],
-                    'last_nutrition_snapshot': current_nutrition_data
-                }
-            )
-    
-    # Return active tips (limit to 5 for UI purposes)
-    final_tips = PersonalizedTip.objects.filter(user=user, is_active=True).order_by('priority', '-created_at')[:5]
+    # Return active tips ordered by priority
+    active_tips = PersonalizedTip.objects.filter(user=user, is_active=True).order_by('priority', '-created_at')[:5]
     
     # Convert to format expected by template
     return [
@@ -260,7 +230,7 @@ def get_or_create_persistent_tips(user, dietary_goals, calories_progress, protei
             'created_at': tip.created_at,
             'updated_at': tip.updated_at
         }
-        for tip in final_tips
+        for tip in active_tips
     ]
 
 def get_trigger_condition(tip_data):
@@ -308,7 +278,8 @@ def refresh_personalized_tips(request):
         recent_scans_count = ScanHistory.objects.filter(user=user, scanned_at__gte=timezone.now() - timedelta(days=7)).count()
         days_active = (timezone.now().date() - user.date_joined.date()).days
         
-        PersonalizedTip.objects.filter(user=user, is_active=True).update(updated_at=timezone.now() - timedelta(minutes=1))
+        # Force refresh tips by deactivating old ones and creating new ones
+        PersonalizedTip.objects.filter(user=user, is_active=True).update(is_active=False)
         
         # Generate fresh tips
         refreshed_tips = get_or_create_persistent_tips(
@@ -972,47 +943,3 @@ def generate_personalized_tips(dietary_goals, calories_progress, protein_progres
     # Sort by priority (1 = highest, 4 = lowest) and limit to 5 tips
     tips.sort(key=lambda x: x['priority'])
     return tips[:5]
-
-def get_general_wellness_tips(user, nutrition_data):
-    """Generate general wellness tips to ensure minimum tip count"""
-    general_tips = [
-        {
-            'type': 'info',
-            'icon': 'droplet',
-            'color': 'info',
-            'title': 'Stay Hydrated',
-            'message': 'Drink 8-10 glasses of water daily for optimal health and metabolism.',
-            'priority': 4
-        },
-        {
-            'type': 'info',
-            'icon': 'apple',
-            'color': 'info',
-            'title': 'Eat Colorful Foods',
-            'message': 'Include a variety of colorful fruits and vegetables for essential nutrients.',
-            'priority': 4
-        },
-        {
-            'type': 'info',
-            'icon': 'clock',
-            'color': 'info',
-            'title': 'Regular Meal Times',
-            'message': 'Eat meals every 3-4 hours to maintain steady energy levels.',
-            'priority': 4
-        },
-        {
-            'type': 'info',
-            'icon': 'moon',
-            'color': 'info',
-            'title': 'Quality Sleep',
-            'message': 'Aim for 7-9 hours of sleep nightly to support healthy metabolism.',
-            'priority': 4
-        }
-    ]
-    
-    # Return tips that aren't already active
-    days_active = nutrition_data.get('days_active', 0)
-    if days_active < 7:
-        return general_tips[:2]  # New users get basic tips
-    else:
-        return general_tips[2:]  # Experienced users get advanced tips
