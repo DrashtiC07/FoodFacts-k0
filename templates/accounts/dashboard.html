@@ -1116,7 +1116,7 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('[v0] Dashboard JavaScript loaded');
+    console.log(' Dashboard JavaScript loaded');
     
     function showModernAlert(message, type = 'success', duration = 5000) {
         const alertDiv = document.createElement('div');
@@ -1142,7 +1142,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function updatePersonalizedTips(progressData) {
         // This function now only updates tip visibility based on current data
         // Tips are generated server-side and remain permanently visible
-        console.log('[v0] Updating personalized tips with progress data:', progressData);
+        console.log(' Updating personalized tips with progress data:', progressData);
         
         // Update tip relevance based on current progress
         const tips = document.querySelectorAll('.tip-item');
@@ -1165,7 +1165,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function refreshPersonalizedTips() {
-        console.log('[v0] Refreshing personalized tips');
+        console.log(' Refreshing personalized tips');
         
         // Show loading state
         const tipsContent = document.getElementById('personalizedTipsContent');
@@ -1301,7 +1301,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }, 2000);
         
-        console.log('[v0] Personalized tips protection activated');
+        console.log(' Personalized tips protection activated');
     }
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -1423,7 +1423,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             })
             .catch(error => {
-                console.error('[v0] Error applying preset:', error);
+                console.error(' Error applying preset:', error);
                 showModernAlert('Error applying preset goals. Please try again.', 'error');
             });
         }
@@ -1460,7 +1460,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 })
                 .catch(error => {
-                    console.error('[v0] Error resetting goals:', error);
+                    console.error(' Error resetting goals:', error);
                     showModernAlert('Error resetting daily goals. Please try again.', 'error');
                 });
             }
@@ -1480,10 +1480,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Enhanced updateProgressBars function with completion-based colors
     function updateProgressBars(data) {
-        console.log('[v0] Updating progress bars with data:', data);
+        console.log(' Updating progress bars with data:', data);
         
         if (!data || !data.progress) {
-            console.warn('[v0] No progress data provided');
+            console.warn(' No progress data provided');
             return;
         }
         
@@ -1656,7 +1656,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             })
             .catch(error => {
-                console.error('[v0] Error adding manual nutrition:', error);
+                console.error(' Error adding manual nutrition:', error);
                 showModernAlert('Error adding nutrition. Please try again.', 'danger');
             });
         });

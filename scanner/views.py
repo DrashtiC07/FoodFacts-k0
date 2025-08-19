@@ -40,9 +40,9 @@ def product_detail(request, barcode):
     logger = logging.getLogger(__name__)
     
     try:
-        logger.info(f"[v0] Attempting to load product with barcode: {barcode}")
+        logger.info(f" Attempting to load product with barcode: {barcode}")
         product = get_object_or_404(Product, barcode=barcode)
-        logger.info(f"[v0] Product found: {product.name}")
+        logger.info(f" Product found: {product.name}")
         
         # Record scan history only for authenticated users
         if request.user.is_authenticated:
@@ -53,9 +53,9 @@ def product_detail(request, barcode):
             try:
                 product.health_score = product.calculate_health_score()
                 product.save()
-                logger.info(f"[v0] Health score calculated: {product.health_score}")
+                logger.info(f" Health score calculated: {product.health_score}")
             except Exception as health_error:
-                logger.warning(f"[v0] Health score calculation failed: {str(health_error)}")
+                logger.warning(f" Health score calculation failed: {str(health_error)}")
         
         # Get nutrition facts with better error handling
         nutrition_facts = []
@@ -63,12 +63,12 @@ def product_detail(request, barcode):
             nutrition_fact_obj = NutritionFact.objects.filter(product=product).first()
             if nutrition_fact_obj:
                 nutrition_facts = nutrition_fact_obj
-                logger.info("[v0] Nutrition facts loaded from database")
+                logger.info(" Nutrition facts loaded from database")
             elif product.nutrition_info:
                 nutrition_facts = parse_nutrition_facts(product.nutrition_info)
-                logger.info("[v0] Nutrition facts parsed from product info")
+                logger.info(" Nutrition facts parsed from product info")
         except Exception as nf_error:
-            logger.warning(f"[v0] Nutrition facts error for product {barcode}: {str(nf_error)}")
+            logger.warning(f" Nutrition facts error for product {barcode}: {str(nf_error)}")
             nutrition_facts = []
         
         # Get NOVA group info with error handling
@@ -76,9 +76,9 @@ def product_detail(request, barcode):
         try:
             if product.nova_group:
                 nova_info = get_nova_group_info(product.nova_group)
-                logger.info(f"[v0] NOVA info loaded for group {product.nova_group}")
+                logger.info(f" NOVA info loaded for group {product.nova_group}")
         except Exception as nova_error:
-            logger.warning(f"[v0] NOVA info error for product {barcode}: {str(nova_error)}")
+            logger.warning(f" NOVA info error for product {barcode}: {str(nova_error)}")
         
         # Get additives analysis with error handling
         additives_analysis = None
@@ -86,21 +86,21 @@ def product_detail(request, barcode):
             if product.ingredients:
                 from .additives_analyzer import analyze_additives
                 additives_analysis = analyze_additives(product.ingredients)
-                logger.info(f"[v0] Additives analysis completed: {additives_analysis.get('total_additives', 0)} additives found")
+                logger.info(f" Additives analysis completed: {additives_analysis.get('total_additives', 0)} additives found")
         except Exception as additives_error:
-            logger.warning(f"[v0] Additives analysis error for product {barcode}: {str(additives_error)}")
+            logger.warning(f" Additives analysis error for product {barcode}: {str(additives_error)}")
         
         # Get environmental impact with error handling
         environmental_impact = None
         try:
             environmental_impact = calculate_environmental_impact(product)
-            logger.info("[v0] Environmental impact calculated")
+            logger.info(" Environmental impact calculated")
         except Exception as env_error:
-            logger.warning(f"[v0] Environmental impact error for product {barcode}: {str(env_error)}")
+            logger.warning(f" Environmental impact error for product {barcode}: {str(env_error)}")
         
         # Get reviews
         reviews = ProductReview.objects.filter(product=product).select_related('user').order_by('-created_at')[:10]
-        logger.info(f"[v0] Loaded {reviews.count()} reviews")
+        logger.info(f" Loaded {reviews.count()} reviews")
         
         dietary_flags = [
             {
@@ -130,7 +130,7 @@ def product_detail(request, barcode):
             existing_review = ProductReview.objects.filter(user=request.user, product=product).first()
             is_favorite = FavoriteProduct.objects.filter(user=request.user, product=product).exists()
 
-        logger.info("[v0] Successfully prepared all product data, rendering template")
+        logger.info(" Successfully prepared all product data, rendering template")
         
         return render(request, 'scanner/product.html', {
             'product': product,
@@ -146,14 +146,14 @@ def product_detail(request, barcode):
         })
         
     except Product.DoesNotExist:
-        logger.error(f"[v0] Product with barcode {barcode} not found in database")
+        logger.error(f" Product with barcode {barcode} not found in database")
         messages.error(request, f'Product with barcode {barcode} not found.')
         return redirect('scanner:search')
     except Exception as e:
-        logger.error(f"[v0] Unexpected error in product_detail for barcode {barcode}: {str(e)}")
-        logger.error(f"[v0] Error type: {type(e).__name__}")
+        logger.error(f" Unexpected error in product_detail for barcode {barcode}: {str(e)}")
+        logger.error(f" Error type: {type(e).__name__}")
         import traceback
-        logger.error(f"[v0] Traceback: {traceback.format_exc()}")
+        logger.error(f" Traceback: {traceback.format_exc()}")
         messages.error(request, f'An error occurred while loading product details: {str(e)}. Please try again.')
         return redirect('scanner:search')
 
@@ -344,10 +344,10 @@ def submit_review(request, barcode):
             else:
                 messages.success(request, 'Your review has been updated!')
                 
-            logger.info(f"[v0] Review saved successfully for user {request.user.username} on product {barcode}")
+            logger.info(f" Review saved successfully for user {request.user.username} on product {barcode}")
             
         except Exception as e:
-            logger.error(f"[v0] Error saving review: {str(e)}")
+            logger.error(f" Error saving review: {str(e)}")
             messages.error(request, 'Failed to save your review. Please try again.')
     
     return redirect('scanner:product_detail', barcode=barcode)
@@ -422,15 +422,15 @@ def save_product(request):
     
     if request.method == 'POST':
         try:
-            logger.info(f"[v0] Save product request from user: {request.user.username}")
+            logger.info(f" Save product request from user: {request.user.username}")
             data = json.loads(request.body)
             barcode = data.get('barcode')
             
             if not barcode:
-                logger.error("[v0] Save product failed: No barcode provided")
+                logger.error(" Save product failed: No barcode provided")
                 return JsonResponse({'success': False, 'error': 'Barcode is required'})
             
-            logger.info(f"[v0] Processing product with barcode: {barcode}")
+            logger.info(f" Processing product with barcode: {barcode}")
             
             # Get or create the product
             product, created = Product.objects.get_or_create(
@@ -444,7 +444,7 @@ def save_product(request):
                 }
             )
             
-            logger.info(f"[v0] Product {'created' if created else 'found'}: {product.name}")
+            logger.info(f" Product {'created' if created else 'found'}: {product.name}")
             
             # Update product information if provided
             if not created:
@@ -461,7 +461,7 @@ def save_product(request):
                 
                 if updated_fields:
                     product.save()
-                    logger.info(f"[v0] Updated product fields: {updated_fields}")
+                    logger.info(f" Updated product fields: {updated_fields}")
             
             # Create scan history entry for the current user only
             scan_history, scan_created = ScanHistory.objects.get_or_create(
@@ -474,9 +474,9 @@ def save_product(request):
             if not scan_created:
                 scan_history.scanned_at = timezone.now()
                 scan_history.save()
-                logger.info(f"[v0] Updated existing scan history for user {request.user.username}")
+                logger.info(f" Updated existing scan history for user {request.user.username}")
             else:
-                logger.info(f"[v0] Created new scan history for user {request.user.username}")
+                logger.info(f" Created new scan history for user {request.user.username}")
             
             # Calculate health score if nutrition info is available
             try:
@@ -485,9 +485,9 @@ def save_product(request):
                     if health_score is not None:
                         product.health_score = health_score
                         product.save()
-                        logger.info(f"[v0] Health score calculated: {health_score}")
+                        logger.info(f" Health score calculated: {health_score}")
             except Exception as health_error:
-                logger.warning(f"[v0] Health score calculation failed: {str(health_error)}")
+                logger.warning(f" Health score calculation failed: {str(health_error)}")
             
             # Save nutrition facts to database if provided
             try:
@@ -501,9 +501,9 @@ def save_product(request):
                         for key, value in data['nutrition_facts'].items():
                             setattr(nutrition_fact, key, value)
                         nutrition_fact.save()
-                    logger.info(f"[v0] Nutrition facts {'created' if nf_created else 'updated'}")
+                    logger.info(f" Nutrition facts {'created' if nf_created else 'updated'}")
             except Exception as nf_error:
-                logger.warning(f"[v0] Nutrition facts save failed: {str(nf_error)}")
+                logger.warning(f" Nutrition facts save failed: {str(nf_error)}")
             
             return JsonResponse({
                 'success': True,
@@ -514,10 +514,10 @@ def save_product(request):
             })
             
         except json.JSONDecodeError:
-            logger.error("[v0] Save product failed: Invalid JSON data")
+            logger.error(" Save product failed: Invalid JSON data")
             return JsonResponse({'success': False, 'error': 'Invalid JSON data'})
         except Exception as e:
-            logger.error(f"[v0] Save product error: {str(e)}")
+            logger.error(f" Save product error: {str(e)}")
             return JsonResponse({'success': False, 'error': f'Server error: {str(e)}'})
     
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
@@ -1033,7 +1033,7 @@ def save_product(barcode, product_info, source):
                             if 0 <= float_value <= 1000:  # Reasonable range for nutrition values
                                 cleaned_nutrition[key] = float_value
                         except (ValueError, TypeError):
-                            logger.warning(f"[v0] Invalid nutrition value for {key}: {value}")
+                            logger.warning(f" Invalid nutrition value for {key}: {value}")
                             continue
                 
                 # Only create nutrition facts if we have valid data
@@ -1042,19 +1042,19 @@ def save_product(barcode, product_info, source):
                         product=product,
                         defaults=cleaned_nutrition
                     )
-                    logger.info(f"[v0] Nutrition facts {'created' if created else 'updated'} for product {barcode}")
+                    logger.info(f" Nutrition facts {'created' if created else 'updated'} for product {barcode}")
                 else:
-                    logger.warning(f"[v0] No valid nutrition data found for product {barcode}")
+                    logger.warning(f" No valid nutrition data found for product {barcode}")
                     
             except Exception as nutrition_error:
-                logger.error(f"[v0] Error saving nutrition facts for product {barcode}: {str(nutrition_error)}")
+                logger.error(f" Error saving nutrition facts for product {barcode}: {str(nutrition_error)}")
                 # Don't fail the entire product save if nutrition facts fail
         
-        logger.info(f"[v0] Product {barcode} saved successfully with health score {product.health_score}")
+        logger.info(f" Product {barcode} saved successfully with health score {product.health_score}")
         return product
         
     except Exception as e:
-        logger.error(f"[v0] Error saving product {barcode}: {str(e)}")
+        logger.error(f" Error saving product {barcode}: {str(e)}")
         raise
 
 def parse_nutrition_facts(nutrition_info):
@@ -1333,17 +1333,17 @@ def scan_history(request):
     import logging
     logger = logging.getLogger(__name__)
     
-    logger.info(f"[v0] Loading scan history for user: {request.user.username} (ID: {request.user.id})")
+    logger.info(f" Loading scan history for user: {request.user.username} (ID: {request.user.id})")
     
     scans = ScanHistory.objects.filter(
         user=request.user  # This ensures only current user's scans
     ).select_related('product').order_by('-scanned_at')
     
-    logger.info(f"[v0] Scan history for user {request.user.username}: {scans.count()} scans found")
+    logger.info(f" Scan history for user {request.user.username}: {scans.count()} scans found")
     
     # Debug: Log first few scan entries
     for i, scan in enumerate(scans[:3]):
-        logger.info(f"[v0] Scan {i+1}: {scan.product.name} by user {scan.user.username} at {scan.scanned_at}")
+        logger.info(f" Scan {i+1}: {scan.product.name} by user {scan.user.username} at {scan.scanned_at}")
     
     paginator = Paginator(scans, 20)  # Show 20 scans per page
     page_number = request.GET.get('page')

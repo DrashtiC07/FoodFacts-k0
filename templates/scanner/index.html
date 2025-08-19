@@ -862,18 +862,18 @@
 {% endblock %} {% block extra_js %}
 <script>
   function toggleFAQ(element) {
-    console.log("[v0] FAQ toggle clicked");
+    console.log(" FAQ toggle clicked");
     const faqItem = element.parentElement;
     const answer = faqItem.querySelector(".faq-answer");
     const toggle = element.querySelector(".faq-toggle");
     const answerContent = answer.querySelector(".answer-content");
 
-    console.log("[v0] FAQ item:", faqItem.classList.contains("active"));
+    console.log(" FAQ item:", faqItem.classList.contains("active"));
 
     // Close all other FAQ items first
     document.querySelectorAll(".faq-item").forEach((item) => {
       if (item !== faqItem && item.classList.contains("active")) {
-        console.log("[v0] Closing other FAQ item");
+        console.log(" Closing other FAQ item");
         item.classList.remove("active");
         const otherAnswer = item.querySelector(".faq-answer");
         const otherToggle = item.querySelector(".faq-toggle");
@@ -890,7 +890,7 @@
 
     // Toggle current FAQ item
     if (faqItem.classList.contains("active")) {
-      console.log("[v0] Closing current FAQ");
+      console.log(" Closing current FAQ");
       // Close current item
       faqItem.classList.remove("active");
       answer.style.maxHeight = "0";
@@ -900,7 +900,7 @@
         answer.style.display = "none";
       }, 400);
     } else {
-      console.log("[v0] Opening current FAQ");
+      console.log(" Opening current FAQ");
       // Open current item
       faqItem.classList.add("active");
       answer.style.display = "block";
@@ -917,7 +917,7 @@
 
   // Initialize FAQ items on page load
   document.addEventListener("DOMContentLoaded", function () {
-    console.log("[v0] FAQ initialized");
+    console.log(" FAQ initialized");
     // Ensure all FAQ items start closed
     document.querySelectorAll(".faq-item").forEach((item) => {
       const answer = item.querySelector(".faq-answer");
