@@ -223,7 +223,7 @@ API <lambda> failed: HTTPSConnectionPool(host='api.upcitemdb.com', port=443): Re
 [v0] Scan 2: Amul Taaza 200ml by user shiv at 2025-08-18 16:56:40.967967+00:00
 [v0] Scan 3: Nutri Choice by user shiv at 2025-08-18 16:55:04.776541+00:00
 [v0] Attempting to load product with barcode: 0050000029730
-[v0] Product found: Nestlé Sweet Cream All-Natural Creamer
+[v0] Product found: Nestlï¿½ Sweet Cream All-Natural Creamer
 [v0] Nutrition facts parsed from product info
 [v0] NOVA info loaded for group 4
 [v0] Additives analysis completed: 0 additives found

@@ -667,7 +667,7 @@
       <div class="card border-0 shadow-sm">
         <div class="card-header bg-transparent border-0 p-4">
           <div class="d-flex justify-content-between align-items-center">
-            <h5 class="fw-bold mb-0" style="font-family: 'Manrope', sans-serif;">
+            <h5 class="fw-bold mb-0" style="font-family: 'Manrope', sans-serif; color: var(--text-primary);">
               <i class="bi bi-clipboard-check me-2 text-success"></i>Tracked Items
             </h5>
             <span class="badge bg-primary">{{ tracked_items|length }} item{{ tracked_items|length|pluralize }}</span>
@@ -678,7 +678,9 @@
             <div class="row g-3">
               {% for item in tracked_items %}
               <div class="col-md-6 col-lg-4">
-                <div class="tracked-item-card p-3 rounded-3 border bg-light bg-opacity-50 h-100">
+                <!-- Updated tracked item card styling for better dark theme support -->
+                <div class="tracked-item-card p-3 rounded-3 border h-100" 
+                     style="background-color: var(--bg-secondary); border-color: var(--border-color) !important;">
                   <div class="d-flex align-items-start mb-2">
                     <div class="product-image me-3">
                       {% if item.product.image_url %}
@@ -691,14 +693,18 @@
                         style="object-fit: cover"
                       />
                       {% else %}
-                      <div class="bg-white rounded-3 d-flex align-items-center justify-content-center border" style="width: 50px; height: 50px">
-                        <i class="bi bi-image text-muted"></i>
+                      <div class="rounded-3 d-flex align-items-center justify-content-center border" 
+                           style="width: 50px; height: 50px; background-color: var(--card-bg); border-color: var(--border-color) !important;">
+                        <i class="bi bi-image" style="color: var(--text-muted);"></i>
                       </div>
                       {% endif %}
                     </div>
                     <div class="flex-grow-1">
                       <h6 class="mb-1 fw-semibold">
-                        <a href="{% url 'scanner:product_detail' item.product.barcode %}" class="text-decoration-none text-dark">
+                        <!-- Fixed text color for dark theme compatibility -->
+                        <a href="{% url 'scanner:product_detail' item.product.barcode %}" 
+                           class="text-decoration-none" 
+                           style="color: var(--text-primary);">
                           {{ item.product.name|truncatechars:25 }}
                         </a>
                       </h6>
@@ -714,11 +720,13 @@
                         </span>
                         {% endif %}
                       </div>
-                      <small class="text-muted">{{ item.serving_size }}g serving</small>
+                      <!-- Updated serving size text color for dark theme -->
+                      <small style="color: var(--text-muted);">{{ item.serving_size }}g serving</small>
                     </div>
                   </div>
                   <div class="d-flex justify-content-between align-items-center">
-                    <small class="text-muted">
+                    <!-- Updated timestamp text color for dark theme -->
+                    <small style="color: var(--text-muted);">
                       <i class="bi bi-clock me-1"></i>{{ item.added_at|timesince }} ago
                     </small>
                     <button class="btn btn-sm btn-outline-danger" onclick="removeTrackedItem({{ item.id }})" title="Remove from tracker">
@@ -731,9 +739,10 @@
             </div>
           {% else %}
             <div class="text-center py-5">
-              <i class="bi bi-clipboard-check display-1 text-muted mb-3"></i>
-              <h6 class="fw-semibold mb-2">No tracked items yet</h6>
-              <p class="text-muted mb-3">Add products to your nutrition tracker to see them here</p>
+              <!-- Updated empty state text colors for dark theme -->
+              <i class="bi bi-clipboard-check display-1 mb-3" style="color: var(--text-muted);"></i>
+              <h6 class="fw-semibold mb-2" style="color: var(--text-primary);">No tracked items yet</h6>
+              <p class="mb-3" style="color: var(--text-muted);">Add products to your nutrition tracker to see them here</p>
               <a href="{% url 'scanner:search' %}" class="btn btn-primary">
                 <i class="bi bi-plus-circle me-1"></i>Start Tracking
               </a>
@@ -1203,15 +1212,36 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
+        // Get CSRF token from multiple possible sources
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                         document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
+                         '{{ csrf_token }}';
+        
+        if (!csrfToken) {
+            showToast('Security token missing. Please refresh the page and try again.', 'error');
+            return;
+        }
+        
+        // Show loading state
+        const button = document.querySelector(`button[onclick="removeTrackedItem(${itemId})"]`);
+        const originalContent = button.innerHTML;
+        button.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+        button.disabled = true;
+        
         fetch('{% url "accounts:remove_tracked_item" %}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}',
+                'X-CSRFToken': csrfToken,
             },
             body: JSON.stringify({'item_id': itemId})
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 // Show success message and reload to update the display
@@ -1219,10 +1249,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 setTimeout(() => window.location.reload(), 1000);
             } else {
                 showToast(data.error || 'Failed to remove item', 'error');
+                // Restore button state
+                button.innerHTML = originalContent;
+                button.disabled = false;
             }
         })
         .catch(error => {
-            showToast('Failed to remove item from tracker', 'error');
+            console.error('Remove tracked item error:', error);
+            showToast('Failed to remove item from tracker. Please try again.', 'error');
+            // Restore button state
+            button.innerHTML = originalContent;
+            button.disabled = false;
         });
     }
 

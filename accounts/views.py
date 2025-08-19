@@ -84,6 +84,7 @@ def dashboard(request):
             'carbs_target': 300,
             'sugar_target': 50,
             'sodium_target': 2300,
+            'fiber_target': 25,
         }
     )
 
@@ -95,6 +96,7 @@ def dashboard(request):
         dietary_goals.carbs_consumed = 0
         dietary_goals.sugar_consumed = 0
         dietary_goals.sodium_consumed = 0
+        dietary_goals.fiber_consumed = 0
         dietary_goals.last_reset_date = today
         dietary_goals.save()
 
@@ -105,6 +107,7 @@ def dashboard(request):
     carbs_progress = (dietary_goals.carbs_consumed / dietary_goals.carbs_target * 100) if dietary_goals.carbs_target > 0 else 0
     sugar_progress = (dietary_goals.sugar_consumed / dietary_goals.sugar_target * 100) if dietary_goals.sugar_target > 0 else 0
     sodium_progress = (dietary_goals.sodium_consumed / dietary_goals.sodium_target * 100) if dietary_goals.sodium_target > 0 else 0
+    fiber_progress = (dietary_goals.fiber_consumed / dietary_goals.fiber_target * 100) if dietary_goals.fiber_target > 0 else 0
 
     # Calculate remaining amounts
     calories_remaining = max(0, dietary_goals.calories_target - dietary_goals.calories_consumed)
@@ -113,6 +116,7 @@ def dashboard(request):
     carbs_remaining = max(0, dietary_goals.carbs_target - dietary_goals.carbs_consumed)
     sugar_remaining = max(0, dietary_goals.sugar_target - dietary_goals.sugar_consumed)
     sodium_remaining = max(0, dietary_goals.sodium_target - dietary_goals.sodium_consumed)
+    fiber_remaining = max(0, dietary_goals.fiber_target - dietary_goals.fiber_consumed)
 
     week_ago = today - timedelta(days=7)
     weekly_logs = WeeklyNutritionLog.objects.filter(
@@ -128,7 +132,7 @@ def dashboard(request):
 
     personalized_tips = get_or_create_persistent_tips(
         user, dietary_goals, calories_progress, protein_progress, fat_progress, 
-        carbs_progress, sugar_progress, sodium_progress, recent_scans_count, days_active
+        carbs_progress, sugar_progress, sodium_progress, fiber_progress, recent_scans_count, days_active
     )
 
     context = {
@@ -144,12 +148,14 @@ def dashboard(request):
         'carbs_progress': min(carbs_progress, 100),
         'sugar_progress': min(sugar_progress, 100),
         'sodium_progress': min(sodium_progress, 100),
+        'fiber_progress': min(fiber_progress, 100),
         'calories_remaining': calories_remaining,
         'protein_remaining': protein_remaining,
         'fat_remaining': fat_remaining,
         'carbs_remaining': carbs_remaining,
         'sugar_remaining': sugar_remaining,
         'sodium_remaining': sodium_remaining,
+        'fiber_remaining': fiber_remaining,
         'recent_scans_count': recent_scans_count,
         'days_active': days_active,
         'weekly_logs': weekly_logs,
@@ -158,7 +164,7 @@ def dashboard(request):
     return render(request, 'accounts/dashboard.html', context)
 
 def get_or_create_persistent_tips(user, dietary_goals, calories_progress, protein_progress, fat_progress, 
-                                carbs_progress, sugar_progress, sodium_progress, recent_scans_count, days_active):
+                                carbs_progress, sugar_progress, sodium_progress, fiber_progress, recent_scans_count, days_active):
     """Get existing persistent tips or create new ones based on current nutrition data"""
     
     current_nutrition_data = {
@@ -168,6 +174,7 @@ def get_or_create_persistent_tips(user, dietary_goals, calories_progress, protei
         'carbs_progress': carbs_progress,
         'sugar_progress': sugar_progress,
         'sodium_progress': sodium_progress,
+        'fiber_progress': fiber_progress,
         'recent_scans_count': recent_scans_count,
         'days_active': days_active
     }
@@ -184,7 +191,7 @@ def get_or_create_persistent_tips(user, dietary_goals, calories_progress, protei
     # Generate new tips based on current conditions
     new_tips_data = generate_personalized_tips(
         dietary_goals, calories_progress, protein_progress, fat_progress, 
-        carbs_progress, sugar_progress, sodium_progress, recent_scans_count, days_active
+        carbs_progress, sugar_progress, sodium_progress, fiber_progress, recent_scans_count, days_active
     )
     
     # Create or update persistent tips
@@ -270,6 +277,7 @@ def refresh_personalized_tips(request):
         carbs_progress = (dietary_goals.carbs_consumed / dietary_goals.carbs_target * 100) if dietary_goals.carbs_target > 0 else 0
         sugar_progress = (dietary_goals.sugar_consumed / dietary_goals.sugar_target * 100) if dietary_goals.sugar_target > 0 else 0
         sodium_progress = (dietary_goals.sodium_consumed / dietary_goals.sodium_target * 100) if dietary_goals.sodium_target > 0 else 0
+        fiber_progress = (dietary_goals.fiber_consumed / dietary_goals.fiber_target * 100) if dietary_goals.fiber_target > 0 else 0
         
         # Get activity stats
         recent_scans_count = ScanHistory.objects.filter(user=user, scanned_at__gte=timezone.now() - timedelta(days=7)).count()
@@ -281,7 +289,7 @@ def refresh_personalized_tips(request):
         # Generate fresh tips
         refreshed_tips = get_or_create_persistent_tips(
             user, dietary_goals, calories_progress, protein_progress, fat_progress, 
-            carbs_progress, sugar_progress, sodium_progress, recent_scans_count, days_active
+            carbs_progress, sugar_progress, sodium_progress, fiber_progress, recent_scans_count, days_active
         )
         
         return JsonResponse({
@@ -310,6 +318,7 @@ def update_nutrition_goals(request):
         carbs_target = int(request.POST.get('carbs_target', 300))
         sugar_target = int(request.POST.get('sugar_target', 50))
         sodium_target = int(request.POST.get('sodium_target', 2300))
+        fiber_target = int(request.POST.get('fiber_target', 25))
         
         # Validate ranges
         if not (500 <= calories_target <= 5000):
@@ -354,12 +363,20 @@ def update_nutrition_goals(request):
             messages.error(request, error_msg)
             return redirect('accounts:dashboard')
         
+        if not (10 <= fiber_target <= 50):
+            error_msg = 'Fiber target must be between 10 and 50g'
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': error_msg})
+            messages.error(request, error_msg)
+            return redirect('accounts:dashboard')
+        
         dietary_goals.calories_target = calories_target
         dietary_goals.protein_target = protein_target
         dietary_goals.fat_target = fat_target
         dietary_goals.carbs_target = carbs_target
         dietary_goals.sugar_target = sugar_target
         dietary_goals.sodium_target = sodium_target
+        dietary_goals.fiber_target = fiber_target
         dietary_goals.save()
         
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -370,6 +387,7 @@ def update_nutrition_goals(request):
             carbs_progress = min((dietary_goals.carbs_consumed / dietary_goals.carbs_target * 100), 100) if dietary_goals.carbs_target > 0 else 0
             sugar_progress = min((dietary_goals.sugar_consumed / dietary_goals.sugar_target * 100), 100) if dietary_goals.sugar_target > 0 else 0
             sodium_progress = min((dietary_goals.sodium_consumed / dietary_goals.sodium_target * 100), 100) if dietary_goals.sodium_target > 0 else 0
+            fiber_progress = min((dietary_goals.fiber_consumed / dietary_goals.fiber_target * 100), 100) if dietary_goals.fiber_target > 0 else 0
             
             return JsonResponse({
                 'success': True,
@@ -380,7 +398,8 @@ def update_nutrition_goals(request):
                     'fat': fat_progress,
                     'carbs': carbs_progress,
                     'sugar': sugar_progress,
-                    'sodium': sodium_progress
+                    'sodium': sodium_progress,
+                    'fiber': fiber_progress
                 },
                 'remaining': {
                     'calories': max(0, dietary_goals.calories_target - dietary_goals.calories_consumed),
@@ -388,7 +407,8 @@ def update_nutrition_goals(request):
                     'fat': max(0, dietary_goals.fat_target - dietary_goals.fat_consumed),
                     'carbs': max(0, dietary_goals.carbs_target - dietary_goals.carbs_consumed),
                     'sugar': max(0, dietary_goals.sugar_target - dietary_goals.sugar_consumed),
-                    'sodium': max(0, dietary_goals.sodium_target - dietary_goals.sodium_consumed)
+                    'sodium': max(0, dietary_goals.sodium_target - dietary_goals.sodium_consumed),
+                    'fiber': max(0, dietary_goals.fiber_target - dietary_goals.fiber_consumed)
                 }
             })
         else:
@@ -420,6 +440,7 @@ def reset_daily_goals(request):
         dietary_goals.carbs_consumed = 0
         dietary_goals.sugar_consumed = 0
         dietary_goals.sodium_consumed = 0
+        dietary_goals.fiber_consumed = 0
         dietary_goals.last_reset_date = timezone.now().date()
         dietary_goals.save()
         
@@ -432,7 +453,8 @@ def reset_daily_goals(request):
                 'fat': 0,
                 'carbs': 0,
                 'sugar': 0,
-                'sodium': 0
+                'sodium': 0,
+                'fiber': 0
             },
             'consumed': {
                 'calories': 0,
@@ -440,7 +462,8 @@ def reset_daily_goals(request):
                 'fat': 0,
                 'carbs': 0,
                 'sugar': 0,
-                'sodium': 0
+                'sodium': 0,
+                'fiber': 0
             },
             'remaining': {
                 'calories': dietary_goals.calories_target,
@@ -448,7 +471,8 @@ def reset_daily_goals(request):
                 'fat': dietary_goals.fat_target,
                 'carbs': dietary_goals.carbs_target,
                 'sugar': dietary_goals.sugar_target,
-                'sodium': dietary_goals.sodium_target
+                'sodium': dietary_goals.sodium_target,
+                'fiber': dietary_goals.fiber_target
             }
         })
     except DietaryGoal.DoesNotExist:
@@ -472,6 +496,7 @@ def apply_preset_goals(request):
                 'carbs_target': 150,
                 'sugar_target': 30,
                 'sodium_target': 2000,
+                'fiber_target': 25,
             },
             'maintenance': {
                 'calories_target': 2000,
@@ -480,6 +505,7 @@ def apply_preset_goals(request):
                 'carbs_target': 250,
                 'sugar_target': 50,
                 'sodium_target': 2300,
+                'fiber_target': 25,
             },
             'muscle_gain': {
                 'calories_target': 2500,
@@ -488,6 +514,7 @@ def apply_preset_goals(request):
                 'carbs_target': 350,
                 'sugar_target': 60,
                 'sodium_target': 2500,
+                'fiber_target': 30,
             }
         }
         
@@ -504,6 +531,7 @@ def apply_preset_goals(request):
         dietary_goals.carbs_target = preset['carbs_target']
         dietary_goals.sugar_target = preset['sugar_target']
         dietary_goals.sodium_target = preset['sodium_target']
+        dietary_goals.fiber_target = preset['fiber_target']
         dietary_goals.save()
         
         # Calculate new progress percentages
@@ -513,6 +541,7 @@ def apply_preset_goals(request):
         carbs_progress = min((dietary_goals.carbs_consumed / dietary_goals.carbs_target * 100), 100) if dietary_goals.carbs_target > 0 else 0
         sugar_progress = min((dietary_goals.sugar_consumed / dietary_goals.sugar_target * 100), 100) if dietary_goals.sugar_target > 0 else 0
         sodium_progress = min((dietary_goals.sodium_consumed / dietary_goals.sodium_target * 100), 100) if dietary_goals.sodium_target > 0 else 0
+        fiber_progress = min((dietary_goals.fiber_consumed / dietary_goals.fiber_target * 100), 100) if dietary_goals.fiber_target > 0 else 0
         
         preset_name = preset_type.replace('_', ' ').title()
         
@@ -526,6 +555,7 @@ def apply_preset_goals(request):
                 'carbs_target': dietary_goals.carbs_target,
                 'sugar_target': dietary_goals.sugar_target,
                 'sodium_target': dietary_goals.sodium_target,
+                'fiber_target': dietary_goals.fiber_target
             },
             'progress': {
                 'calories': calories_progress,
@@ -533,7 +563,8 @@ def apply_preset_goals(request):
                 'fat': fat_progress,
                 'carbs': carbs_progress,
                 'sugar': sugar_progress,
-                'sodium': sodium_progress
+                'sodium': sodium_progress,
+                'fiber': fiber_progress
             },
             'remaining': {
                 'calories': max(0, dietary_goals.calories_target - dietary_goals.calories_consumed),
@@ -541,7 +572,8 @@ def apply_preset_goals(request):
                 'fat': max(0, dietary_goals.fat_target - dietary_goals.fat_consumed),
                 'carbs': max(0, dietary_goals.carbs_target - dietary_goals.carbs_consumed),
                 'sugar': max(0, dietary_goals.sugar_target - dietary_goals.sugar_consumed),
-                'sodium': max(0, dietary_goals.sodium_target - dietary_goals.sodium_consumed)
+                'sodium': max(0, dietary_goals.sodium_target - dietary_goals.sodium_consumed),
+                'fiber': max(0, dietary_goals.fiber_target - dietary_goals.fiber_consumed)
             }
         })
         
@@ -625,6 +657,7 @@ def add_to_nutrition_tracker(request):
             dietary_goals.carbs_consumed += int(nutrition.get('carbohydrates_100g', 0) * multiplier)
             dietary_goals.sugar_consumed += int(nutrition.get('sugars_100g', 0) * multiplier)
             dietary_goals.sodium_consumed += int(nutrition.get('sodium_100g', 0) * multiplier)
+            dietary_goals.fiber_consumed += int(nutrition.get('fiber_100g', 0) * multiplier)
             dietary_goals.save()
             
             return JsonResponse({
@@ -640,7 +673,8 @@ def add_to_nutrition_tracker(request):
                     'calories': int(nutrition.get('energy-kcal_100g', 0) * multiplier),
                     'protein': int(nutrition.get('proteins_100g', 0) * multiplier),
                     'fat': int(nutrition.get('fat_100g', 0) * multiplier),
-                    'carbs': int(nutrition.get('carbohydrates_100g', 0) * multiplier)
+                    'carbs': int(nutrition.get('carbohydrates_100g', 0) * multiplier),
+                    'fiber': int(nutrition.get('fiber_100g', 0) * multiplier)
                 }
             })
         else:
@@ -656,43 +690,61 @@ def add_to_nutrition_tracker(request):
 @require_POST
 def remove_tracked_item(request):
     """Remove item from nutrition tracker"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
+    
     try:
         data = json.loads(request.body)
         item_id = data.get('item_id')
         
+        if not item_id:
+            return JsonResponse({'success': False, 'error': 'Item ID is required'}, status=400)
+        
         tracked_item = get_object_or_404(TrackedItem, id=item_id, user=request.user)
+        product_name = tracked_item.product.name  # Store name before deletion
         
         # Remove nutrition from daily goals
-        dietary_goals = DietaryGoal.objects.get(user=request.user)
-        calculated_nutrition = tracked_item.calculated_nutrition
-        
-        if calculated_nutrition:
-            dietary_goals.calories_consumed -= int(calculated_nutrition.get('energy-kcal_100g', 0))
-            dietary_goals.protein_consumed -= int(calculated_nutrition.get('proteins_100g', 0))
-            dietary_goals.fat_consumed -= int(calculated_nutrition.get('fat_100g', 0))
-            dietary_goals.carbs_consumed -= int(calculated_nutrition.get('carbohydrates_100g', 0))
-            dietary_goals.sugar_consumed -= int(calculated_nutrition.get('sugars_100g', 0))
-            dietary_goals.sodium_consumed -= int(calculated_nutrition.get('sodium_100g', 0))
+        try:
+            dietary_goals = DietaryGoal.objects.get(user=request.user)
+            calculated_nutrition = tracked_item.calculated_nutrition
             
-            # Ensure values don't go negative
-            dietary_goals.calories_consumed = max(0, dietary_goals.calories_consumed)
-            dietary_goals.protein_consumed = max(0, dietary_goals.protein_consumed)
-            dietary_goals.fat_consumed = max(0, dietary_goals.fat_consumed)
-            dietary_goals.carbs_consumed = max(0, dietary_goals.carbs_consumed)
-            dietary_goals.sugar_consumed = max(0, dietary_goals.sugar_consumed)
-            dietary_goals.sodium_consumed = max(0, dietary_goals.sodium_consumed)
-            
-            dietary_goals.save()
+            if calculated_nutrition:
+                dietary_goals.calories_consumed -= int(calculated_nutrition.get('energy-kcal_100g', 0))
+                dietary_goals.protein_consumed -= int(calculated_nutrition.get('proteins_100g', 0))
+                dietary_goals.fat_consumed -= int(calculated_nutrition.get('fat_100g', 0))
+                dietary_goals.carbs_consumed -= int(calculated_nutrition.get('carbohydrates_100g', 0))
+                dietary_goals.sugar_consumed -= int(calculated_nutrition.get('sugars_100g', 0))
+                dietary_goals.sodium_consumed -= int(calculated_nutrition.get('sodium_100g', 0))
+                dietary_goals.fiber_consumed -= int(calculated_nutrition.get('fiber_100g', 0))
+                
+                # Ensure values don't go negative
+                dietary_goals.calories_consumed = max(0, dietary_goals.calories_consumed)
+                dietary_goals.protein_consumed = max(0, dietary_goals.protein_consumed)
+                dietary_goals.fat_consumed = max(0, dietary_goals.fat_consumed)
+                dietary_goals.carbs_consumed = max(0, dietary_goals.carbs_consumed)
+                dietary_goals.sugar_consumed = max(0, dietary_goals.sugar_consumed)
+                dietary_goals.sodium_consumed = max(0, dietary_goals.sodium_consumed)
+                dietary_goals.fiber_consumed = max(0, dietary_goals.fiber_consumed)
+                
+                dietary_goals.save()
+        except DietaryGoal.DoesNotExist:
+            # If no dietary goals exist, just continue with deletion
+            pass
         
         tracked_item.delete()
         
         return JsonResponse({
             'success': True,
-            'message': f'Removed {tracked_item.product.name} from tracker'
+            'message': f'Removed {product_name} from tracker'
         })
         
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON data'}, status=400)
     except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)})
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error removing tracked item: {str(e)}")
+        return JsonResponse({'success': False, 'error': 'Failed to remove item from tracker'}, status=500)
 
 @login_required
 @require_POST
@@ -708,6 +760,7 @@ def add_manual_nutrition(request):
         carbs = float(data.get('carbs', 0))
         sugar = float(data.get('sugar', 0))
         sodium = float(data.get('sodium', 0))
+        fiber = float(data.get('fiber', 0))
         
         # Validate input ranges
         if calories < 0 or calories > 2000:
@@ -722,6 +775,8 @@ def add_manual_nutrition(request):
             return JsonResponse({'success': False, 'error': 'Sugar must be between 0 and 100g'})
         if sodium < 0 or sodium > 3000:
             return JsonResponse({'success': False, 'error': 'Sodium must be between 0 and 3000mg'})
+        if fiber < 0 or fiber > 50:
+            return JsonResponse({'success': False, 'error': 'Fiber must be between 0 and 50g'})
         
         # Get or create dietary goals
         dietary_goals, created = DietaryGoal.objects.get_or_create(user=request.user)
@@ -733,6 +788,7 @@ def add_manual_nutrition(request):
         dietary_goals.carbs_consumed += int(carbs)
         dietary_goals.sugar_consumed += int(sugar)
         dietary_goals.sodium_consumed += int(sodium)
+        dietary_goals.fiber_consumed += int(fiber)
         dietary_goals.save()
         
         # Calculate new progress percentages
@@ -742,6 +798,7 @@ def add_manual_nutrition(request):
         carbs_progress = min((dietary_goals.carbs_consumed / dietary_goals.carbs_target * 100), 100) if dietary_goals.carbs_target > 0 else 0
         sugar_progress = min((dietary_goals.sugar_consumed / dietary_goals.sugar_target * 100), 100) if dietary_goals.sugar_target > 0 else 0
         sodium_progress = min((dietary_goals.sodium_consumed / dietary_goals.sodium_target * 100), 100) if dietary_goals.sodium_target > 0 else 0
+        fiber_progress = min((dietary_goals.fiber_consumed / dietary_goals.fiber_target * 100), 100) if dietary_goals.fiber_target > 0 else 0
         
         return JsonResponse({
             'success': True,
@@ -752,7 +809,8 @@ def add_manual_nutrition(request):
                 'fat': fat_progress,
                 'carbs': carbs_progress,
                 'sugar': sugar_progress,
-                'sodium': sodium_progress
+                'sodium': sodium_progress,
+                'fiber': fiber_progress
             },
             'consumed': {
                 'calories': dietary_goals.calories_consumed,
@@ -760,7 +818,8 @@ def add_manual_nutrition(request):
                 'fat': dietary_goals.fat_consumed,
                 'carbs': dietary_goals.carbs_consumed,
                 'sugar': dietary_goals.sugar_consumed,
-                'sodium': dietary_goals.sodium_consumed
+                'sodium': dietary_goals.sodium_consumed,
+                'fiber': dietary_goals.fiber_consumed
             },
             'remaining': {
                 'calories': max(0, dietary_goals.calories_target - dietary_goals.calories_consumed),
@@ -768,7 +827,8 @@ def add_manual_nutrition(request):
                 'fat': max(0, dietary_goals.fat_target - dietary_goals.fat_consumed),
                 'carbs': max(0, dietary_goals.carbs_target - dietary_goals.carbs_consumed),
                 'sugar': max(0, dietary_goals.sugar_target - dietary_goals.sugar_consumed),
-                'sodium': max(0, dietary_goals.sodium_target - dietary_goals.sodium_consumed)
+                'sodium': max(0, dietary_goals.sodium_target - dietary_goals.sodium_consumed),
+                'fiber': max(0, dietary_goals.fiber_target - dietary_goals.fiber_consumed)
             }
         })
         
@@ -829,7 +889,7 @@ def weekly_nutrition_report(request):
     return render(request, 'accounts/weekly_report.html', context)
 
 def generate_personalized_tips(dietary_goals, calories_progress, protein_progress, fat_progress, 
-                             carbs_progress, sugar_progress, sodium_progress, recent_scans_count, days_active):
+                             carbs_progress, sugar_progress, sodium_progress, fiber_progress, recent_scans_count, days_active):
     """Generate dynamic personalized tips based on user's nutrition data and activity"""
     tips = []
     
@@ -918,6 +978,16 @@ def generate_personalized_tips(dietary_goals, calories_progress, protein_progres
             'priority': 3
         })
     
+    if fiber_progress >= 80:
+        tips.append({
+            'type': 'success',
+            'icon': 'check-circle',
+            'color': 'success',
+            'title': 'Fiber Goal Achieved',
+            'message': 'Great job meeting your fiber target! Your digestive system will thank you.',
+            'priority': 3
+        })
+    
     # Activity-based tips
     if recent_scans_count == 0:
         tips.append({
@@ -992,6 +1062,14 @@ def generate_personalized_tips(dietary_goals, calories_progress, protein_progres
                 'color': 'info',
                 'title': 'Meal Timing',
                 'message': 'Try to eat regular meals every 3-4 hours to maintain energy levels.',
+                'priority': 4
+            },
+            {
+                'type': 'info',
+                'icon': 'fiber',
+                'color': 'info',
+                'title': 'Fiber for Digestion',
+                'message': 'Ensure you\'re getting enough fiber for a healthy digestive system.',
                 'priority': 4
             }
         ]
