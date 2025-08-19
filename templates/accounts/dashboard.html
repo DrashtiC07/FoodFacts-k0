@@ -1205,7 +1205,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     <!-- Updated removeTrackedItem function to dynamically remove items and include product name in toast -->
     function removeTrackedItem(itemId, productName) {
-        if (!confirm('Remove this item from your nutrition tracker?')) {
+        if (!confirm(`Remove ${productName} from your tracker?`)) {
             return;
         }
         
@@ -1250,13 +1250,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }, 300);
                 }
-                showToast(`✅ Removed ${productName} from tracker.`, 'success');
+                showToast(`✅ Removed ${productName}`, 'success');
             } else {
-                showToast(data.error || 'Failed to remove item', 'error');
+                showToast('Failed to remove item. Please try again.', 'error');
             }
         })
         .catch(error => {
-            showToast('Failed to remove item from tracker', 'error');
+            showToast('Failed to remove item. Please try again.', 'error');
         });
     }
 
@@ -1608,119 +1608,4 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Ensure tips remain visible
                     const tips = personalizedTipsContent.querySelectorAll('.alert');
                     tips.forEach(tip => {
-                        if (tip.style.display === 'none' && !tip.hasAttribute('data-should-hide')) {
-                            tip.style.display = 'block';
-                        }
-                    });
-                }
-            });
-        });
-        
-        observer.observe(personalizedTipsContent, {
-            childList: true,
-            subtree: true,
-            attributes: true,
-            attributeFilter: ['style', 'class']
-        });
-    }
-
-    const manualForm = document.getElementById('manualNutritionForm');
-    if (manualForm) {
-        manualForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const calories = parseFloat(document.getElementById('manualCalories').value) || 0;
-            const protein = parseFloat(document.getElementById('manualProtein').value) || 0;
-            const fat = parseFloat(document.getElementById('manualFat').value) || 0;
-            const carbs = parseFloat(document.getElementById('manualCarbs').value) || 0;
-            
-            if (calories === 0 && protein === 0 && fat === 0 && carbs === 0) {
-                showModernAlert('Please enter at least one nutrition value.', 'warning');
-                return;
-            }
-            
-            // Validate ranges
-            if (calories < 0 || calories > 2000) {
-                showModernAlert('Calories must be between 0 and 2000', 'danger');
-                return;
-            }
-            if (protein < 0 || protein > 200) {
-                showModernAlert('Protein must be between 0 and 200g', 'danger');
-                return;
-            }
-            if (fat < 0 || fat > 150) {
-                showModernAlert('Fat must be between 0 and 150g', 'danger');
-                return;
-            }
-            if (carbs < 0 || carbs > 300) {
-                showModernAlert('Carbs must be between 0 and 300g', 'danger');
-                return;
-            }
-            
-            // Send AJAX request to add manual nutrition
-            fetch('{% url "accounts:add_manual_nutrition" %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                },
-                body: JSON.stringify({
-                    calories: calories,
-                    protein: protein,
-                    fat: fat,
-                    carbs: carbs
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Update progress bars without page reload
-                    updateProgressBars(data);
-                    
-                    // Update remaining values
-                    updateRemainingValues(data.remaining);
-                    
-                    // Clear form
-                    manualForm.reset();
-                    
-                    // Show modern success message
-                    showModernAlert(data.message, 'success');
-                } else {
-                    showModernAlert('Error: ' + (data.error || 'Unknown error'), 'danger');
-                }
-            })
-            .catch(error => {
-                console.error('[v0] Error adding manual nutrition:', error);
-                showModernAlert('Error adding nutrition. Please try again.', 'danger');
-            });
-        });
-    }
-    
-    // Prevent tips from disappearing by protecting the tips container
-    const tipsContainer = document.getElementById('personalizedTipsContent');
-    if (tipsContainer) {
-        // Create a MutationObserver to prevent tips from being hidden
-        const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                if (mutation.type === 'childList' || mutation.type === 'attributes') {
-                    // Ensure tips remain visible
-                    const tips = tipsContainer.querySelectorAll('.alert');
-                    tips.forEach(tip => {
-                        if (tip.style.display === 'none' && !tip.hasAttribute('data-should-hide')) {
-                            tip.style.display = 'block';
-                        }
-                    });
-                }
-            });
-        });
-        
-        observer.observe(tipsContainer, {
-            childList: true,
-            subtree: true,
-            attributes: true,
-            attributeFilter: ['style', 'class']
-        });
-    }
-});
-</script>
-{% endblock %}
+                        if (tip.style.display === 'none' && !tip.has
