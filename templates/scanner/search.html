@@ -1,0 +1,676 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Search Products - Food Scanner{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Modern Search Header -->
+            <div class="text-center mb-5">
+                <h1 class="display-5 fw-bold mb-3" style="font-family: 'Work Sans', sans-serif;">
+                    <i class="bi bi-search me-3" style="color: var(--primary-color);"></i>Search Products
+                </h1>
+                <p class="fs-5" style="color: var(--text-muted);">Find products by name, brand, or barcode</p>
+            </div>
+
+            <!-- Enhanced Search Card -->
+            <div class="card border-0 shadow-sm mb-5" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
+                <div class="card-body p-4">
+                    <!-- Search Tabs -->
+                    <ul class="nav nav-pills nav-fill mb-4" id="searchTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="text-search-tab" data-bs-toggle="pill" 
+                                    data-bs-target="#text-search" type="button" role="tab"
+                                    style="border-radius: var(--border-radius-sm); font-weight: 500; color: var(--text-secondary);">
+                                <i class="bi bi-search me-2"></i>Text Search
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="barcode-search-tab" data-bs-toggle="pill" 
+                                    data-bs-target="#barcode-search" type="button" role="tab"
+                                    style="border-radius: var(--border-radius-sm); font-weight: 500; color: var(--text-secondary);">
+                                <i class="bi bi-upc-scan me-2"></i>Barcode Search
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="searchTabContent">
+                        <!-- Text Search Tab -->
+                        <div class="tab-pane fade show active" id="text-search" role="tabpanel">
+                            <form method="get" class="mb-3">
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text border-end-0" style="background: var(--bg-secondary); border-color: var(--border-color);">
+                                        <i class="bi bi-search" style="color: var(--text-muted);"></i>
+                                    </span>
+                                    <input type="text" class="form-control border-start-0" name="q" 
+                                           value="{{ query }}" 
+                                           placeholder="Search by product name, brand, or category..."
+                                           autocomplete="off"
+                                           style="border-color: var(--border-color); background: var(--bg-primary); color: var(--text-primary);">
+                                    <button type="submit" class="btn btn-primary px-4">
+                                        <i class="bi bi-search me-1"></i>Search
+                                    </button>
+                                </div>
+                            </form>
+                            <div class="d-flex flex-wrap gap-2">
+                                <small style="color: var(--text-muted);">Popular searches:</small>
+                                <a href="?q=organic" class="badge text-decoration-none" style="background: var(--bg-secondary); color: var(--text-primary);">Organic</a>
+                                <a href="?q=chocolate" class="badge text-decoration-none" style="background: var(--bg-secondary); color: var(--text-primary);">Chocolate</a>
+                                <a href="?q=milk" class="badge text-decoration-none" style="background: var(--bg-secondary); color: var(--text-primary);">Milk</a>
+                                <a href="?q=bread" class="badge text-decoration-none" style="background: var(--bg-secondary); color: var(--text-primary);">Bread</a>
+                            </div>
+                        </div>
+
+                        <!-- Barcode Search Tab -->
+                        <div class="tab-pane fade" id="barcode-search" role="tabpanel">
+                            <!-- Enhanced barcode search form with better validation and feedback -->
+                            <form method="post" action="{% url 'scanner:manual_entry' %}" id="barcodeSearchForm">
+                                {% csrf_token %}
+                                <div class="input-group input-group-lg mb-3">
+                                    <span class="input-group-text border-end-0" style="background: var(--bg-secondary); border-color: var(--border-color);">
+                                        <i class="bi bi-upc-scan" style="color: var(--text-muted);"></i>
+                                    </span>
+                                    <input type="text" class="form-control border-start-0" name="barcode" 
+                                           id="barcodeInput"
+                                           placeholder="Enter barcode number (8-14 digits)..."
+                                           pattern="[0-9]{8,14}"
+                                           value="{{ barcode_error|default:'' }}"
+                                           autocomplete="off"
+                                           style="border-color: var(--border-color); background: var(--bg-primary); color: var(--text-primary);">
+                                    <button type="submit" class="btn btn-primary px-4" id="barcodeSearchBtn">
+                                        <span class="btn-text">
+                                            <i class="bi bi-search me-1"></i>Find Product
+                                        </span>
+                                        <span class="btn-loading d-none">
+                                            <span class="spinner-border spinner-border-sm me-1"></span>
+                                            Searching APIs...
+                                        </span>
+                                    </button>
+                                </div>
+                                
+                                <!-- Added real-time validation feedback -->
+                                <div id="barcodeValidation" class="mb-3 d-none">
+                                    <div class="alert alert-info border-0 py-2" style="background: rgba(255, 171, 171, 0.1); color: var(--primary-color);">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        <span id="validationMessage">Enter a valid barcode to search</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <small style="color: var(--text-muted);">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            Enter the barcode number found on the product packaging
+                                        </small>
+                                    </div>
+                                    <div class="col-md-6 text-md-end">
+                                        <small style="color: var(--text-muted);">
+                                            Supported formats: EAN-13, UPC-A, EAN-8, ITF-14
+                                        </small>
+                                    </div>
+                                </div>
+                            </form>
+
+                            <!-- Show barcode not found message if applicable -->
+                            {% if barcode_not_found %}
+                            <div class="alert border-0 mt-3" style="background: rgba(255, 195, 160, 0.2); color: var(--health-fair); border-left: 4px solid var(--health-fair) !important;">
+                                <div class="d-flex align-items-start">
+                                    <i class="bi bi-exclamation-triangle-fill me-3 mt-1" style="color: var(--health-fair);"></i>
+                                    <div class="flex-grow-1">
+                                        <h6 class="fw-semibold mb-2">Product Not Found</h6>
+                                        <p class="mb-3">We couldn't find a product with barcode <code style="background: var(--bg-secondary); color: var(--text-primary); padding: 2px 6px; border-radius: 4px;">{{ barcode_not_found }}</code> in our database or external sources.</p>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <small style="color: var(--text-muted);" class="me-3">You can check these sources:</small>
+                                            {% for url in suggest_urls %}
+                                            <a href="{{ url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-box-arrow-up-right me-1"></i>Source {{ forloop.counter }}
+                                            </a>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Barcode Examples -->
+                            <div class="mt-4 p-3 rounded-3" style="background: var(--bg-secondary);">
+                                <h6 class="fw-semibold mb-3">
+                                    <i class="bi bi-lightbulb me-2" style="color: var(--accent-color);"></i>Barcode Examples
+                                </h6>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge me-2" style="background: var(--primary-color); color: var(--text-primary);">EAN-13</span>
+                                            <code class="cursor-pointer" onclick="fillBarcode(this)" style="color: var(--text-muted);">1234567890123</code>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge me-2" style="background: var(--secondary-color); color: var(--text-primary);">UPC-A</span>
+                                            <code class="cursor-pointer" onclick="fillBarcode(this)" style="color: var(--text-muted);">123456789012</code>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge me-2" style="background: var(--health-excellent); color: var(--text-primary);">EAN-8</span>
+                                            <code class="cursor-pointer" onclick="fillBarcode(this)" style="color: var(--text-muted);">12345678</code>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge me-2" style="background: var(--accent-color); color: var(--text-primary);">ITF-14</span>
+                                            <code class="cursor-pointer" onclick="fillBarcode(this)" style="color: var(--text-muted);">12345678901234</code>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Results -->
+            {% if query %}
+            <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="fw-semibold mb-1" style="color: var(--text-primary);">Search Results</h4>
+                        <p class="mb-0" style="color: var(--text-muted);">
+                            Found {{ results_count }} product{{ results_count|pluralize }} for "{{ query }}"
+                        </p>
+                    </div>
+                    {% if results_count > 0 %}
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                                style="border-color: var(--border-color); color: var(--text-secondary);">
+                            <i class="bi bi-funnel me-1"></i>Sort
+                        </button>
+                        <ul class="dropdown-menu" style="background: var(--card-bg); border: 1px solid var(--border-color);">
+                            <li><a class="dropdown-item" href="?q={{ query }}&sort=name" style="color: var(--text-primary);">Name A-Z</a></li>
+                            <li><a class="dropdown-item" href="?q={{ query }}&sort=brand" style="color: var(--text-primary);">Brand</a></li>
+                            <li><a class="dropdown-item" href="?q={{ query }}&sort=recent" style="color: var(--text-primary);">Most Recent</a></li>
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if page_obj %}
+            <div class="row g-4">
+                {% for product in page_obj %}
+                <div class="col-lg-6">
+                    <div class="card product-card border-0 shadow-sm h-100 interactive-card" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-start">
+                                <div class="product-image me-3">
+                                    {% if product.image_url %}
+                                        <img src="{{ product.image_url }}" alt="{{ product.name }}" 
+                                             class="rounded-3" width="80" height="80" style="object-fit: cover;">
+                                    {% else %}
+                                        <div class="rounded-3 d-flex align-items-center justify-content-center border" 
+                                             style="width: 80px; height: 80px; background: var(--bg-secondary); border-color: var(--border-color) !important;">
+                                            <i class="bi bi-image fs-3" style="color: var(--text-muted);"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h5 class="card-title mb-2 fw-semibold">
+                                        <a href="{% url 'scanner:product_detail' product.barcode %}" 
+                                           class="text-decoration-none" style="color: var(--text-primary);">
+                                            {{ product.name|truncatechars:60 }}
+                                        </a>
+                                    </h5>
+                                    <div class="mb-2">
+                                        {% if product.brand %}
+                                        <span class="badge me-2" style="background: var(--bg-secondary); color: var(--text-secondary);">
+                                            <i class="bi bi-building me-1"></i>{{ product.brand }}
+                                        </span>
+                                        {% endif %}
+                                        {% if product.category %}
+                                        <span class="badge me-2" style="background: var(--primary-light); color: var(--primary-color);">
+                                            <i class="bi bi-tag me-1"></i>{{ product.category|truncatechars:20 }}
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small style="color: var(--text-muted);">
+                                            <i class="bi bi-upc-scan me-1"></i>{{ product.barcode }}
+                                        </small>
+                                        {% if product.health_score %}
+                                        <div class="health-score-mini text-white
+                                            {% if product.health_score >= 80 %}{% elif product.health_score >= 60 %}{% elif product.health_score >= 40 %}{% else %}{% endif %}"
+                                            style="background: {% if product.health_score >= 80 %}var(--health-excellent){% elif product.health_score >= 60 %}var(--health-good){% elif product.health_score >= 40 %}var(--health-fair){% else %}var(--health-poor){% endif %};">
+                                            {{ product.health_score }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    {% if product.ecoscore %}
+                                    <div class="mt-2">
+                                        <span class="badge" style="background: var(--health-excellent); color: var(--text-primary);">
+                                            <i class="bi bi-leaf me-1"></i>Eco-Score {{ product.ecoscore|upper }}
+                                        </span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <nav aria-label="Search results pagination" class="mt-5">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?q={{ query }}&page=1">
+                                <i class="bi bi-chevron-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?q={{ query }}&page={{ page_obj.previous_page_number }}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?q={{ query }}&page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?q={{ query }}&page={{ page_obj.next_page_number }}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?q={{ query }}&page={{ page_obj.paginator.num_pages }}">
+                                <i class="bi bi-chevron-double-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% elif query %}
+            <!-- No Results Found -->
+            <div class="text-center py-5">
+                <i class="bi bi-search display-1 mb-4" style="color: var(--text-muted);"></i>
+                <h4 class="fw-semibold mb-3" style="color: var(--text-primary);">No products found</h4>
+                <p class="mb-4" style="color: var(--text-muted);">
+                    We couldn't find any products matching "{{ query }}". 
+                    Try different keywords or check the spelling.
+                </p>
+                <div class="d-flex flex-column flex-md-row gap-3 justify-content-center">
+                    <a href="{% url 'scanner:scan' %}" class="btn btn-primary btn-lg">
+                        <i class="bi bi-camera me-2"></i>Scan a Product
+                    </a>
+                    <button class="btn btn-outline-primary btn-lg" onclick="clearSearch()">
+                        <i class="bi bi-arrow-clockwise me-2"></i>Try New Search
+                    </button>
+                </div>
+                
+                <!-- Search Tips -->
+                <div class="mt-5 p-4 rounded-3 text-start" style="background: var(--bg-secondary);">
+                    <h6 class="fw-semibold mb-3">
+                        <i class="bi bi-lightbulb me-2" style="color: var(--accent-color);"></i>Search Tips
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="bi bi-check-circle me-2" style="color: var(--health-excellent);"></i>
+                                    Try shorter, more general terms
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-check-circle me-2" style="color: var(--health-excellent);"></i>
+                                    Search by brand name only
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="bi bi-check-circle me-2" style="color: var(--health-excellent);"></i>
+                                    Use the barcode search tab
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-check-circle me-2" style="color: var(--health-excellent);"></i>
+                                    Check for typos
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <!-- Initial Search State -->
+            <div class="text-center py-5">
+                <i class="bi bi-search display-1 mb-4" style="color: var(--text-muted);"></i>
+                <h4 class="fw-semibold mb-3" style="color: var(--text-primary);">Discover Products</h4>
+                <p class="mb-4" style="color: var(--text-muted);">
+                    Search our database of thousands of products or scan a barcode to get started.
+                </p>
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="p-4 rounded-3 text-center" style="background: rgba(255, 171, 171, 0.1);">
+                                    <i class="bi bi-search fs-1 mb-3" style="color: var(--primary-color);"></i>
+                                    <h6 class="fw-semibold">Text Search</h6>
+                                    <p class="small mb-0" style="color: var(--text-muted);">Find products by name, brand, or category</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-4 rounded-3 text-center" style="background: rgba(185, 251, 192, 0.1);">
+                                    <i class="bi bi-upc-scan fs-1 mb-3" style="color: var(--health-excellent);"></i>
+                                    <h6 class="fw-semibold">Barcode Search</h6>
+                                    <p class="small mb-0" style="color: var(--text-muted);">Enter barcode numbers directly</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Enhanced product card styling with pastel theme */
+.product-card {
+    transition: all var(--transition-normal);
+    cursor: pointer;
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Health score mini indicator */
+.health-score-mini {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+/* Enhanced nav pills with pastel colors */
+.nav-pills .nav-link {
+    border-radius: var(--border-radius-sm);
+    font-weight: 500;
+    transition: all var(--transition-fast);
+    color: var(--text-secondary);
+}
+
+.nav-pills .nav-link.active {
+    background-color: var(--primary-color) !important;
+    color: var(--text-primary) !important;
+}
+
+.nav-pills .nav-link:hover:not(.active) {
+    background-color: var(--bg-secondary);
+    color: var(--primary-color);
+}
+
+/* Enhanced input styling with pastel theme */
+.input-group-text {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+}
+
+.form-control {
+    border-color: var(--border-color);
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 171, 171, 0.2);
+}
+
+/* Badge enhancements */
+.badge {
+    font-weight: 500;
+    padding: 0.5rem 0.75rem;
+}
+
+/* Loading state */
+.btn-loading {
+    pointer-events: none;
+}
+
+/* Enhanced barcode input validation with pastel colors */
+.form-control:invalid {
+    border-color: var(--health-poor);
+}
+
+.form-control:valid {
+    border-color: var(--health-excellent);
+}
+
+.form-control.is-valid {
+    border-color: var(--health-excellent);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23b9fbc0' d='m2.3 6.73.94-.94 1.44 1.44L7.4 4.5l.94.94L4.66 9.17z'/%3e%3c/svg%3e");
+}
+
+.form-control.is-invalid {
+    border-color: var(--health-poor);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23ffabab'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.5 5.5 1 1m0-1-1 1'/%3e%3c/svg%3e");
+}
+
+/* Tab content styling */
+.tab-content {
+    min-height: 200px;
+}
+
+/* Interactive elements */
+.interactive-card {
+    cursor: pointer;
+}
+
+.interactive-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Cursor pointer for clickable elements */
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.cursor-pointer:hover {
+    color: var(--primary-color) !important;
+    text-decoration: underline;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .health-score-mini {
+        width: 32px;
+        height: 32px;
+        font-size: 0.75rem;
+    }
+    
+    .product-image img,
+    .product-image div {
+        width: 60px !important;
+        height: 60px !important;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Enhanced barcode form handling
+    const barcodeForm = document.getElementById('barcodeSearchForm');
+    const barcodeInput = document.getElementById('barcodeInput');
+    const barcodeBtn = document.getElementById('barcodeSearchBtn');
+    const btnText = barcodeBtn.querySelector('.btn-text');
+    const btnLoading = barcodeBtn.querySelector('.btn-loading');
+    const validationDiv = document.getElementById('barcodeValidation');
+    const validationMessage = document.getElementById('validationMessage');
+    
+    barcodeInput.addEventListener('input', function() {
+        const value = this.value.replace(/\D/g, ''); // Remove non-digits
+        this.value = value;
+        
+        // Show/hide validation feedback
+        if (value.length > 0) {
+            validationDiv.classList.remove('d-none');
+            
+            if (value.length >= 8 && value.length <= 14) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+                barcodeBtn.disabled = false;
+                validationMessage.textContent = `Valid ${getBarcodeType(value.length)} barcode - Ready to search!`;
+                validationDiv.querySelector('.alert').className = 'alert border-0 py-2';
+                validationDiv.querySelector('.alert').style.cssText = 'background: rgba(185, 251, 192, 0.2); color: var(--health-excellent);';
+                validationDiv.querySelector('i').className = 'bi bi-check-circle me-2';
+            } else {
+                this.classList.remove('is-valid');
+                this.classList.add('is-invalid');
+                barcodeBtn.disabled = true;
+                validationMessage.textContent = `Enter ${8 - value.length > 0 ? 8 - value.length + ' more' : 'valid'} digits (${value.length}/8-14)`;
+                validationDiv.querySelector('.alert').className = 'alert border-0 py-2';
+                validationDiv.querySelector('.alert').style.cssText = 'background: rgba(255, 171, 171, 0.2); color: var(--health-poor);';
+                validationDiv.querySelector('i').className = 'bi bi-exclamation-circle me-2';
+            }
+        } else {
+            validationDiv.classList.add('d-none');
+            this.classList.remove('is-valid', 'is-invalid');
+            barcodeBtn.disabled = false;
+        }
+    });
+    
+    barcodeForm.addEventListener('submit', function(e) {
+        const barcode = barcodeInput.value.trim();
+        
+        if (!barcode || barcode.length < 8 || barcode.length > 14) {
+            e.preventDefault();
+            alert('Please enter a valid barcode (8-14 digits)');
+            barcodeInput.focus();
+            return;
+        }
+        
+        // Show loading state
+        barcodeBtn.disabled = true;
+        btnText.classList.add('d-none');
+        btnLoading.classList.remove('d-none');
+        
+        // Update validation message
+        validationMessage.textContent = 'Searching multiple APIs for product information...';
+        validationDiv.querySelector('.alert').style.cssText = 'background: rgba(255, 195, 160, 0.2); color: var(--accent-color);';
+        validationDiv.querySelector('i').className = 'bi bi-hourglass-split me-2';
+    });
+    
+    // Auto-focus on tab switch
+    document.getElementById('barcode-search-tab').addEventListener('shown.bs.tab', function() {
+        barcodeInput.focus();
+    });
+    
+    // Product card click handling
+    document.querySelectorAll('.product-card').forEach(card => {
+        card.addEventListener('click', function(e) {
+            if (e.target.tagName !== 'A') {
+                const link = this.querySelector('a[href]');
+                if (link) {
+                    window.location.href = link.href;
+                }
+            }
+        });
+    });
+    
+    // Search suggestions
+    const searchInput = document.querySelector('input[name="q"]');
+    if (searchInput) {
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !this.value.trim()) {
+                e.preventDefault();
+                alert('Please enter a search term');
+            }
+        });
+    }
+});
+
+function getBarcodeType(length) {
+    switch(length) {
+        case 8: return 'EAN-8';
+        case 12: return 'UPC-A';
+        case 13: return 'EAN-13';
+        case 14: return 'ITF-14';
+        default: return 'Generic';
+    }
+}
+
+// Clear search function
+function clearSearch() {
+    const searchInput = document.querySelector('input[name="q"]');
+    if (searchInput) {
+        searchInput.value = '';
+        searchInput.focus();
+    }
+}
+
+function fillBarcode(element) {
+    const barcodeInput = document.getElementById('barcodeInput');
+    if (barcodeInput) {
+        barcodeInput.value = element.textContent;
+        barcodeInput.dispatchEvent(new Event('input'));
+        barcodeInput.focus();
+        
+        // Switch to barcode tab if not already active
+        const barcodeTab = document.getElementById('barcode-search-tab');
+        if (barcodeTab && !barcodeTab.classList.contains('active')) {
+            barcodeTab.click();
+        }
+        
+        // Add visual feedback
+        element.style.background = 'var(--primary-color)';
+        element.style.color = 'var(--text-primary)';
+        setTimeout(() => {
+            element.style.background = '';
+            element.style.color = 'var(--text-muted)';
+        }, 1000);
+    }
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    // Ctrl/Cmd + K to focus search
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        const activeTab = document.querySelector('.nav-link.active');
+        if (activeTab && activeTab.id === 'barcode-search-tab') {
+            document.getElementById('barcodeInput').focus();
+        } else {
+            document.querySelector('input[name="q"]').focus();
+        }
+    }
+});
+</script>
+{% endblock %}

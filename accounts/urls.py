@@ -1,0 +1,23 @@
+from django.urls import path
+from . import views
+
+app_name = 'accounts'
+
+urlpatterns = [
+    path('register/', views.register, name='register'),
+    path('login/', views.user_login, name='login'),
+    path('logout/', views.user_logout, name='logout'),
+    path('dashboard/', views.dashboard, name='dashboard'),
+    path('profile/', views.profile, name='profile'),
+    path('add_review/<str:barcode>/', views.add_review, name='add_review'),
+    path('favorite/<str:barcode>/', views.add_remove_favorite, name='add_remove_favorite'),
+    path('update_nutrition_goals/', views.update_nutrition_goals, name='update_nutrition_goals'),
+    path('reset_daily_goals/', views.reset_daily_goals, name='reset_daily_goals'),
+    path('add_to_nutrition_tracker/', views.add_to_nutrition_tracker, name='add_to_nutrition_tracker'),
+    path('remove_tracked_item/', views.remove_tracked_item, name='remove_tracked_item'),
+    path('add_manual_nutrition/', views.add_manual_nutrition, name='add_manual_nutrition'),
+    path('toggle-theme/', views.toggle_theme, name='toggle_theme'),
+    path('weekly-report/', views.weekly_nutrition_report, name='weekly_nutrition_report'),
+    path('apply_preset_goals/', views.apply_preset_goals, name='apply_preset_goals'),
+    path('refresh_tips/', views.refresh_personalized_tips, name='refresh_personalized_tips'),
+]

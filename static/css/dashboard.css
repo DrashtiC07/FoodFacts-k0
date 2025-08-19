@@ -1,0 +1,581 @@
+/* Dashboard Specific Styles */
+
+.dashboard-container {
+  padding: 2rem 0;
+}
+
+.dashboard-header {
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  color: white;
+  padding: 3rem 0;
+  margin-bottom: 2rem;
+  border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
+}
+
+.dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: var(--card-bg);
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 6px var(--shadow-color);
+  transition: all var(--transition-normal);
+  border-left: 4px solid var(--primary-color);
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px var(--shadow-color);
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  font-family: "Playfair Display", serif;
+}
+
+.stat-label {
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.875rem;
+}
+
+.recent-scans {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 6px var(--shadow-color);
+}
+
+.scan-item {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color var(--transition-fast);
+}
+
+.scan-item:hover {
+  background-color: var(--bg-secondary);
+}
+
+.scan-item:last-child {
+  border-bottom: none;
+}
+
+.scan-product-image {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: var(--border-radius-sm);
+}
+
+.scan-placeholder {
+  width: 60px;
+  height: 60px;
+  background-color: var(--bg-tertiary);
+  border-radius: var(--border-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+}
+
+.nutrition-goals {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 6px var(--shadow-color);
+  padding: 1.5rem;
+}
+
+.goal-progress {
+  margin-bottom: 1.5rem;
+}
+
+.goal-label {
+  display: flex;
+  justify-content: between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.goal-bar {
+  height: 12px;
+  background-color: var(--bg-tertiary);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.goal-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+  border-radius: 6px;
+  transition: width var(--transition-normal);
+}
+
+.favorites-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.favorite-card {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 6px var(--shadow-color);
+  overflow: hidden;
+  transition: all var(--transition-normal);
+}
+
+.favorite-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px var(--shadow-color);
+}
+
+.favorite-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.favorite-placeholder {
+  width: 100%;
+  height: 200px;
+  background-color: var(--bg-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 3rem;
+}
+
+.favorite-content {
+  padding: 1.5rem;
+}
+
+.favorite-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.favorite-brand {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+.favorite-health-score {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.score-excellent {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--health-excellent);
+}
+
+.score-good {
+  background-color: rgba(132, 204, 22, 0.1);
+  color: var(--health-good);
+}
+
+.score-fair {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--health-fair);
+}
+
+.score-poor {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--health-poor);
+}
+
+/* Added enhanced personalized tips styles for permanent visibility and dynamic updates */
+/* Personalized Tips Styles */
+.tip-item {
+  border-radius: 12px !important;
+  border: 1px solid transparent !important;
+  margin-bottom: 0.75rem !important;
+  padding: 1rem !important;
+  transition: all 0.3s ease !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.tip-item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: currentColor;
+  opacity: 0.3;
+}
+
+.tip-item[data-tip-type="critical"] {
+  background: rgba(220, 53, 69, 0.1) !important;
+  border-color: rgba(220, 53, 69, 0.3) !important;
+  animation: pulse-critical 2s infinite;
+}
+
+.tip-item[data-tip-type="warning"] {
+  background: rgba(255, 193, 7, 0.1) !important;
+  border-color: rgba(255, 193, 7, 0.3) !important;
+}
+
+.tip-item[data-tip-type="success"] {
+  background: rgba(25, 135, 84, 0.1) !important;
+  border-color: rgba(25, 135, 84, 0.3) !important;
+}
+
+.tip-item[data-tip-type="info"] {
+  background: rgba(13, 110, 253, 0.1) !important;
+  border-color: rgba(13, 110, 253, 0.3) !important;
+}
+
+.tip-item:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.tip-item .bi {
+  font-size: 1.1em;
+  margin-right: 0.5rem;
+  flex-shrink: 0;
+}
+
+.tip-item strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+.tip-item small {
+  line-height: 1.4;
+  opacity: 0.9;
+}
+
+@keyframes pulse-critical {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(220, 53, 69, 0);
+  }
+}
+
+/* Nutrition Goal Cards Enhanced */
+.nutrition-goal-card {
+  padding: 1.5rem !important;
+  background: var(--card-bg) !important;
+  border-radius: 12px !important;
+  border: 1px solid var(--border-color) !important;
+  transition: all 0.3s ease !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.nutrition-goal-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+  opacity: 0.6;
+}
+
+.nutrition-goal-card:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+  border-color: var(--primary-color) !important;
+}
+
+.nutrition-bar {
+  height: 14px !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  background: var(--bg-tertiary) !important;
+  position: relative !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+.nutrition-bar .progress-fill {
+  height: 100% !important;
+  border-radius: 8px !important;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.nutrition-bar .progress-fill::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Enhanced Progress Bar Colors */
+.calories-progress {
+  background: linear-gradient(90deg, #3b82f6, #1d4ed8) !important;
+}
+
+.protein-progress {
+  background: linear-gradient(90deg, #0ea5e9, #0284c7) !important;
+}
+
+.fat-progress {
+  background: linear-gradient(90deg, #f59e0b, #d97706) !important;
+}
+
+.carbs-progress {
+  background: linear-gradient(90deg, #10b981, #059669) !important;
+}
+
+.sugar-progress {
+  background: linear-gradient(90deg, #f97316, #ea580c) !important;
+}
+
+.sodium-progress {
+  background: linear-gradient(90deg, #8b5cf6, #7c3aed) !important;
+}
+
+/* Added interactive card animations and modern alert styles */
+.interactive-card {
+  cursor: pointer !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.interactive-card:hover {
+  transform: translateY(-6px) scale(1.02) !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1) !important;
+  border-color: var(--primary-color) !important;
+}
+
+/* Modern Alert Styles */
+.alert-modern {
+  border: none !important;
+  border-radius: 12px !important;
+  padding: 1rem 1.25rem !important;
+  margin-bottom: 1rem !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  backdrop-filter: blur(10px) !important;
+  animation: slideInRight 0.3s ease-out !important;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Profile Section */
+.profile-header {
+  text-align: center;
+  padding: 2rem;
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 6px var(--shadow-color);
+  margin-bottom: 2rem;
+}
+
+.profile-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.profile-avatar-placeholder {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 3rem;
+  font-weight: 700;
+  margin: 0 auto 1rem;
+}
+
+.profile-name {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.profile-email {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+.profile-stats {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 1rem;
+}
+
+.profile-stat {
+  text-align: center;
+}
+
+.profile-stat-number {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.profile-stat-label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Added responsive enhancements and mobile optimizations */
+/* Responsive Dashboard */
+@media (max-width: 768px) {
+  .dashboard-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .favorites-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-stats {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .stat-number {
+    font-size: 2rem;
+  }
+
+  .nutrition-goal-card {
+    padding: 1rem !important;
+  }
+
+  .tip-item {
+    padding: 0.75rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  .tip-item strong {
+    font-size: 0.9rem;
+  }
+
+  .tip-item small {
+    font-size: 0.8rem;
+  }
+
+  .interactive-card:hover {
+    transform: translateY(-3px) scale(1.01) !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .nutrition-bar {
+    height: 12px !important;
+  }
+
+  .tip-item {
+    padding: 0.5rem !important;
+  }
+
+  .nutrition-goal-card {
+    padding: 0.75rem !important;
+  }
+}
+
+/* Added utility classes for enhanced user experience */
+/* Utility Classes */
+.spin {
+  animation: spin 1s linear infinite !important;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in !important;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.bounce-in {
+  animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) !important;
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

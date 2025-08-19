@@ -1,0 +1,874 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }} - Food Scanner{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Modern Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-transparent p-0">
+            <li class="breadcrumb-item">
+                <a href="{% url 'scanner:index' %}" class="text-decoration-none" style="color: var(--primary-color);">
+                    <i class="bi bi-house me-1"></i>Home
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'scanner:search' %}" class="text-decoration-none" style="color: var(--primary-color);">Products</a>
+            </li>
+            <li class="breadcrumb-item active" style="color: var(--text-muted);">{{ product.name|truncatechars:30 }}</li>
+        </ol>
+    </nav>
+
+    <!-- Product Hero Section -->
+    <div class="row mb-5">
+        <div class="col-lg-5 mb-4">
+            <!-- Product Image Card -->
+            <div class="card border-0 shadow-sm sticky-top" style="top: 2rem; background: var(--card-bg); border: 1px solid var(--border-color) !important;">
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        {% if product.image_url %}
+                        <img src="{{ product.image_url }}" alt="{{ product.name }}" 
+                             class="img-fluid rounded-3 shadow-sm" 
+                             style="max-height: 350px; width: 100%; object-fit: contain;">
+                        {% else %}
+                        <div class="rounded-3 d-flex align-items-center justify-content-center shadow-sm" 
+                             style="height: 350px; background: var(--bg-secondary);">
+                            <div class="text-center">
+                                <i class="bi bi-image" style="font-size: 4rem; color: var(--text-muted);"></i>
+                                <p class="mt-2 mb-0" style="color: var(--text-muted);">No image available</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Health Score Showcase -->
+                    {% if product.health_score %}
+                    <div class="text-center mb-4">
+                        <div class="health-score-circle mx-auto mb-3 
+                            {% if product.health_score >= 80 %}health-score-excellent
+                            {% elif product.health_score >= 60 %}health-score-good
+                            {% elif product.health_score >= 40 %}health-score-fair
+                            {% else %}health-score-poor{% endif %}">
+                            <div class="text-center">
+                                <div class="fs-2 fw-bold">{{ product.health_score }}</div>
+                                <small class="opacity-75">/ 100</small>
+                            </div>
+                        </div>
+                        <h5 class="fw-bold mb-2" style="font-family: 'Work Sans', sans-serif; color: var(--text-primary);">Health Score</h5>
+                        <p class="mb-0" style="color: var(--text-muted);">
+                            {% if product.health_score >= 80 %}
+                                <i class="bi bi-check-circle-fill me-1" style="color: var(--health-excellent);"></i>Excellent nutritional choice
+                            {% elif product.health_score >= 60 %}
+                                <i class="bi bi-check-circle me-1" style="color: var(--health-good);"></i>Good nutritional option
+                            {% elif product.health_score >= 40 %}
+                                <i class="bi bi-exclamation-circle me-1" style="color: var(--health-fair);"></i>Fair nutritional value
+                            {% else %}
+                                <i class="bi bi-x-circle me-1" style="color: var(--health-poor);"></i>Consider healthier alternatives
+                            {% endif %}
+                        </p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Quick Stats -->
+                    <div class="row g-3">
+                        {% if product.ecoscore %}
+                        <div class="col-6">
+                            <div class="text-center p-3 rounded-3" style="background: rgba(185, 251, 192, 0.2); border: 1px solid rgba(185, 251, 192, 0.5);">
+                                <div class="fs-4 fw-bold mb-1" style="color: var(--health-excellent);">{{ product.ecoscore|upper }}</div>
+                                <small class="fw-semibold" style="color: var(--health-excellent);">Eco Score</small>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if product.nova_group %}
+                        <div class="col-6">
+                            <div class="text-center p-3 rounded-3" style="background: rgba(255, 195, 160, 0.2); border: 1px solid rgba(255, 195, 160, 0.5);">
+                                <div class="fs-4 fw-bold mb-1" style="color: var(--accent-color);">{{ product.nova_group }}</div>
+                                <small class="fw-semibold" style="color: var(--accent-color);">NOVA Group</small>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Action Buttons -->
+                    {% if user.is_authenticated %}
+                    <div class="d-grid gap-2 mt-4">
+                        <form method="post" action="{% url 'scanner:toggle_favorite' product.barcode %}" class="d-grid">
+                            {% csrf_token %}
+                            <button type="submit" class="btn {% if is_favorite %}btn-danger{% else %}btn-outline-danger{% endif %} btn-lg">
+                                <i class="bi bi-heart{% if is_favorite %}-fill{% endif %} me-2"></i>
+                                {% if is_favorite %}Remove from Favorites{% else %}Add to Favorites{% endif %}
+                            </button>
+                        </form>
+                        <!-- Enhanced nutrition tracker button with confirmation toast -->
+                        <button class="btn btn-outline-primary btn-lg" onclick="addToNutritionTracker('{{ product.barcode }}', '{{ product.name }}')">
+                            <i class="bi bi-plus-circle me-2"></i>Add to Nutrition Tracker
+                        </button>
+                    </div>
+                    {% else %}
+                    <div class="text-center mt-4">
+                        <p class="mb-3" style="color: var(--text-muted);">Want to save this product?</p>
+                        <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Login to Save
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <!-- Product Header -->
+            <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="flex-grow-1">
+                        <h1 class="display-5 fw-bold mb-2" style="font-family: 'Work Sans', sans-serif; color: var(--text-primary);">
+                            {{ product.name }}
+                        </h1>
+                        {% if product.brand %}
+                        <p class="fs-5 mb-3" style="color: var(--text-muted);">
+                            <i class="bi bi-building me-1"></i>{{ product.brand }}
+                        </p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Rating Display -->
+                    {% if product.average_rating %}
+                    <div class="text-end">
+                        <div class="fs-5 mb-1" style="color: var(--accent-color);">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= product.average_rating %}
+                                    <i class="bi bi-star-fill"></i>
+                                {% else %}
+                                    <i class="bi bi-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <small style="color: var(--text-muted);">
+                            {{ product.average_rating|floatformat:1 }} 
+                            ({{ product.review_count }} review{{ product.review_count|pluralize }})
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Product Meta -->
+                <!-- Enhanced flexbox layout for tags with proper overflow handling and responsive wrapping -->
+                <div class="tags-container" style="
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 0.5rem;
+                    margin-bottom: 1.5rem;
+                    max-width: 100%;
+                    overflow: hidden;
+                ">
+                    <span class="tag-item badge px-3 py-2" style="
+                        background: var(--bg-secondary);
+                        color: var(--text-secondary);
+                        border: 1px solid var(--border-color);
+                        flex: 0 0 auto;
+                        max-width: 200px;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        word-break: break-word;
+                    ">
+                        <i class="bi bi-upc-scan me-1"></i>{{ product.barcode }}
+                    </span>
+                    
+                    {% if product.category %}
+                    <span class="tag-item badge px-3 py-2" style="
+                        background: var(--primary-light);
+                        color: var(--primary-color);
+                        border: 1px solid var(--primary-color);
+                        flex: 0 0 auto;
+                        max-width: 200px;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        word-break: break-word;
+                    ">
+                        <i class="bi bi-tag me-1"></i>{{ product.category }}
+                    </span>
+                    {% endif %}
+                    
+                    {% if product.serving_size %}
+                    <span class="tag-item badge px-3 py-2" style="
+                        background: rgba(255, 195, 160, 0.2);
+                        color: var(--accent-color);
+                        border: 1px solid var(--accent-color);
+                        flex: 0 0 auto;
+                        max-width: 200px;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        word-break: break-word;
+                    ">
+                        <i class="bi bi-cup me-1"></i>{{ product.serving_size }}
+                    </span>
+                    {% endif %}
+                    
+                    {% if product.vegan %}
+                    <span class="tag-item badge px-3 py-2" style="
+                        background: var(--health-excellent);
+                        color: white;
+                        flex: 0 0 auto;
+                        max-width: 150px;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        word-break: break-word;
+                    ">
+                        <i class="bi bi-leaf me-1"></i>Vegan
+                    </span>
+                    {% elif product.vegetarian %}
+                    <span class="tag-item badge px-3 py-2" style="
+                        background: var(--health-good);
+                        color: white;
+                        flex: 0 0 auto;
+                        max-width: 150px;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        word-break: break-word;
+                    ">
+                        <i class="bi bi-egg me-1"></i>Vegetarian
+                    </span>
+                    {% endif %}
+                    
+                    {% if product.organic %}
+                    <span class="tag-item badge px-3 py-2" style="
+                        background: var(--health-excellent);
+                        color: white;
+                        flex: 0 0 auto;
+                        max-width: 150px;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        word-break: break-word;
+                    ">
+                        <i class="bi bi-award me-1"></i>Organic
+                    </span>
+                    {% endif %}
+                    
+                    {% if product.palm_oil_free %}
+                    <span class="tag-item badge px-3 py-2" style="
+                        background: var(--health-good);
+                        color: white;
+                        flex: 0 0 auto;
+                        max-width: 180px;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        word-break: break-word;
+                    ">
+                        <i class="bi bi-shield-check me-1"></i>Palm Oil Free
+                    </span>
+                    {% endif %}
+                    
+                    {% if product.allergens %}
+                        {% for allergen in product.allergens %}
+                        <span class="tag-item badge px-3 py-2" style="
+                            background: var(--health-poor);
+                            color: white;
+                            flex: 0 0 auto;
+                            max-width: 150px;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                            word-break: break-word;
+                        ">
+                            <i class="bi bi-exclamation-triangle me-1"></i>{{ allergen|title }}
+                        </span>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+            <!-- NOVA Group Information -->
+            {% if product.nova_group %}
+            <div class="card border-0 shadow-sm mb-4" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
+                <div class="card-header bg-transparent border-0 p-4">
+                    <h4 class="fw-bold mb-0" style="font-family: 'Work Sans', sans-serif; color: var(--text-primary);">
+                        <i class="bi bi-info-circle me-2" style="color: var(--accent-color);"></i>Processing Level (NOVA {{ product.nova_group }})
+                    </h4>
+                </div>
+                <!-- Enhanced NOVA section with collapsible details -->
+                <div class="card-body p-4">
+                    {% if nova_info %}
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h5 class="fw-semibold mb-2" style="color: var(--text-primary);">{{ nova_info.name }}</h5>
+                            <p class="mb-3" style="color: var(--text-secondary);">{{ nova_info.description }}</p>
+                            
+                            <!-- Collapsible section for detailed NOVA information -->
+                            <div class="accordion" id="novaAccordion">
+                                <div class="accordion-item border-0" style="background: var(--bg-secondary);">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                                data-bs-target="#novaDetails" style="background: var(--bg-secondary); color: var(--text-primary); border: none;">
+                                            <i class="bi bi-chevron-down me-2"></i>Learn More About NOVA {{ product.nova_group }}
+                                        </button>
+                                    </h2>
+                                    <div id="novaDetails" class="accordion-collapse collapse" data-bs-parent="#novaAccordion">
+                                        <div class="accordion-body">
+                                            <div class="mb-3">
+                                                <h6 class="fw-semibold mb-2" style="color: var(--text-primary);">Health Impact:</h6>
+                                                <p class="mb-0" style="color: var(--text-secondary);">{{ nova_info.health_impact }}</p>
+                                            </div>
+                                            <div class="mb-3">
+                                                <h6 class="fw-semibold mb-2" style="color: var(--text-primary);">Examples:</h6>
+                                                <ul class="mb-0" style="color: var(--text-secondary);">
+                                                    {% for example in nova_info.examples %}
+                                                    <li>{{ example }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </div>
+                                            <div class="mb-3">
+                                                <h6 class="fw-semibold mb-2" style="color: var(--text-primary);">Environmental Impact:</h6>
+                                                <p class="mb-0" style="color: var(--text-secondary);">{{ nova_info.environmental_impact }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="recommendation p-3 rounded mt-3" style="background: var(--bg-secondary); border-left: 4px solid {% if product.nova_group == 1 %}var(--health-excellent){% elif product.nova_group == 2 %}var(--accent-color){% elif product.nova_group == 3 %}var(--health-fair){% else %}var(--health-poor){% endif %};">
+                                <small class="fw-medium" style="color: var(--text-primary);">
+                                    <i class="bi bi-{{ nova_info.icon }} me-2"></i>{{ nova_info.recommendation }}
+                                </small>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="nova-visual p-3">
+                                <div class="nova-badge mb-3" style="background: {% if product.nova_group == 1 %}var(--health-excellent){% elif product.nova_group == 2 %}var(--accent-color){% elif product.nova_group == 3 %}var(--health-fair){% else %}var(--health-poor){% endif %}; color: var(--text-primary); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                    <span class="fs-2 fw-bold">{{ product.nova_group }}</span>
+                                </div>
+                                <small style="color: var(--text-muted);">Processing Level</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <!-- Show unknown NOVA classification with auto-detect suggestion -->
+            <div class="card border-0 shadow-sm mb-4" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
+                <div class="card-header bg-transparent border-0 p-4">
+                    <h4 class="fw-bold mb-0" style="font-family: 'Work Sans', sans-serif; color: var(--text-primary);">
+                        <i class="bi bi-question-circle me-2" style="color: var(--text-muted);"></i>Processing Level (Unknown)
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="text-center py-3">
+                        <i class="bi bi-search" style="font-size: 2rem; color: var(--text-muted);"></i>
+                        <h6 class="mt-2 mb-2" style="color: var(--text-primary);">NOVA Classification Unknown</h6>
+                        <p class="mb-3" style="color: var(--text-muted);">We're analyzing the ingredients to determine the processing level.</p>
+                        <button class="btn btn-outline-primary btn-sm" onclick="suggestNovaGroup('{{ product.barcode }}')">
+                            <i class="bi bi-cpu me-1"></i>Auto-Detect Processing Level
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Environmental Impact Section -->
+            {% if environmental_impact %}
+            <div class="card border-0 shadow-sm mb-4" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
+                <div class="card-header bg-transparent border-0 p-4">
+                    <h4 class="fw-bold mb-0" style="font-family: 'Work Sans', sans-serif; color: var(--text-primary);">
+                        <i class="bi bi-globe me-2" style="color: var(--health-excellent);"></i>Environmental Impact
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row align-items-center mb-4">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="environmental-score me-3" style="background: {% if environmental_impact.grade == 'A' %}var(--health-excellent){% elif environmental_impact.grade == 'B' %}var(--health-good){% elif environmental_impact.grade == 'C' %}var(--health-fair){% elif environmental_impact.grade == 'D' %}var(--accent-color){% else %}var(--health-poor){% endif %}; color: var(--text-primary); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    <span class="fs-4 fw-bold">{{ environmental_impact.grade }}</span>
+                                </div>
+                                <div>
+                                    <h5 class="fw-semibold mb-1" style="color: var(--text-primary);">Environmental Grade</h5>
+                                    <p class="mb-0" style="color: var(--text-muted);">Score: {{ environmental_impact.overall_score }}/100</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3 rounded" style="background: var(--bg-secondary);">
+                                <div class="fs-6 fw-semibold mb-1" style="color: var(--text-primary);">Carbon Footprint</div>
+                                <div class="badge" style="background: {% if environmental_impact.carbon_footprint_estimate == 'Very Low' %}var(--health-excellent){% elif environmental_impact.carbon_footprint_estimate == 'Low' %}var(--health-good){% elif environmental_impact.carbon_footprint_estimate == 'Moderate' %}var(--health-fair){% elif environmental_impact.carbon_footprint_estimate == 'High' %}var(--accent-color){% else %}var(--health-poor){% endif %}; color: var(--text-primary);">
+                                    {{ environmental_impact.carbon_footprint_estimate }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Impact Breakdown -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="impact-item p-3 rounded" style="background: var(--bg-secondary);">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="fw-semibold" style="color: var(--text-primary);">Ingredients</span>
+                                    <span class="badge" style="background: {% if environmental_impact.ingredient_impact.score >= 75 %}var(--health-excellent){% elif environmental_impact.ingredient_impact.score >= 50 %}var(--health-fair){% else %}var(--health-poor){% endif %}; color: var(--text-primary);">{{ environmental_impact.ingredient_impact.score }}/100</span>
+                                </div>
+                                {% if environmental_impact.ingredient_impact.high_impact_count > 0 %}
+                                <small style="color: var(--text-muted);">{{ environmental_impact.ingredient_impact.high_impact_count }} high-impact ingredient{{ environmental_impact.ingredient_impact.high_impact_count|pluralize }}</small>
+                                {% else %}
+                                <small style="color: var(--text-muted);">Low environmental impact ingredients</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="impact-item p-3 rounded" style="background: var(--bg-secondary);">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="fw-semibold" style="color: var(--text-primary);">Processing</span>
+                                    <span class="badge" style="background: {% if environmental_impact.processing_impact.score >= 75 %}var(--health-excellent){% elif environmental_impact.processing_impact.score >= 50 %}var(--health-fair){% else %}var(--health-poor){% endif %}; color: var(--text-primary);">{{ environmental_impact.processing_impact.score }}/100</span>
+                                </div>
+                                <small style="color: var(--text-muted);">{{ environmental_impact.processing_impact.description }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Environmental Recommendations -->
+                    {% if environmental_impact.recommendations %}
+                    <div class="environmental-recommendations">
+                        <h6 class="fw-semibold mb-3" style="color: var(--text-primary);">
+                            <i class="bi bi-lightbulb me-2" style="color: var(--accent-color);"></i>Environmental Tips
+                        </h6>
+                        <div class="row">
+                            {% for recommendation in environmental_impact.recommendations %}
+                            <div class="col-12 mb-2">
+                                <div class="d-flex align-items-start">
+                                    <i class="bi bi-check-circle me-2 mt-1" style="color: var(--health-excellent);"></i>
+                                    <small style="color: var(--text-secondary);">{{ recommendation }}</small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Additives Analysis Section -->
+            {% if additives_analysis %}
+            <div class="card border-0 shadow-sm mb-4" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
+                <div class="card-header bg-transparent border-0 p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="fw-bold mb-0" style="font-family: 'Work Sans', sans-serif; color: var(--text-primary);">
+                            <i class="bi bi-shield-exclamation me-2" style="color: var(--accent-color);"></i>Food Additives Analysis
+                        </h4>
+                        <div class="text-end">
+                            <div class="additive-score" style="background: {% if additives_analysis.health_impact_score >= 80 %}var(--health-excellent){% elif additives_analysis.health_impact_score >= 60 %}var(--health-good){% elif additives_analysis.health_impact_score >= 40 %}var(--health-fair){% else %}var(--health-poor){% endif %}; color: var(--text-primary); padding: 0.5rem 1rem; border-radius: var(--border-radius); font-weight: bold;">
+                                {{ additives_analysis.health_impact_score }}/100
+                            </div>
+                            <small style="color: var(--text-muted);">Safety Score</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    {% if additives_analysis.total_additives > 0 %}
+                    
+                    <!-- High Risk Additives Section -->
+                    {% if additives_analysis.controversial_count > 0 %}
+                    <div class="alert alert-warning mb-4" style="border-left: 4px solid var(--health-poor);">
+                        <h6 class="fw-bold mb-2" style="color: var(--health-poor);">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>⚠️ High Risk Additives Detected
+                        </h6>
+                        <p class="mb-2" style="color: var(--text-secondary);">
+                            This product contains {{ additives_analysis.controversial_count }} controversial additive{{ additives_analysis.controversial_count|pluralize }} that may have health concerns.
+                        </p>
+                        <button class="btn btn-outline-danger btn-sm" data-bs-toggle="collapse" data-bs-target="#highRiskAdditives">
+                            <i class="bi bi-info-circle me-1"></i>Learn More About Health Effects
+                        </button>
+                    </div>
+                    {% endif %}
+
+                    <!-- Additives Summary -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="additives-summary p-3 rounded" style="background: var(--bg-secondary);">
+                                <h6 class="fw-semibold mb-3" style="color: var(--text-primary);">Summary</h6>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span style="color: var(--text-secondary);">Total Additives:</span>
+                                    <span class="fw-semibold" style="color: var(--text-primary);">{{ additives_analysis.total_additives }}</span>
+                                </div>
+                                {% if additives_analysis.controversial_count > 0 %}
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span style="color: var(--text-secondary);">Controversial:</span>
+                                    <span class="fw-semibold" style="color: var(--health-poor);">{{ additives_analysis.controversial_count }}</span>
+                                </div>
+                                {% endif %}
+                                <div class="safety-breakdown mt-3">
+                                    {% if additives_analysis.safety_summary.safe > 0 %}
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <small style="color: var(--health-excellent);">
+                                            <i class="bi bi-check-circle-fill me-1"></i>Safe: {{ additives_analysis.safety_summary.safe }}
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                    {% if additives_analysis.safety_summary.moderate > 0 %}
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <small style="color: var(--health-fair);">
+                                            <i class="bi bi-exclamation-triangle-fill me-1"></i>Moderate: {{ additives_analysis.safety_summary.moderate }}
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                    {% if additives_analysis.safety_summary.avoid > 0 %}
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <small style="color: var(--health-poor);">
+                                            <i class="bi bi-x-circle-fill me-1"></i>Avoid: {{ additives_analysis.safety_summary.avoid }}
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="health-impact p-3 rounded" style="background: var(--bg-secondary);">
+                                <h6 class="fw-semibold mb-3" style="color: var(--text-primary);">Health Impact</h6>
+                                <p class="mb-2" style="color: var(--text-secondary); font-size: 0.9rem;">{{ additives_analysis.overall_assessment }}</p>
+                                {% if additives_analysis.main_concerns %}
+                                <div class="concerns mt-3">
+                                    <small class="fw-semibold" style="color: var(--text-primary);">Main Concerns:</small>
+                                    {% for concern in additives_analysis.main_concerns %}
+                                    <div class="mt-1">
+                                        <small style="color: var(--health-poor);">
+                                            <i class="bi bi-exclamation-circle me-1"></i>{{ concern }}
+                                        </small>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Additives List -->
+                    {% if additives_analysis.detailed_additives %}
+                    <div class="additives-details">
+                        <h6 class="fw-semibold mb-3" style="color: var(--text-primary);">
+                            <i class="bi bi-list-ul me-2"></i>Detailed Analysis
+                        </h6>
+                        <div class="accordion" id="additivesAccordion">
+                            {% for additive in additives_analysis.detailed_additives %}
+                            <div class="accordion-item border-0 mb-2" style="background: var(--bg-secondary); border-radius: var(--border-radius) !important;">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                            data-bs-target="#additive{{ forloop.counter }}" style="background: var(--bg-secondary); color: var(--text-primary); border: none; border-radius: var(--border-radius) !important;">
+                                        <div class="d-flex align-items-center w-100">
+                                            <div class="me-3">
+                                                <span class="badge" style="background: {% if additive.safety_level == 'safe' %}var(--health-excellent){% elif additive.safety_level == 'moderate' %}var(--health-fair){% else %}var(--health-poor){% endif %}; color: var(--text-primary);">
+                                                    {{ additive.code }}
+                                                </span>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <div class="fw-semibold">{{ additive.name }}</div>
+                                                <small style="color: var(--text-muted);">{{ additive.function }}</small>
+                                            </div>
+                                        </div>
+                                    </button>
+                                </h2>
+                                <div id="additive{{ forloop.counter }}" class="accordion-collapse collapse" data-bs-parent="#additivesAccordion">
+                                    <div class="accordion-body">
+                                        <div class="row">
+                                            <div class="col-md-8">
+                                                <p class="mb-3" style="color: var(--text-secondary);">{{ additive.description }}</p>
+                                                {% if additive.health_effects %}
+                                                <div class="mb-3">
+                                                    <h6 class="fw-semibold mb-2" style="color: var(--text-primary);">Health Effects:</h6>
+                                                    <p class="mb-0" style="color: var(--text-secondary); font-size: 0.9rem;">{{ additive.health_effects }}</p>
+                                                </div>
+                                                {% endif %}
+                                                {% if additive.sources %}
+                                                <div class="mb-3">
+                                                    <h6 class="fw-semibold mb-2" style="color: var(--text-primary);">Common Sources:</h6>
+                                                    <p class="mb-0" style="color: var(--text-secondary); font-size: 0.9rem;">{{ additive.sources }}</p>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="safety-info p-3 rounded" style="background: var(--card-bg); border: 1px solid var(--border-color);">
+                                                    <div class="text-center mb-2">
+                                                        <div class="safety-badge mb-2" style="background: {% if additive.safety_level == 'safe' %}var(--health-excellent){% elif additive.safety_level == 'moderate' %}var(--health-fair){% else %}var(--health-poor){% endif %}; color: var(--text-primary); padding: 0.5rem; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                                            <i class="bi bi-{% if additive.safety_level == 'safe' %}check-circle{% elif additive.safety_level == 'moderate' %}exclamation-triangle{% else %}x-circle{% endif %}"></i>
+                                                        </div>
+                                                        <div class="fw-semibold" style="color: var(--text-primary);">{{ additive.safety_level|title }}</div>
+                                                    </div>
+                                                    {% if additive.recommendation %}
+                                                    <small style="color: var(--text-secondary);">{{ additive.recommendation }}</small>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-check-circle" style="font-size: 3rem; color: var(--health-excellent);"></i>
+                        <h5 class="mt-3 mb-2" style="color: var(--text-primary);">No Additives Detected</h5>
+                        <p class="mb-0" style="color: var(--text-muted);">This product appears to contain no artificial additives or preservatives.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Nutrition Facts -->
+            {% if product.nutrition_facts %}
+            <div class="card border-0 shadow-sm mb-4" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
+                <div class="card-header bg-transparent border-0 p-4">
+                    <h4 class="fw-bold mb-0" style="font-family: 'Work Sans', sans-serif; color: var(--text-primary);">
+                        <i class="bi bi-bar-chart me-2" style="color: var(--primary-color);"></i>Nutrition Facts
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="nutrition-grid">
+                        {% for key, value in product.nutrition_facts.items %}
+                        {% if value and value != "0" and value != "0g" and value != "0mg" %}
+                        <div class="nutrition-item d-flex justify-content-between align-items-center py-2 border-bottom" style="border-color: var(--border-color) !important;">
+                            <span class="fw-medium" style="color: var(--text-primary);">{{ key|title }}</span>
+                            <span class="fw-semibold" style="color: var(--text-secondary);">{{ value }}</span>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Ingredients -->
+            {% if product.ingredients %}
+            <div class="card border-0 shadow-sm mb-4" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
+                <div class="card-header bg-transparent border-0 p-4">
+                    <h4 class="fw-bold mb-0" style="font-family: 'Work Sans', sans-serif; color: var(--text-primary);">
+                        <i class="bi bi-list-check me-2" style="color: var(--accent-color);"></i>Ingredients
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="ingredients-text p-3 rounded" style="background: var(--bg-secondary); border-left: 4px solid var(--primary-color);">
+                        <p class="mb-0" style="color: var(--text-secondary); line-height: 1.6;">{{ product.ingredients }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Reviews Section -->
+            <div class="card border-0 shadow-sm mb-4" style="background: var(--card-bg); border: 1px solid var(--border-color) !important;">
+                <div class="card-header bg-transparent border-0 p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="fw-bold mb-0" style="font-family: 'Work Sans', sans-serif; color: var(--text-primary);">
+                            <i class="bi bi-chat-dots me-2" style="color: var(--primary-color);"></i>Reviews
+                        </h4>
+                        {% if user.is_authenticated %}
+                        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#reviewModal">
+                            <i class="bi bi-plus me-1"></i>Write Review
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    {% if reviews %}
+                        {% for review in reviews %}
+                        <div class="review-item mb-4 pb-4 {% if not forloop.last %}border-bottom{% endif %}" style="border-color: var(--border-color) !important;">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="user-avatar me-3" style="background: var(--primary-light); color: var(--primary-color); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                                        {{ review.user.username|first|upper }}
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold" style="color: var(--text-primary);">{{ review.user.username }}</div>
+                                        <div class="text-warning">
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= review.rating %}
+                                                    <i class="bi bi-star-fill"></i>
+                                                {% else %}
+                                                    <i class="bi bi-star"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <small style="color: var(--text-muted);">{{ review.created_at|date:"M d, Y" }}</small>
+                            </div>
+                            <p class="mb-0" style="color: var(--text-secondary);">{{ review.comment }}</p>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-chat" style="font-size: 3rem; color: var(--text-muted);"></i>
+                        <h5 class="mt-3 mb-2" style="color: var(--text-primary);">No Reviews Yet</h5>
+                        <p class="mb-0" style="color: var(--text-muted);">Be the first to review this product!</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Review Modal -->
+{% if user.is_authenticated %}
+<div class="modal fade" id="reviewModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" style="background: var(--card-bg); border: 1px solid var(--border-color);">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold" style="color: var(--text-primary);">Write a Review</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'accounts:add_review' product.barcode %}">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" style="color: var(--text-primary);">Rating</label>
+                        <div class="rating-input">
+                            {% for i in "12345" %}
+                            <input type="radio" name="rating" value="{{ forloop.counter }}" id="star{{ forloop.counter }}" class="d-none">
+                            <label for="star{{ forloop.counter }}" class="star-label" style="color: var(--text-muted); cursor: pointer; font-size: 1.5rem;">
+                                <i class="bi bi-star"></i>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="comment" class="form-label fw-semibold" style="color: var(--text-primary);">Comment</label>
+                        <textarea name="comment" id="comment" class="form-control" rows="4" 
+                                  style="background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary);"
+                                  placeholder="Share your thoughts about this product..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit Review</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+// Rating stars interaction
+document.querySelectorAll('.star-label').forEach((star, index) => {
+    star.addEventListener('click', function() {
+        const rating = index + 1;
+        document.querySelectorAll('.star-label').forEach((s, i) => {
+            if (i < rating) {
+                s.innerHTML = '<i class="bi bi-star-fill"></i>';
+                s.style.color = 'var(--accent-color)';
+            } else {
+                s.innerHTML = '<i class="bi bi-star"></i>';
+                s.style.color = 'var(--text-muted)';
+            }
+        });
+    });
+});
+
+function addToNutritionTracker(barcode, productName) {
+    const servingSize = prompt(`Enter serving size in grams for "${productName}":`, '100');
+    
+    if (servingSize && !isNaN(servingSize) && servingSize > 0) {
+        fetch('{% url "accounts:add_to_nutrition_tracker" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                'barcode': barcode,
+                'serving_size': parseFloat(servingSize)
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success toast
+                showToast(data.message, 'success');
+                
+                // Show additional product info if available
+                if (data.product_info) {
+                    const info = data.product_info;
+                    const nutritionInfo = data.nutrition_added;
+                    
+                    setTimeout(() => {
+                        showToast(
+                            `Added: ${nutritionInfo.calories} cal, ${nutritionInfo.protein}g protein, ${nutritionInfo.fat}g fat, ${nutritionInfo.carbs}g carbs`,
+                            'info'
+                        );
+                    }, 2000);
+                }
+            } else {
+                showToast(data.error, 'error');
+            }
+        })
+        .catch(error => {
+            showToast('Failed to add to nutrition tracker', 'error');
+        });
+    }
+}
+
+function suggestNovaGroup(barcode) {
+    fetch('{% url "scanner:suggest_nova_group" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({'barcode': barcode})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(`Suggested NOVA Group: ${data.nova_group} - ${data.description}`, 'info');
+            // Optionally reload the page to show updated classification
+            setTimeout(() => location.reload(), 2000);
+        } else {
+            showToast(data.error, 'error');
+        }
+    })
+    .catch(error => {
+        showToast('Failed to analyze processing level', 'error');
+    });
+}
+
+function showToast(message, type = 'info') {
+    const toastContainer = document.getElementById('toast-container') || createToastContainer();
+    
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'primary'} border-0`;
+    toast.setAttribute('role', 'alert');
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'error' ? 'x-circle' : 'info-circle'} me-2"></i>
+                ${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    
+    toastContainer.appendChild(toast);
+    
+    const bsToast = new bootstrap.Toast(toast, {delay: 5000});
+    bsToast.show();
+    
+    toast.addEventListener('hidden.bs.toast', () => {
+        toast.remove();
+    });
+}
+
+function createToastContainer() {
+    const container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'toast-container position-fixed top-0 end-0 p-3';
+    container.style.zIndex = '1055';
+    document.body.appendChild(container);
+    return container;
+}
+</script>
+{% endblock %}

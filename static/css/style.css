@@ -1,0 +1,558 @@
+/* Food Scanner - Modern Pastel Design System */
+
+/* Import Google Fonts - Modern Typography */
+@import url("https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&display=swap");
+
+/* CSS Custom Properties for Modern Pastel Theming */
+:root {
+  /* Light Theme - Beautiful Pastel Colors */
+  --primary-color: #a78bfa; /* Soft Purple */
+  --primary-hover: #9333ea; /* Deeper purple */
+  --primary-light: #f3f4f6; /* Light gray background */
+  --accent-color: #06b6d4; /* Soft Cyan */
+  --accent-hover: #0891b2; /* Deeper cyan */
+  --secondary-color: #10b981; /* Emerald Green */
+  --secondary-hover: #059669; /* Deeper emerald */
+
+  /* Light Theme Background & Text */
+  --bg-primary: #ffffff; /* Pure white */
+  --bg-secondary: #f8fafc; /* Very light gray */
+  --bg-tertiary: #f1f5f9; /* Light gray */
+  --text-primary: #1e293b; /* Dark slate */
+  --text-secondary: #475569; /* Medium slate */
+  --text-muted: #64748b; /* Light slate */
+  --border-color: #e2e8f0; /* Very light slate */
+  --shadow-color: rgba(167, 139, 250, 0.15); /* Soft purple shadow */
+  --card-bg: #ffffff;
+
+  /* Health Score Colors - Pastel Friendly */
+  --health-excellent: #10b981; /* Emerald green */
+  --health-good: #22c55e; /* Green */
+  --health-fair: #f59e0b; /* Amber */
+  --health-poor: #ef4444; /* Red */
+
+  /* Spacing & Borders - Modern Approach */
+  --border-radius: 16px;
+  --border-radius-sm: 12px;
+  --border-radius-lg: 24px;
+  --border-radius-xl: 32px;
+
+  /* Transitions - Smooth & Professional */
+  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Shadows - Layered Design */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Dark Theme - Sophisticated Dark Colors */
+[data-theme="dark"] {
+  /* Dark Theme - Sophisticated Colors */
+  --primary-color: #c4b5fd; /* Light Purple */
+  --primary-hover: #a78bfa; /* Deeper light purple */
+  --primary-light: #1e1b4b; /* Dark indigo for backgrounds */
+  --accent-color: #67e8f9; /* Light Cyan */
+  --accent-hover: #22d3ee; /* Deeper light cyan */
+  --secondary-color: #6ee7b7; /* Light Emerald */
+  --secondary-hover: #34d399; /* Deeper light emerald */
+
+  /* Dark Theme Background & Text */
+  --bg-primary: #0f172a; /* Dark slate */
+  --bg-secondary: #1e293b; /* Slate */
+  --bg-tertiary: #334155; /* Light slate */
+  --text-primary: #f8fafc; /* Very light text */
+  --text-secondary: #cbd5e1; /* Light text */
+  --text-muted: #94a3b8; /* Muted text */
+  --border-color: #475569; /* Dark borders */
+  --shadow-color: rgba(196, 181, 253, 0.2); /* Light purple shadow */
+  --card-bg: #1e293b; /* Slate for cards */
+
+  /* Health Score Colors - Dark Theme */
+  --health-excellent: #6ee7b7; /* Light emerald */
+  --health-good: #86efac; /* Light green */
+  --health-fair: #fbbf24; /* Light amber */
+  --health-poor: #f87171; /* Light red */
+
+  /* Shadows - Layered Design */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+}
+
+/* Base Styles - Modern Foundation */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+/* Typography - Modern Hierarchy */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Work Sans", sans-serif;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text-primary);
+  letter-spacing: -0.025em;
+}
+
+.display-1,
+.display-2,
+.display-3,
+.display-4,
+.display-5,
+.display-6 {
+  font-family: "Work Sans", sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.05em;
+}
+
+/* Modern Button System */
+.btn {
+  border-radius: var(--border-radius-sm);
+  font-weight: 500;
+  font-family: "Open Sans", sans-serif;
+  transition: all var(--transition-fast);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  letter-spacing: 0.025em;
+}
+
+.btn-primary {
+  /* Updated to purple to cyan gradient */
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  color: white;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--primary-hover), var(--accent-hover));
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
+  color: white;
+}
+
+.btn-outline-primary {
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+  background: transparent;
+}
+
+.btn-outline-primary:hover {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: var(--secondary-color);
+  color: white;
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+  background: var(--secondary-hover);
+  color: white;
+  transform: translateY(-1px);
+}
+
+/* Modern Card System */
+.card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  border-color: rgba(167, 139, 250, 0.3);
+}
+
+.card-header {
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding: 1.25rem 1.5rem;
+  font-weight: 600;
+  font-family: "Work Sans", sans-serif;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+/* Modern Navigation */
+.navbar {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-normal);
+}
+
+[data-theme="dark"] .navbar {
+  background-color: rgba(15, 23, 42, 0.95) !important;
+}
+
+.navbar-brand {
+  font-family: "Work Sans", sans-serif;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--primary-color) !important;
+  letter-spacing: -0.025em;
+}
+
+.nav-link {
+  color: var(--text-secondary) !important;
+  font-weight: 500;
+  font-family: "Open Sans", sans-serif;
+  transition: all var(--transition-fast);
+  padding: 0.5rem 1rem !important;
+  border-radius: var(--border-radius-sm);
+}
+
+.nav-link:hover {
+  color: var(--primary-color) !important;
+  background-color: var(--bg-secondary);
+}
+
+.nav-link.active {
+  color: var(--primary-color) !important;
+  background-color: var(--primary-light);
+  font-weight: 600;
+}
+
+/* Updated dropdown styling to remove duplicate icons */
+.dropdown-toggle::after {
+  display: none !important; /* Remove Bootstrap's default dropdown arrow */
+}
+
+/* Modern Health Score System */
+.health-score-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 700;
+  font-family: "Work Sans", sans-serif;
+  color: white;
+  position: relative;
+  box-shadow: var(--shadow-lg);
+  transition: transform var(--transition-normal);
+}
+
+.health-score-circle:hover {
+  transform: scale(1.05);
+}
+
+.health-score-excellent {
+  background: linear-gradient(135deg, var(--health-excellent), var(--secondary-color));
+}
+.health-score-good {
+  background: linear-gradient(135deg, var(--health-good), #86efac);
+}
+.health-score-fair {
+  background: linear-gradient(135deg, var(--health-fair), #fbbf24);
+}
+.health-score-poor {
+  background: linear-gradient(135deg, var(--health-poor), #f87171);
+}
+
+/* Modern Progress Bars */
+.nutrition-bar {
+  height: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: var(--bg-tertiary);
+  position: relative;
+}
+
+.nutrition-bar .progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+  border-radius: 6px;
+  transition: width var(--transition-slow);
+  position: relative;
+  overflow: hidden;
+}
+
+.nutrition-bar .progress-fill::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Modern Form System */
+.form-control {
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: all var(--transition-fast);
+  padding: 0.75rem 1rem;
+  font-family: "Open Sans", sans-serif;
+  font-size: 0.875rem;
+}
+
+.form-control:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.2);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  outline: none;
+}
+
+.form-control::placeholder {
+  color: var(--text-muted);
+}
+
+.form-label {
+  font-weight: 500;
+  font-family: "Open Sans", sans-serif;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+/* Modern Scanner Interface */
+.scanner-container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.scan-area {
+  border: 2px dashed var(--border-color);
+  border-radius: var(--border-radius-lg);
+  padding: 3rem;
+  text-align: center;
+  background-color: var(--bg-secondary);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.scan-area:hover {
+  border-color: var(--primary-color);
+  background-color: var(--primary-light);
+  transform: scale(1.01);
+}
+
+.scan-area.dragover {
+  border-color: var(--accent-color);
+  background-color: var(--primary-light);
+  transform: scale(1.02);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Modern Alerts */
+.alert {
+  border-radius: var(--border-radius);
+  border: none;
+  font-weight: 500;
+  font-family: "Open Sans", sans-serif;
+  padding: 1rem 1.25rem;
+  border-left: 4px solid;
+}
+
+.alert-success {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: var(--health-excellent);
+  border-left-color: var(--health-excellent);
+}
+
+.alert-warning {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--health-fair);
+  border-left-color: var(--health-fair);
+}
+
+.alert-danger {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--health-poor);
+  border-left-color: var(--health-poor);
+}
+
+.alert-info {
+  background-color: rgba(167, 139, 250, 0.1);
+  color: var(--primary-color);
+  border-left-color: var(--primary-color);
+}
+
+/* Modern Loading States */
+.loading-spinner {
+  display: inline-block;
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid var(--bg-tertiary);
+  border-radius: 50%;
+  border-top-color: var(--primary-color);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Modern Utility Classes */
+.text-gradient {
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 600;
+}
+
+.shadow-custom {
+  box-shadow: var(--shadow-xl);
+}
+
+.border-gradient {
+  border: 2px solid transparent;
+  background: linear-gradient(var(--bg-primary), var(--bg-primary)) padding-box,
+    linear-gradient(135deg, var(--primary-color), var(--accent-color)) border-box;
+  border-radius: var(--border-radius);
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  color: white;
+  font-size: 1.25rem;
+  cursor: pointer;
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition-normal);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-xl);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .theme-toggle {
+    bottom: 1rem;
+    right: 1rem;
+    width: 48px;
+    height: 48px;
+    font-size: 1.125rem;
+  }
+
+  .health-score-circle {
+    width: 100px;
+    height: 100px;
+    font-size: 1.75rem;
+  }
+
+  .scan-area {
+    padding: 2rem 1rem;
+  }
+
+  .btn {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.8125rem;
+  }
+}
+
+/* Modern Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.slide-in {
+  animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Modern Interactive Elements */
+.interactive-card {
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.interactive-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+}
+
+.glass-effect {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .glass-effect {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}

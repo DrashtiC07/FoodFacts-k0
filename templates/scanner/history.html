@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Scan History - Food Facts Scanner{% endblock %}
+
+{% block content %}
+<!-- Added padding-top to avoid navbar collision -->
+<div class="container" style="padding-top: 100px;">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold">Your Scan History</h2>
+            <p class="text-muted">Track all the products you've scanned</p>
+        </div>
+    </div>
+    
+    <!-- Updated to use page_obj instead of history and show all scanned products -->
+    {% if page_obj %}
+    <div class="row g-4">
+        {% for scan in page_obj %}
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-start">
+                        <div class="product-image me-3">
+                            {% if scan.product.image_url %}
+                                <img src="{{ scan.product.image_url }}" alt="{{ scan.product.name }}" 
+                                     class="rounded" width="60" height="60" style="object-fit: cover;">
+                            {% else %}
+                                <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                     style="width: 60px; height: 60px;">
+                                    <i class="bi bi-image text-muted"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="card-title mb-1">
+                                <a href="{% url 'scanner:product_detail' scan.product.barcode %}" 
+                                   class="text-decoration-none">
+                                    {{ scan.product.name }}
+                                </a>
+                            </h5>
+                            <p class="text-muted small mb-2">{{ scan.product.brand|default:"Unknown Brand" }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex gap-2">
+                                    {% if scan.product.ecoscore %}
+                                        <span class="badge bg-{{ scan.product.ecoscore|lower }}">
+                                            {{ scan.product.ecoscore }}
+                                        </span>
+                                    {% endif %}
+                                    {% if scan.product.health_score %}
+                                        <span class="badge bg-primary">
+                                            {{ scan.product.health_score }}/100
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                <small class="text-muted">{{ scan.scanned_at|date:"M d, Y H:i" }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Added pagination for history -->
+    {% if page_obj.has_other_pages %}
+    <nav aria-label="History pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                </li>
+            {% endif %}
+            
+            <li class="page-item active">
+                <span class="page-link">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            </li>
+            
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-clock-history display-1 text-muted mb-3"></i>
+        <h4>No scan history yet</h4>
+        <p class="text-muted">Start scanning products to see your history here.</p>
+        <a href="{% url 'scanner:scan' %}" class="btn btn-primary">
+            <i class="bi bi-camera me-2"></i>Start Scanning
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
