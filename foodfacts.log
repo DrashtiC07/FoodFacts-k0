@@ -170,3 +170,374 @@ API <lambda> failed: HTTPSConnectionPool(host='api.upcitemdb.com', port=443): Re
 [v0] Environmental impact calculated
 [v0] Loaded 1 reviews
 [v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8901063142015
+[v0] Product found: Nutri Choice
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8901063142015
+[v0] Product found: Nutri Choice
+[v0] Nutrition facts parsed from product info
+[v0] NOVA info loaded for group 4
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8901262150088
+[v0] Product found: Amul Taaza 200ml
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8901719105913
+[v0] Product found: parle hide & seek 20g
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8901719105913
+[v0] Product found: parle hide & seek 20g
+[v0] Nutrition facts parsed from product info
+[v0] NOVA info loaded for group 4
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Loading scan history for user: shiv (ID: 1)
+[v0] Scan history for user shiv: 50 scans found
+[v0] Scan 1: parle hide & seek 20g by user shiv at 2025-08-18 16:57:55.128191+00:00
+[v0] Scan 2: Amul Taaza 200ml by user shiv at 2025-08-18 16:56:40.967967+00:00
+[v0] Scan 3: Nutri Choice by user shiv at 2025-08-18 16:55:04.776541+00:00
+[v0] Loading scan history for user: shiv (ID: 1)
+[v0] Scan history for user shiv: 50 scans found
+[v0] Scan 1: parle hide & seek 20g by user shiv at 2025-08-18 16:57:55.128191+00:00
+[v0] Scan 2: Amul Taaza 200ml by user shiv at 2025-08-18 16:56:40.967967+00:00
+[v0] Scan 3: Nutri Choice by user shiv at 2025-08-18 16:55:04.776541+00:00
+[v0] Loading scan history for user: shiv (ID: 1)
+[v0] Scan history for user shiv: 50 scans found
+[v0] Scan 1: parle hide & seek 20g by user shiv at 2025-08-18 16:57:55.128191+00:00
+[v0] Scan 2: Amul Taaza 200ml by user shiv at 2025-08-18 16:56:40.967967+00:00
+[v0] Scan 3: Nutri Choice by user shiv at 2025-08-18 16:55:04.776541+00:00
+[v0] Attempting to load product with barcode: 0050000029730
+[v0] Product found: Nestlé Sweet Cream All-Natural Creamer
+[v0] Nutrition facts parsed from product info
+[v0] NOVA info loaded for group 4
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 1 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Loading scan history for user: shiv (ID: 1)
+[v0] Scan history for user shiv: 50 scans found
+[v0] Scan 1: parle hide & seek 20g by user shiv at 2025-08-18 16:57:55.128191+00:00
+[v0] Scan 2: Amul Taaza 200ml by user shiv at 2025-08-18 16:56:40.967967+00:00
+[v0] Scan 3: Nutri Choice by user shiv at 2025-08-18 16:55:04.776541+00:00
+[v0] Attempting to load product with barcode: 0051111407592
+[v0] Product found: Birthday Cake Protein Oats
+[v0] Nutrition facts parsed from product info
+[v0] Environmental impact calculated
+[v0] Loaded 1 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8901058007220
+[v0] Product found: Maggie masala magic
+[v0] Environmental impact calculated
+[v0] Loaded 1 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8904256714099
+[v0] Product found: Fresho Frozen Green pea
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8904256714099
+[v0] Product found: Fresho Frozen Green pea
+[v0] Nutrition facts parsed from product info
+[v0] NOVA info loaded for group 3
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Loading scan history for user: shiv (ID: 1)
+[v0] Scan history for user shiv: 50 scans found
+[v0] Scan 1: parle hide & seek 20g by user shiv at 2025-08-18 16:57:55.128191+00:00
+[v0] Scan 2: Amul Taaza 200ml by user shiv at 2025-08-18 16:56:40.967967+00:00
+[v0] Scan 3: Nutri Choice by user shiv at 2025-08-18 16:55:04.776541+00:00
+[v0] Loading scan history for user: shiv (ID: 1)
+[v0] Scan history for user shiv: 50 scans found
+[v0] Scan 1: parle hide & seek 20g by user shiv at 2025-08-18 16:57:55.128191+00:00
+[v0] Scan 2: Amul Taaza 200ml by user shiv at 2025-08-18 16:56:40.967967+00:00
+[v0] Scan 3: Nutri Choice by user shiv at 2025-08-18 16:55:04.776541+00:00
+[v0] Loading scan history for user: shiv (ID: 1)
+[v0] Scan history for user shiv: 50 scans found
+[v0] Scan 1: parle hide & seek 20g by user shiv at 2025-08-18 16:57:55.128191+00:00
+[v0] Scan 2: Amul Taaza 200ml by user shiv at 2025-08-18 16:56:40.967967+00:00
+[v0] Scan 3: Nutri Choice by user shiv at 2025-08-18 16:55:04.776541+00:00
+[v0] Attempting to load product with barcode: 8901063092617
+[v0] Product found: Good Day Butter Cookies
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8901063092617
+[v0] Product found: Good Day Butter Cookies
+[v0] Nutrition facts parsed from product info
+[v0] NOVA info loaded for group 1
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8901262151696
+[v0] Product found: Amul Lassi 250 ml
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8901262151696
+[v0] Product found: Amul Lassi 250 ml
+[v0] Nutrition facts parsed from product info
+[v0] NOVA info loaded for group 2
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8905694508257
+[v0] Product found: A2 Buffalo Milk
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8905694508257
+[v0] Product found: A2 Buffalo Milk
+[v0] Nutrition facts parsed from product info
+[v0] NOVA info loaded for group 2
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8909177001693
+[v0] Product found: White Eggs
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8909177001693
+[v0] Product found: White Eggs
+[v0] Nutrition facts parsed from product info
+[v0] NOVA info loaded for group 2
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 4906400744024
+[v0] Product found: Kulfi
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 4906400744024
+[v0] Product found: Kulfi
+[v0] Nutrition facts parsed from product info
+[v0] NOVA info loaded for group 2
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8908019757675
+[v0] Product found: Go Zero Madagascar Chocolate
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 1 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8908019757675
+[v0] Product found: Go Zero Madagascar Chocolate
+[v0] Nutrition facts parsed from product info
+[v0] NOVA info loaded for group 2
+[v0] Additives analysis completed: 1 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 000101481703
+[v0] Product found: Cucumber
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 000101481703
+[v0] Product found: Cucumber
+[v0] Nutrition facts parsed from product info
+[v0] NOVA info loaded for group 3
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8904025400079
+[v0] Product found: Alphonso mango pulp
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 1 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8904025400079
+[v0] Product found: Alphonso mango pulp
+[v0] Nutrition facts parsed from product info
+[v0] NOVA info loaded for group 3
+[v0] Additives analysis completed: 1 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8901262070836
+[v0] Product found: Amul Bitter Chocolate
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8901262070836
+[v0] Product found: Amul Bitter Chocolate
+[v0] Nutrition facts parsed from product info
+[v0] NOVA info loaded for group 3
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8901719130403
+[v0] Product found: nutriticrunch digestive
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 1 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8901719130403
+[v0] Product found: nutriticrunch digestive
+[v0] Nutrition facts parsed from product info
+[v0] NOVA info loaded for group 4
+[v0] Additives analysis completed: 1 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8906009010106
+[v0] Product found: JAGGERY POWDER
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8906009010106
+[v0] Product found: JAGGERY POWDER
+[v0] Nutrition facts parsed from product info
+[v0] NOVA info loaded for group 3
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8901058001181
+[v0] Product found: maggi
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8901058001181
+[v0] Product found: maggi
+[v0] Nutrition facts parsed from product info
+[v0] NOVA info loaded for group 2
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8901030919305
+[v0] Product found: pizza & pasta sauce
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 3 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8901030919305
+[v0] Product found: pizza & pasta sauce
+[v0] Nutrition facts parsed from product info
+[v0] NOVA info loaded for group 4
+[v0] Additives analysis completed: 3 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8906069403054
+[v0] Product found: Veeba pazta sauce
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8906069403054
+[v0] Product found: Veeba pazta sauce
+[v0] Nutrition facts parsed from product info
+[v0] NOVA info loaded for group 2
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8901764092800
+[v0] Product found: Maaza
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8901764092800
+[v0] Product found: Maaza
+[v0] Nutrition facts parsed from product info
+[v0] NOVA info loaded for group 3
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8901030833892
+[v0] Product found: Mayonnaise
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8901030833892
+[v0] Product found: Mayonnaise
+[v0] Nutrition facts parsed from product info
+[v0] NOVA info loaded for group 4
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8906007702263
+[v0] Product found: Wrap tortilla
+[v0] Nutrition facts parsed from product info
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Attempting to load product with barcode: 8906007702263
+[v0] Product found: Wrap tortilla
+[v0] Nutrition facts parsed from product info
+[v0] NOVA info loaded for group 2
+[v0] Additives analysis completed: 0 additives found
+[v0] Environmental impact calculated
+[v0] Loaded 0 reviews
+[v0] Successfully prepared all product data, rendering template
+[v0] Loading scan history for user: Drashti (ID: 1)
+[v0] Scan history for user Drashti: 67 scans found
+[v0] Scan 1: Wrap tortilla by user Drashti at 2025-08-18 17:24:26.113477+00:00
+[v0] Scan 2: Mayonnaise by user Drashti at 2025-08-18 17:22:08.249950+00:00
+[v0] Scan 3: Maaza by user Drashti at 2025-08-18 17:19:13.789795+00:00
+[v0] Loading scan history for user: Drashti (ID: 1)
+[v0] Scan history for user Drashti: 67 scans found
+[v0] Scan 1: Wrap tortilla by user Drashti at 2025-08-18 17:24:26.113477+00:00
+[v0] Scan 2: Mayonnaise by user Drashti at 2025-08-18 17:22:08.249950+00:00
+[v0] Scan 3: Maaza by user Drashti at 2025-08-18 17:19:13.789795+00:00
