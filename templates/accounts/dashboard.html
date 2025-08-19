@@ -677,9 +677,8 @@
           {% if tracked_items %}
             <div class="row g-3">
               {% for item in tracked_items %}
-              <div class="col-md-6 col-lg-4" id="tracked-item-{{ item.id }}">
-                <!-- Updated card styling for better dark theme support -->
-                <div class="tracked-item-card p-3 rounded-3 border h-100" style="background-color: var(--card-bg); border-color: var(--border-color) !important;">
+              <div class="col-md-6 col-lg-4">
+                <div class="tracked-item-card p-3 rounded-3 border bg-light bg-opacity-50 h-100">
                   <div class="d-flex align-items-start mb-2">
                     <div class="product-image me-3">
                       {% if item.product.image_url %}
@@ -699,8 +698,7 @@
                     </div>
                     <div class="flex-grow-1">
                       <h6 class="mb-1 fw-semibold">
-                        <!-- Fixed text color for dark theme compatibility -->
-                        <a href="{% url 'scanner:product_detail' item.product.barcode %}" class="text-decoration-none" style="color: var(--text-primary);">
+                        <a href="{% url 'scanner:product_detail' item.product.barcode %}" class="text-decoration-none text-dark">
                           {{ item.product.name|truncatechars:25 }}
                         </a>
                       </h6>
@@ -716,17 +714,14 @@
                         </span>
                         {% endif %}
                       </div>
-                      <!-- Updated text color for dark theme -->
-                      <small style="color: var(--text-muted);">{{ item.serving_size }}g serving</small>
+                      <small class="text-muted">{{ item.serving_size }}g serving</small>
                     </div>
                   </div>
                   <div class="d-flex justify-content-between align-items-center">
-                    <!-- Updated text color for dark theme -->
-                    <small style="color: var(--text-muted);">
+                    <small class="text-muted">
                       <i class="bi bi-clock me-1"></i>{{ item.added_at|timesince }} ago
                     </small>
-                    <!-- Updated remove button with product name data attribute -->
-                    <button class="btn btn-sm btn-outline-danger" onclick="removeTrackedItem({{ item.id }}, '{{ item.product.name|escapejs }}')" title="Remove from tracker">
+                    <button class="btn btn-sm btn-outline-danger" onclick="removeTrackedItem({{ item.id }})" title="Remove from tracker">
                       <i class="bi bi-trash"></i>
                     </button>
                   </div>
@@ -1203,9 +1198,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    <!-- Updated removeTrackedItem function to dynamically remove items and include product name in toast -->
-    function removeTrackedItem(itemId, productName) {
-        if (!confirm(`Remove ${productName} from your tracker?`)) {
+    function removeTrackedItem(itemId) {
+        if (!confirm('Remove this item from your nutrition tracker?')) {
             return;
         }
         
@@ -1220,43 +1214,15 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                const itemCard = document.getElementById(`tracked-item-${itemId}`);
-                if (itemCard) {
-                    itemCard.style.transition = 'all 0.3s ease';
-                    itemCard.style.transform = 'scale(0.8)';
-                    itemCard.style.opacity = '0';
-                    setTimeout(() => {
-                        itemCard.remove();
-                        // Update the badge count
-                        const badge = document.querySelector('.badge.bg-primary');
-                        if (badge) {
-                            const currentCount = parseInt(badge.textContent.split(' ')[0]);
-                            const newCount = currentCount - 1;
-                            badge.textContent = `${newCount} item${newCount !== 1 ? 's' : ''}`;
-                        }
-                        // Show empty state if no items left
-                        const trackedItemsContainer = document.querySelector('.row.g-3');
-                        if (trackedItemsContainer && trackedItemsContainer.children.length === 0) {
-                            trackedItemsContainer.innerHTML = `
-                                <div class="text-center py-5">
-                                    <i class="bi bi-clipboard-check display-1 text-muted mb-3"></i>
-                                    <h6 class="fw-semibold mb-2">No tracked items yet</h6>
-                                    <p class="text-muted mb-3">Add products to your nutrition tracker to see them here</p>
-                                    <a href="{% url 'scanner:search' %}" class="btn btn-primary">
-                                        <i class="bi bi-plus-circle me-1"></i>Start Tracking
-                                    </a>
-                                </div>
-                            `;
-                        }
-                    }, 300);
-                }
-                showToast(`✅ Removed ${productName}`, 'success');
+                // Show success message and reload to update the display
+                showToast(data.message, 'success');
+                setTimeout(() => window.location.reload(), 1000);
             } else {
-                showToast('Failed to remove item. Please try again.', 'error');
+                showToast(data.error || 'Failed to remove item', 'error');
             }
         })
         .catch(error => {
-            showToast('Failed to remove item. Please try again.', 'error');
+            showToast('Failed to remove item from tracker', 'error');
         });
     }
 
@@ -1608,39 +1574,119 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Ensure tips remain visible
                     const tips = personalizedTipsContent.querySelectorAll('.alert');
                     tips.forEach(tip => {
-                        if (tip.style.display === 'none' && !tip.hasAttribute('data-shown')) {
+                        if (tip.style.display === 'none' && !tip.hasAttribute('data-should-hide')) {
                             tip.style.display = 'block';
-                            tip.setAttribute('data-shown', 'true');
-                            break;
                         }
                     });
                 }
             });
         });
         
-        observer.observe(tipsContent, {
+        observer.observe(personalizedTipsContent, {
             childList: true,
             subtree: true,
             attributes: true,
             attributeFilter: ['style', 'class']
         });
+    }
 
-        // Re-check visibility every 3 seconds
-        setInterval(function() {
-            if (personalizedTipsContent) {
-                    const tips = personalizedTipsContent.querySelectorAll('.alert');
-
+    const manualForm = document.getElementById('manualNutritionForm');
+    if (manualForm) {
+        manualForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const calories = parseFloat(document.getElementById('manualCalories').value) || 0;
+            const protein = parseFloat(document.getElementById('manualProtein').value) || 0;
+            const fat = parseFloat(document.getElementById('manualFat').value) || 0;
+            const carbs = parseFloat(document.getElementById('manualCarbs').value) || 0;
+            
+            if (calories === 0 && protein === 0 && fat === 0 && carbs === 0) {
+                showModernAlert('Please enter at least one nutrition value.', 'warning');
+                return;
+            }
+            
+            // Validate ranges
+            if (calories < 0 || calories > 2000) {
+                showModernAlert('Calories must be between 0 and 2000', 'danger');
+                return;
+            }
+            if (protein < 0 || protein > 200) {
+                showModernAlert('Protein must be between 0 and 200g', 'danger');
+                return;
+            }
+            if (fat < 0 || fat > 150) {
+                showModernAlert('Fat must be between 0 and 150g', 'danger');
+                return;
+            }
+            if (carbs < 0 || carbs > 300) {
+                showModernAlert('Carbs must be between 0 and 300g', 'danger');
+                return;
+            }
+            
+            // Send AJAX request to add manual nutrition
+            fetch('{% url "accounts:add_manual_nutrition" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({
+                    calories: calories,
+                    protein: protein,
+                    fat: fat,
+                    carbs: carbs
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update progress bars without page reload
+                    updateProgressBars(data);
+                    
+                    // Update remaining values
+                    updateRemainingValues(data.remaining);
+                    
+                    // Clear form
+                    manualForm.reset();
+                    
+                    // Show modern success message
+                    showModernAlert(data.message, 'success');
+                } else {
+                    showModernAlert('Error: ' + (data.error || 'Unknown error'), 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('[v0] Error adding manual nutrition:', error);
+                showModernAlert('Error adding nutrition. Please try again.', 'danger');
+            });
+        });
+    }
+    
+    // Prevent tips from disappearing by protecting the tips container
+    const tipsContainer = document.getElementById('personalizedTipsContent');
+    if (tipsContainer) {
+        // Create a MutationObserver to prevent tips from being hidden
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList' || mutation.type === 'attributes') {
+                    // Ensure tips remain visible
+                    const tips = tipsContainer.querySelectorAll('.alert');
                     tips.forEach(tip => {
-                        if (tip.style.display === 'none' && !tip.hasAttribute('data-shown')) {
+                        if (tip.style.display === 'none' && !tip.hasAttribute('data-should-hide')) {
                             tip.style.display = 'block';
-                            tip.setAttribute('data-shown', 'true');
-                            break;
                         }
                     });
                 }
-            }, 3000);
-        }
-    });
+            });
+        });
+        
+        observer.observe(tipsContainer, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['style', 'class']
+        });
+    }
 });
 </script>
 {% endblock %}
