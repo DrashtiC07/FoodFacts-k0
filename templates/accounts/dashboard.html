@@ -1608,4 +1608,39 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Ensure tips remain visible
                     const tips = personalizedTipsContent.querySelectorAll('.alert');
                     tips.forEach(tip => {
-                        if (tip.style.display === 'none' && !tip.has
+                        if (tip.style.display === 'none' && !tip.hasAttribute('data-shown')) {
+                            tip.style.display = 'block';
+                            tip.setAttribute('data-shown', 'true');
+                            break;
+                        }
+                    });
+                }
+            });
+        });
+        
+        observer.observe(tipsContent, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['style', 'class']
+        });
+
+        // Re-check visibility every 3 seconds
+        setInterval(function() {
+            if (personalizedTipsContent) {
+                    const tips = personalizedTipsContent.querySelectorAll('.alert');
+
+                    tips.forEach(tip => {
+                        if (tip.style.display === 'none' && !tip.hasAttribute('data-shown')) {
+                            tip.style.display = 'block';
+                            tip.setAttribute('data-shown', 'true');
+                            break;
+                        }
+                    });
+                }
+            }, 3000);
+        }
+    });
+});
+</script>
+{% endblock %}
