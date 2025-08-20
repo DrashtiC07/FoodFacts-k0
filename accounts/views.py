@@ -655,7 +655,7 @@ def add_to_nutrition_tracker(request):
 @login_required
 @require_POST
 def remove_tracked_item(request):
-    """Remove item from nutrition tracker"""
+    """Remove item from nutrition tracker with confirmation dialog"""
     try:
         data = json.loads(request.body)
         item_id = data.get('item_id')
@@ -684,11 +684,12 @@ def remove_tracked_item(request):
             
             dietary_goals.save()
         
+        product_name = tracked_item.product.name
         tracked_item.delete()
         
         return JsonResponse({
             'success': True,
-            'message': f'Removed {tracked_item.product.name} from tracker'
+            'message': f'Removed {product_name} from tracker'
         })
         
     except Exception as e:
@@ -696,112 +697,93 @@ def remove_tracked_item(request):
 
 @login_required
 @require_POST
-def add_manual_nutrition(request):
-    """Add manual nutrition entries to user's daily tracking"""
+def remove_favorite_product(request):
+    """Remove product from favorites with confirmation dialog"""
     try:
         data = json.loads(request.body)
+        favorite_id = data.get('favorite_id')
         
-        # Get nutrition values from request
-        calories = float(data.get('calories', 0))
-        protein = float(data.get('protein', 0))
-        fat = float(data.get('fat', 0))
-        carbs = float(data.get('carbs', 0))
-        sugar = float(data.get('sugar', 0))
-        sodium = float(data.get('sodium', 0))
-        
-        # Validate input ranges
-        if calories < 0 or calories > 2000:
-            return JsonResponse({'success': False, 'error': 'Calories must be between 0 and 2000'})
-        if protein < 0 or protein > 200:
-            return JsonResponse({'success': False, 'error': 'Protein must be between 0 and 200g'})
-        if fat < 0 or fat > 150:
-            return JsonResponse({'success': False, 'error': 'Fat must be between 0 and 150g'})
-        if carbs < 0 or carbs > 300:
-            return JsonResponse({'success': False, 'error': 'Carbs must be between 0 and 300g'})
-        if sugar < 0 or sugar > 100:
-            return JsonResponse({'success': False, 'error': 'Sugar must be between 0 and 100g'})
-        if sodium < 0 or sodium > 3000:
-            return JsonResponse({'success': False, 'error': 'Sodium must be between 0 and 3000mg'})
-        
-        # Get or create dietary goals
-        dietary_goals, created = DietaryGoal.objects.get_or_create(user=request.user)
-        
-        # Add to daily consumption
-        dietary_goals.calories_consumed += int(calories)
-        dietary_goals.protein_consumed += int(protein)
-        dietary_goals.fat_consumed += int(fat)
-        dietary_goals.carbs_consumed += int(carbs)
-        dietary_goals.sugar_consumed += int(sugar)
-        dietary_goals.sodium_consumed += int(sodium)
-        dietary_goals.save()
-        
-        # Calculate new progress percentages
-        calories_progress = min((dietary_goals.calories_consumed / dietary_goals.calories_target * 100), 100) if dietary_goals.calories_target > 0 else 0
-        protein_progress = min((dietary_goals.protein_consumed / dietary_goals.protein_target * 100), 100) if dietary_goals.protein_target > 0 else 0
-        fat_progress = min((dietary_goals.fat_consumed / dietary_goals.fat_target * 100), 100) if dietary_goals.fat_target > 0 else 0
-        carbs_progress = min((dietary_goals.carbs_consumed / dietary_goals.carbs_target * 100), 100) if dietary_goals.carbs_target > 0 else 0
-        sugar_progress = min((dietary_goals.sugar_consumed / dietary_goals.sugar_target * 100), 100) if dietary_goals.sugar_target > 0 else 0
-        sodium_progress = min((dietary_goals.sodium_consumed / dietary_goals.sodium_target * 100), 100) if dietary_goals.sodium_target > 0 else 0
+        favorite = get_object_or_404(FavoriteProduct, id=favorite_id, user=request.user)
+        product_name = favorite.product.name
+        favorite.delete()
         
         return JsonResponse({
             'success': True,
-            'message': 'Manual nutrition entry added successfully!',
-            'progress': {
-                'calories': calories_progress,
-                'protein': protein_progress,
-                'fat': fat_progress,
-                'carbs': carbs_progress,
-                'sugar': sugar_progress,
-                'sodium': sodium_progress
-            },
-            'consumed': {
-                'calories': dietary_goals.calories_consumed,
-                'protein': dietary_goals.protein_consumed,
-                'fat': dietary_goals.fat_consumed,
-                'carbs': dietary_goals.carbs_consumed,
-                'sugar': dietary_goals.sugar_consumed,
-                'sodium': dietary_goals.sodium_consumed
-            },
-            'remaining': {
-                'calories': max(0, dietary_goals.calories_target - dietary_goals.calories_consumed),
-                'protein': max(0, dietary_goals.protein_target - dietary_goals.protein_consumed),
-                'fat': max(0, dietary_goals.fat_target - dietary_goals.fat_consumed),
-                'carbs': max(0, dietary_goals.carbs_target - dietary_goals.carbs_consumed),
-                'sugar': max(0, dietary_goals.sugar_target - dietary_goals.sugar_consumed),
-                'sodium': max(0, dietary_goals.sodium_target - dietary_goals.sodium_consumed)
-            }
+            'message': f'Removed {product_name} from favorites'
         })
         
-    except (ValueError, TypeError) as e:
-        return JsonResponse({'success': False, 'error': 'Invalid input values. Please enter valid numbers.'})
     except Exception as e:
-        return JsonResponse({'success': False, 'error': f'An error occurred: {str(e)}'})
+        return JsonResponse({'success': False, 'error': str(e)})
 
-@require_POST
-def toggle_theme(request):
-    """Toggle theme between light and dark mode via AJAX"""
+@login_required
+def export_user_data(request):
+    """Export user data as PDF using fpdf"""
     try:
-        data = json.loads(request.body)
-        theme = data.get('theme', 'light')
+        from fpdf import FPDF
+        from django.http import HttpResponse
+        from datetime import datetime
         
-        # Validate theme value
-        if theme not in ['light', 'dark']:
-            theme = 'light'
+        # Create PDF
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font('Arial', 'B', 16)
         
-        # Store theme in session
-        request.session['theme'] = theme
+        # Title
+        pdf.cell(0, 10, f'Food Scanner - User Data Export', 0, 1, 'C')
+        pdf.cell(0, 10, f'Generated on {datetime.now().strftime("%Y-%m-%d %H:%M")}', 0, 1, 'C')
+        pdf.ln(10)
         
+        # User Info
+        pdf.set_font('Arial', 'B', 14)
+        pdf.cell(0, 10, 'User Information', 0, 1)
+        pdf.set_font('Arial', '', 12)
+        pdf.cell(0, 8, f'Username: {request.user.username}', 0, 1)
+        pdf.cell(0, 8, f'Email: {request.user.email}', 0, 1)
+        pdf.cell(0, 8, f'Member since: {request.user.date_joined.strftime("%Y-%m-%d")}', 0, 1)
+        pdf.ln(5)
+        
+        # Dietary Goals
+        dietary_goals = DietaryGoal.objects.get_or_create(user=request.user)[0]
+        pdf.set_font('Arial', 'B', 14)
+        pdf.cell(0, 10, 'Current Dietary Goals', 0, 1)
+        pdf.set_font('Arial', '', 12)
+        pdf.cell(0, 8, f'Calories: {dietary_goals.calories_consumed}/{dietary_goals.calories_target} kcal', 0, 1)
+        pdf.cell(0, 8, f'Protein: {dietary_goals.protein_consumed}/{dietary_goals.protein_target}g', 0, 1)
+        pdf.cell(0, 8, f'Fat: {dietary_goals.fat_consumed}/{dietary_goals.fat_target}g', 0, 1)
+        pdf.cell(0, 8, f'Carbs: {dietary_goals.carbs_consumed}/{dietary_goals.carbs_target}g', 0, 1)
+        pdf.ln(5)
+        
+        # Recent Scans
+        scan_history = ScanHistory.objects.filter(user=request.user).order_by('-scanned_at')[:10]
+        pdf.set_font('Arial', 'B', 14)
+        pdf.cell(0, 10, 'Recent Scans (Last 10)', 0, 1)
+        pdf.set_font('Arial', '', 10)
+        for scan in scan_history:
+            pdf.cell(0, 6, f'• {scan.product.name} - {scan.scanned_at.strftime("%Y-%m-%d %H:%M")}', 0, 1)
+        pdf.ln(5)
+        
+        # Favorite Products
+        favorites = FavoriteProduct.objects.filter(user=request.user)[:10]
+        pdf.set_font('Arial', 'B', 14)
+        pdf.cell(0, 10, 'Favorite Products', 0, 1)
+        pdf.set_font('Arial', '', 10)
+        for fav in favorites:
+            pdf.cell(0, 6, f'• {fav.product.name} - Added: {fav.added_at.strftime("%Y-%m-%d")}', 0, 1)
+        
+        # Generate response
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="user-data-export.pdf"'
+        response.write(pdf.output(dest='S').encode('latin-1'))
+        
+        return response
+        
+    except ImportError:
         return JsonResponse({
-            'status': 'success',
-            'theme': theme,
-            'message': f'Theme switched to {theme} mode'
+            'success': False, 
+            'error': 'PDF library not available. Please install fpdf2: pip install fpdf2'
         })
-        
     except Exception as e:
-        return JsonResponse({
-            'status': 'error',
-            'error': str(e)
-        })
+        return JsonResponse({'success': False, 'error': str(e)})
 
 @login_required
 def weekly_nutrition_report(request):

@@ -20,4 +20,6 @@ urlpatterns = [
     path('weekly-report/', views.weekly_nutrition_report, name='weekly_nutrition_report'),
     path('apply_preset_goals/', views.apply_preset_goals, name='apply_preset_goals'),
     path('refresh_tips/', views.refresh_personalized_tips, name='refresh_personalized_tips'),
+    path('remove_favorite_product/', views.remove_favorite_product, name='remove_favorite_product'),
+    path('export_data/', views.export_user_data, name='export_user_data'),
 ]

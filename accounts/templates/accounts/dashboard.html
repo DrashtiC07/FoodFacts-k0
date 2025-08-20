@@ -18,6 +18,43 @@
         </div>
     </div>
 
+    <!-- Added Quick Actions section with working Export Data button -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightning-charge me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <a href="{% url 'scanner:scan' %}" class="btn btn-primary w-100">
+                                <i class="bi bi-camera me-2"></i>Scan Product
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'scanner:search' %}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-search me-2"></i>Search Products
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-success w-100" onclick="exportUserData()">
+                                <i class="bi bi-download me-2"></i>Export Data
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-info w-100" onclick="refreshTips()">
+                                <i class="bi bi-arrow-clockwise me-2"></i>Refresh Tips
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Account Overview -->
     <div class="row mb-4">
         <div class="col-md-4">
@@ -88,6 +125,39 @@
         </div>
     </div>
 
+    <!-- Enhanced Personalized Tips section with better styling and dynamic content -->
+    {% if personalized_tips %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightbulb me-2"></i>Personalized Tips
+                    </h5>
+                    <small class="text-muted">AI-powered insights based on your data</small>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for tip in personalized_tips %}
+                        <div class="col-md-6 mb-3">
+                            <div class="alert alert-{{ tip.color }} border-0 shadow-sm h-100">
+                                <div class="d-flex align-items-start">
+                                    <i class="bi bi-{{ tip.icon }} me-3 mt-1 fs-5"></i>
+                                    <div class="flex-grow-1">
+                                        <h6 class="alert-heading mb-2">{{ tip.title }}</h6>
+                                        <p class="mb-0">{{ tip.message }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Stats Cards -->
     <div class="row mb-4">
         <div class="col-md-3 mb-3">
@@ -135,6 +205,50 @@
             </div>
         </div>
     </div>
+
+    <!-- Enhanced Tracked Items section with working delete functionality -->
+    {% if tracked_items %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-check me-2"></i>Tracked Items
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for item in tracked_items %}
+                    <div class="d-flex align-items-center mb-3 tracked-item" data-item-id="{{ item.id }}" {% if not forloop.last %}border-bottom pb-3{% endif %}>
+                        <div class="product-image me-3">
+                            {% if item.product.image_url %}
+                                <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" class="rounded" width="50" height="50" style="object-fit: cover;">
+                            {% else %}
+                                <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                    <i class="bi bi-image text-muted"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">
+                                <a href="{% url 'scanner:product_detail' item.product.barcode %}" class="text-decoration-none">
+                                    {{ item.product.name|truncatechars:40 }}
+                                </a>
+                            </h6>
+                            <small class="text-muted">
+                                <i class="bi bi-clock me-1"></i>{{ item.added_at|timesince }} ago
+                                <span class="ms-2">{{ item.serving_size }}g serving</span>
+                            </small>
+                        </div>
+                        <button class="btn btn-outline-danger btn-sm" onclick="confirmDeleteTrackedItem({{ item.id }}, '{{ item.product.name|escapejs }}')">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 
     <!-- Recent Activity -->
     <div class="row">
@@ -191,7 +305,7 @@
                 <div class="card-body">
                     {% if favorite_products %}
                         {% for favorite in favorite_products %}
-                        <div class="d-flex align-items-center mb-3 {% if not forloop.last %}border-bottom pb-3{% endif %}">
+                        <div class="d-flex align-items-center mb-3 favorite-item" data-favorite-id="{{ favorite.id }}" {% if not forloop.last %}border-bottom pb-3{% endif %}>
                             <div class="product-image me-3">
                                 {% if favorite.product.image_url %}
                                     <img src="{{ favorite.product.image_url }}" alt="{{ favorite.product.name }}" class="rounded" width="50" height="50" style="object-fit: cover;">
@@ -214,6 +328,10 @@
                                     {{ favorite.product.brand|default:"Unknown Brand" }}
                                 </small>
                             </div>
+                            <!-- Added working delete button for favorite products -->
+                            <button class="btn btn-outline-danger btn-sm" onclick="confirmDeleteFavorite({{ favorite.id }}, '{{ favorite.product.name|escapejs }}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
                         </div>
                         {% endfor %}
                     {% else %}
@@ -279,6 +397,46 @@
     </div>
     {% endif %}
 </div>
+
+<!-- Added confirmation modals for delete actions -->
+<!-- Delete Tracked Item Modal -->
+<div class="modal fade" id="deleteTrackedItemModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to remove <strong id="trackedItemName"></strong> from your tracked items?</p>
+                <p class="text-muted small">This will also remove its nutrition contribution from your daily goals.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteTrackedItem">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Favorite Modal -->
+<div class="modal fade" id="deleteFavoriteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to remove <strong id="favoriteItemName"></strong> from your favorites?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteFavorite">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_css %}
@@ -307,5 +465,242 @@
 .product-image div {
     border: 1px solid var(--bs-border-color);
 }
+
+/* Enhanced dark theme support for better text contrast */
+[data-theme="dark"] .text-muted {
+    color: #adb5bd !important;
+}
+
+[data-theme="dark"] .card {
+    background-color: #2d3748;
+    border-color: #4a5568;
+}
+
+[data-theme="dark"] .card-header {
+    background-color: #374151;
+    border-color: #4a5568;
+}
+
+[data-theme="dark"] .alert {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .progress {
+    background-color: #4a5568;
+}
+
+[data-theme="dark"] .border-bottom {
+    border-color: #4a5568 !important;
+}
+
+[data-theme="dark"] .bg-light {
+    background-color: #374151 !important;
+}
+
+/* Loading states */
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentTrackedItemId = null;
+let currentFavoriteId = null;
+
+function confirmDeleteTrackedItem(itemId, itemName) {
+    currentTrackedItemId = itemId;
+    document.getElementById('trackedItemName').textContent = itemName;
+    new bootstrap.Modal(document.getElementById('deleteTrackedItemModal')).show();
+}
+
+function confirmDeleteFavorite(favoriteId, itemName) {
+    currentFavoriteId = favoriteId;
+    document.getElementById('favoriteItemName').textContent = itemName;
+    new bootstrap.Modal(document.getElementById('deleteFavoriteModal')).show();
+}
+
+document.getElementById('confirmDeleteTrackedItem').addEventListener('click', function() {
+    if (currentTrackedItemId) {
+        deleteTrackedItem(currentTrackedItemId);
+    }
+});
+
+document.getElementById('confirmDeleteFavorite').addEventListener('click', function() {
+    if (currentFavoriteId) {
+        deleteFavoriteProduct(currentFavoriteId);
+    }
+});
+
+function deleteTrackedItem(itemId) {
+    const button = document.getElementById('confirmDeleteTrackedItem');
+    button.disabled = true;
+    button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Deleting...';
+    
+    fetch('{% url "accounts:remove_tracked_item" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}',
+        },
+        body: JSON.stringify({
+            'item_id': itemId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Remove the item from the DOM
+            const itemElement = document.querySelector(`[data-item-id="${itemId}"]`);
+            if (itemElement) {
+                itemElement.remove();
+            }
+            
+            // Show success message
+            showToast('success', data.message);
+            
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('deleteTrackedItemModal')).hide();
+            
+            // Refresh page to update nutrition goals
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showToast('error', data.error || 'Failed to delete item');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('error', 'An error occurred while deleting the item');
+    })
+    .finally(() => {
+        button.disabled = false;
+        button.innerHTML = 'Delete';
+    });
+}
+
+function deleteFavoriteProduct(favoriteId) {
+    const button = document.getElementById('confirmDeleteFavorite');
+    button.disabled = true;
+    button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Deleting...';
+    
+    fetch('{% url "accounts:remove_favorite_product" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}',
+        },
+        body: JSON.stringify({
+            'favorite_id': favoriteId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Remove the item from the DOM
+            const itemElement = document.querySelector(`[data-favorite-id="${favoriteId}"]`);
+            if (itemElement) {
+                itemElement.remove();
+            }
+            
+            // Show success message
+            showToast('success', data.message);
+            
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('deleteFavoriteModal')).hide();
+        } else {
+            showToast('error', data.error || 'Failed to delete favorite');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('error', 'An error occurred while deleting the favorite');
+    })
+    .finally(() => {
+        button.disabled = false;
+        button.innerHTML = 'Delete';
+    });
+}
+
+function exportUserData() {
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generating PDF...';
+    
+    // Create a temporary link to trigger download
+    window.location.href = '{% url "accounts:export_user_data" %}';
+    
+    // Reset button after a delay
+    setTimeout(() => {
+        button.disabled = false;
+        button.innerHTML = originalText;
+        showToast('success', 'Data export completed!');
+    }, 2000);
+}
+
+function refreshTips() {
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Refreshing...';
+    
+    fetch('{% url "accounts:refresh_personalized_tips" %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            showToast('success', 'Tips refreshed successfully!');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showToast('error', 'Failed to refresh tips');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('error', 'An error occurred while refreshing tips');
+    })
+    .finally(() => {
+        button.disabled = false;
+        button.innerHTML = originalText;
+    });
+}
+
+function showToast(type, message) {
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    toast.innerHTML = `
+        <div class="d-flex align-items-center">
+            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}-fill me-2"></i>
+            <span>${message}</span>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.remove();
+        }
+    }, 5000);
+}
+</script>
 {% endblock %}
