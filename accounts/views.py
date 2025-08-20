@@ -810,6 +810,111 @@ def weekly_nutrition_report(request):
     }
     return render(request, 'accounts/weekly_report.html', context)
 
+@login_required
+@require_POST
+def add_manual_nutrition(request):
+    """Add manual nutrition entry to user's daily tracking"""
+    try:
+        data = json.loads(request.body)
+        
+        # Get nutrition values from request
+        calories = float(data.get('calories', 0))
+        protein = float(data.get('protein', 0))
+        fat = float(data.get('fat', 0))
+        carbs = float(data.get('carbs', 0))
+        sugar = float(data.get('sugar', 0))
+        sodium = float(data.get('sodium', 0))
+        food_name = data.get('food_name', 'Manual Entry')
+        
+        # Validate input values
+        if calories < 0 or protein < 0 or fat < 0 or carbs < 0 or sugar < 0 or sodium < 0:
+            return JsonResponse({'success': False, 'error': 'Nutrition values cannot be negative'})
+        
+        if calories > 5000 or protein > 500 or fat > 500 or carbs > 1000 or sugar > 500 or sodium > 10000:
+            return JsonResponse({'success': False, 'error': 'Nutrition values seem too high. Please check your input.'})
+        
+        # Get or create dietary goals
+        dietary_goals, created = DietaryGoal.objects.get_or_create(user=request.user)
+        
+        # Add to daily consumption
+        dietary_goals.calories_consumed += int(calories)
+        dietary_goals.protein_consumed += int(protein)
+        dietary_goals.fat_consumed += int(fat)
+        dietary_goals.carbs_consumed += int(carbs)
+        dietary_goals.sugar_consumed += int(sugar)
+        dietary_goals.sodium_consumed += int(sodium)
+        dietary_goals.save()
+        
+        # Calculate new progress percentages
+        calories_progress = min((dietary_goals.calories_consumed / dietary_goals.calories_target * 100), 100) if dietary_goals.calories_target > 0 else 0
+        protein_progress = min((dietary_goals.protein_consumed / dietary_goals.protein_target * 100), 100) if dietary_goals.protein_target > 0 else 0
+        fat_progress = min((dietary_goals.fat_consumed / dietary_goals.fat_target * 100), 100) if dietary_goals.fat_target > 0 else 0
+        carbs_progress = min((dietary_goals.carbs_consumed / dietary_goals.carbs_target * 100), 100) if dietary_goals.carbs_target > 0 else 0
+        sugar_progress = min((dietary_goals.sugar_consumed / dietary_goals.sugar_target * 100), 100) if dietary_goals.sugar_target > 0 else 0
+        sodium_progress = min((dietary_goals.sodium_consumed / dietary_goals.sodium_target * 100), 100) if dietary_goals.sodium_target > 0 else 0
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'✅ Added {food_name} to your nutrition tracker!',
+            'nutrition_added': {
+                'calories': int(calories),
+                'protein': int(protein),
+                'fat': int(fat),
+                'carbs': int(carbs),
+                'sugar': int(sugar),
+                'sodium': int(sodium)
+            },
+            'progress': {
+                'calories': calories_progress,
+                'protein': protein_progress,
+                'fat': fat_progress,
+                'carbs': carbs_progress,
+                'sugar': sugar_progress,
+                'sodium': sodium_progress
+            },
+            'remaining': {
+                'calories': max(0, dietary_goals.calories_target - dietary_goals.calories_consumed),
+                'protein': max(0, dietary_goals.protein_target - dietary_goals.protein_consumed),
+                'fat': max(0, dietary_goals.fat_target - dietary_goals.fat_consumed),
+                'carbs': max(0, dietary_goals.carbs_target - dietary_goals.carbs_consumed),
+                'sugar': max(0, dietary_goals.sugar_target - dietary_goals.sugar_consumed),
+                'sodium': max(0, dietary_goals.sodium_target - dietary_goals.sodium_consumed)
+            }
+        })
+        
+    except (ValueError, TypeError) as e:
+        return JsonResponse({'success': False, 'error': 'Invalid nutrition values. Please enter valid numbers.'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': f'An error occurred: {str(e)}'})
+
+@login_required
+@require_POST
+def toggle_theme(request):
+    """Toggle user's theme preference between light and dark mode"""
+    try:
+        user = request.user
+        
+        # Toggle theme preference
+        if hasattr(user, 'theme_preference'):
+            current_theme = user.theme_preference
+        else:
+            current_theme = 'light'  # default
+        
+        new_theme = 'dark' if current_theme == 'light' else 'light'
+        
+        # Save theme preference (you might want to add this field to your user model)
+        # For now, we'll use session storage
+        request.session['theme_preference'] = new_theme
+        
+        return JsonResponse({
+            'success': True,
+            'theme': new_theme,
+            'message': f'Theme switched to {new_theme} mode'
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
 def generate_personalized_tips(dietary_goals, calories_progress, protein_progress, fat_progress, 
                              carbs_progress, sugar_progress, sodium_progress, recent_scans_count, days_active):
     """Generate dynamic personalized tips based on user's nutrition data and activity"""
