@@ -858,7 +858,6 @@
       </div>
     </div>
   </div>
-  {% endif %}
 </div>
 
 <!-- Enhanced nutrition goals modal with sugar and sodium tracking -->
@@ -1410,7 +1409,7 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
             },
             body: JSON.stringify({'item_id': itemId})
         })
@@ -1777,4 +1776,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Ensure tips remain visible
                     const tips = personalizedTipsContent.querySelectorAll('.alert');
                     tips.forEach(tip => {
-                        if (tip.style.display === 'none' && !tip.has
+                        if (tip.style.display === 'none' && !tip.classList.contains('fade')) {
+                            tip.style.display = 'block';
+                        }
+                    });
+                }
+            });
+        });
+        
+        observer.observe(personalizedTipsContent, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['style', 'class']
+        });
+    }
+});
+</script>
+{% endblock %}
