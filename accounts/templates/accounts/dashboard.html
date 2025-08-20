@@ -4,6 +4,7 @@
 {% block title %}Dashboard - Food Scanner{% endblock %}
 
 {% block content %}
+{% csrf_token %}
 <div class="container">
     <div class="row">
         <div class="col-12">
@@ -211,9 +212,10 @@
     <div class="row mb-4">
         <div class="col-12">
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-transparent">
+                <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">
                         <i class="bi bi-list-check me-2"></i>Tracked Items
+                        <span class="badge bg-primary ms-2">{{ tracked_items|length }} items</span>
                     </h5>
                 </div>
                 <div class="card-body">
@@ -234,12 +236,21 @@
                                     {{ item.product.name|truncatechars:40 }}
                                 </a>
                             </h6>
-                            <small class="text-muted">
-                                <i class="bi bi-clock me-1"></i>{{ item.added_at|timesince }} ago
-                                <span class="ms-2">{{ item.serving_size }}g serving</span>
-                            </small>
+                            <div class="d-flex align-items-center">
+                                {% if item.product.nutrition_grade %}
+                                    <span class="badge bg-{{ item.product.nutrition_grade|lower }} me-2">{{ item.product.nutrition_grade }}</span>
+                                {% endif %}
+                                <small class="text-muted">
+                                    <i class="bi bi-clock me-1"></i>{{ item.added_at|timesince }} ago
+                                    <span class="ms-2">{{ item.serving_size }}g serving</span>
+                                </small>
+                            </div>
                         </div>
-                        <button class="btn btn-outline-danger btn-sm" onclick="confirmDeleteTrackedItem({{ item.id }}, '{{ item.product.name|escapejs }}')">
+                        <!-- Enhanced delete button with better styling and data attributes -->
+                        <button class="btn btn-outline-danger btn-sm delete-tracked-btn" 
+                                data-item-id="{{ item.id }}" 
+                                data-item-name="{{ item.product.name|escapejs }}"
+                                title="Remove from tracker">
                             <i class="bi bi-trash"></i>
                         </button>
                     </div>
@@ -297,9 +308,12 @@
 
         <div class="col-lg-6 mb-4">
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-transparent">
+                <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">
                         <i class="bi bi-heart-fill me-2"></i>Favorite Products
+                        {% if favorite_products %}
+                            <span class="badge bg-danger ms-2">{{ favorite_products|length }} items</span>
+                        {% endif %}
                     </h5>
                 </div>
                 <div class="card-body">
@@ -323,13 +337,16 @@
                                 </h6>
                                 <small class="text-muted">
                                     {% if favorite.product.nutrition_grade %}
-                                        <span class="badge bg-{{ favorite.product.nutrition_grade|lower }} me-1">{{ favorite.product.nutrition_grade }}</span>
+                                        <span class="badge bg-{{ favorite.product.nutrition_grade|lower }} me-2">{{ favorite.product.nutrition_grade }}</span>
                                     {% endif %}
                                     {{ favorite.product.brand|default:"Unknown Brand" }}
                                 </small>
                             </div>
-                            <!-- Added working delete button for favorite products -->
-                            <button class="btn btn-outline-danger btn-sm" onclick="confirmDeleteFavorite({{ favorite.id }}, '{{ favorite.product.name|escapejs }}')">
+                            <!-- Enhanced delete button for favorites with better data attributes -->
+                            <button class="btn btn-outline-danger btn-sm delete-favorite-btn" 
+                                    data-favorite-id="{{ favorite.id }}" 
+                                    data-item-name="{{ favorite.product.name|escapejs }}"
+                                    title="Remove from favorites">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </div>
@@ -398,41 +415,55 @@
     {% endif %}
 </div>
 
-<!-- Added confirmation modals for delete actions -->
+<!-- Enhanced confirmation modals with better styling and accessibility -->
 <!-- Delete Tracked Item Modal -->
-<div class="modal fade" id="deleteTrackedItemModal" tabindex="-1">
-    <div class="modal-dialog">
+<div class="modal fade" id="deleteTrackedItemModal" tabindex="-1" aria-labelledby="deleteTrackedItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirm Deletion</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="deleteTrackedItemModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>Confirm Deletion
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to remove <strong id="trackedItemName"></strong> from your tracked items?</p>
-                <p class="text-muted small">This will also remove its nutrition contribution from your daily goals.</p>
+                <p class="mb-2">Are you sure you want to remove <strong id="trackedItemName"></strong> from your tracked items?</p>
+                <div class="alert alert-warning border-0 mb-0">
+                    <small><i class="bi bi-info-circle me-1"></i>This will also remove its nutrition contribution from your daily goals.</small>
+                </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteTrackedItem">Delete</button>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteTrackedItem">
+                    <i class="bi bi-trash me-1"></i>Delete Item
+                </button>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Delete Favorite Modal -->
-<div class="modal fade" id="deleteFavoriteModal" tabindex="-1">
-    <div class="modal-dialog">
+<div class="modal fade" id="deleteFavoriteModal" tabindex="-1" aria-labelledby="deleteFavoriteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirm Deletion</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="deleteFavoriteModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>Confirm Deletion
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to remove <strong id="favoriteItemName"></strong> from your favorites?</p>
+                <p class="mb-0">Are you sure you want to remove <strong id="favoriteItemName"></strong> from your favorites?</p>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteFavorite">Delete</button>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteFavorite">
+                    <i class="bi bi-heart-break me-1"></i>Remove Favorite
+                </button>
             </div>
         </div>
     </div>
@@ -497,15 +528,58 @@
     background-color: #374151 !important;
 }
 
-/* Loading states */
-.btn:disabled {
+/* Enhanced button states and hover effects */
+.delete-tracked-btn:hover,
+.delete-favorite-btn:hover {
+    transform: scale(1.05);
+    transition: all 0.2s ease;
+}
+
+.delete-tracked-btn:disabled,
+.delete-favorite-btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+    transform: none;
+}
+
+/* Enhanced modal styling */
+.modal-content {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+    padding: 1.5rem 1.5rem 0;
+}
+
+.modal-body {
+    padding: 1rem 1.5rem;
+}
+
+.modal-footer {
+    padding: 0 1.5rem 1.5rem;
+}
+
+/* Dark theme modal support */
+[data-theme="dark"] .modal-content {
+    background-color: #2d3748;
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .modal-header .btn-close {
+    filter: invert(1);
+}
+
+/* Loading animation */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
 }
 
 .loading {
-    opacity: 0.7;
-    pointer-events: none;
+    animation: pulse 1.5s ease-in-out infinite;
 }
 </style>
 {% endblock %}
@@ -515,32 +589,63 @@
 let currentTrackedItemId = null;
 let currentFavoriteId = null;
 
+// Get CSRF token
+function getCSRFToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}';
+}
+
+// Enhanced event listeners using event delegation
+document.addEventListener('DOMContentLoaded', function() {
+    // Event delegation for delete tracked item buttons
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.delete-tracked-btn')) {
+            const button = e.target.closest('.delete-tracked-btn');
+            const itemId = button.getAttribute('data-item-id');
+            const itemName = button.getAttribute('data-item-name');
+            confirmDeleteTrackedItem(itemId, itemName);
+        }
+        
+        if (e.target.closest('.delete-favorite-btn')) {
+            const button = e.target.closest('.delete-favorite-btn');
+            const favoriteId = button.getAttribute('data-favorite-id');
+            const itemName = button.getAttribute('data-item-name');
+            confirmDeleteFavorite(favoriteId, itemName);
+        }
+    });
+    
+    // Modal confirmation handlers
+    document.getElementById('confirmDeleteTrackedItem')?.addEventListener('click', function() {
+        if (currentTrackedItemId) {
+            deleteTrackedItem(currentTrackedItemId);
+        }
+    });
+
+    document.getElementById('confirmDeleteFavorite')?.addEventListener('click', function() {
+        if (currentFavoriteId) {
+            deleteFavoriteProduct(currentFavoriteId);
+        }
+    });
+});
+
 function confirmDeleteTrackedItem(itemId, itemName) {
     currentTrackedItemId = itemId;
     document.getElementById('trackedItemName').textContent = itemName;
-    new bootstrap.Modal(document.getElementById('deleteTrackedItemModal')).show();
+    const modal = new bootstrap.Modal(document.getElementById('deleteTrackedItemModal'));
+    modal.show();
 }
 
 function confirmDeleteFavorite(favoriteId, itemName) {
     currentFavoriteId = favoriteId;
     document.getElementById('favoriteItemName').textContent = itemName;
-    new bootstrap.Modal(document.getElementById('deleteFavoriteModal')).show();
+    const modal = new bootstrap.Modal(document.getElementById('deleteFavoriteModal'));
+    modal.show();
 }
-
-document.getElementById('confirmDeleteTrackedItem').addEventListener('click', function() {
-    if (currentTrackedItemId) {
-        deleteTrackedItem(currentTrackedItemId);
-    }
-});
-
-document.getElementById('confirmDeleteFavorite').addEventListener('click', function() {
-    if (currentFavoriteId) {
-        deleteFavoriteProduct(currentFavoriteId);
-    }
-});
 
 function deleteTrackedItem(itemId) {
     const button = document.getElementById('confirmDeleteTrackedItem');
+    const originalText = button.innerHTML;
+    
+    // Show loading state
     button.disabled = true;
     button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Deleting...';
     
@@ -548,88 +653,134 @@ function deleteTrackedItem(itemId) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}',
+            'X-CSRFToken': getCSRFToken(),
         },
         body: JSON.stringify({
-            'item_id': itemId
+            'item_id': parseInt(itemId)
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
-            // Remove the item from the DOM
+            // Remove the item from the DOM with animation
             const itemElement = document.querySelector(`[data-item-id="${itemId}"]`);
             if (itemElement) {
-                itemElement.remove();
+                itemElement.style.transition = 'opacity 0.3s ease';
+                itemElement.style.opacity = '0';
+                setTimeout(() => {
+                    itemElement.remove();
+                    // Update badge count
+                    updateTrackedItemsCount();
+                }, 300);
             }
             
             // Show success message
             showToast('success', data.message);
             
             // Close modal
-            bootstrap.Modal.getInstance(document.getElementById('deleteTrackedItemModal')).hide();
+            const modal = bootstrap.Modal.getInstance(document.getElementById('deleteTrackedItemModal'));
+            modal.hide();
             
-            // Refresh page to update nutrition goals
+            // Refresh page to update nutrition goals after a short delay
             setTimeout(() => {
                 window.location.reload();
-            }, 1000);
+            }, 1500);
         } else {
-            showToast('error', data.error || 'Failed to delete item');
+            throw new Error(data.error || 'Failed to delete item');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showToast('error', 'An error occurred while deleting the item');
+        showToast('error', error.message || 'An error occurred while deleting the item');
     })
     .finally(() => {
         button.disabled = false;
-        button.innerHTML = 'Delete';
+        button.innerHTML = originalText;
+        currentTrackedItemId = null;
     });
 }
 
 function deleteFavoriteProduct(favoriteId) {
     const button = document.getElementById('confirmDeleteFavorite');
+    const originalText = button.innerHTML;
+    
+    // Show loading state
     button.disabled = true;
-    button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Deleting...';
+    button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Removing...';
     
     fetch('{% url "accounts:remove_favorite_product" %}', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}',
+            'X-CSRFToken': getCSRFToken(),
         },
         body: JSON.stringify({
-            'favorite_id': favoriteId
+            'favorite_id': parseInt(favoriteId)
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
-            // Remove the item from the DOM
+            // Remove the item from the DOM with animation
             const itemElement = document.querySelector(`[data-favorite-id="${favoriteId}"]`);
             if (itemElement) {
-                itemElement.remove();
+                itemElement.style.transition = 'opacity 0.3s ease';
+                itemElement.style.opacity = '0';
+                setTimeout(() => {
+                    itemElement.remove();
+                    // Update badge count
+                    updateFavoritesCount();
+                }, 300);
             }
             
             // Show success message
             showToast('success', data.message);
             
             // Close modal
-            bootstrap.Modal.getInstance(document.getElementById('deleteFavoriteModal')).hide();
+            const modal = bootstrap.Modal.getInstance(document.getElementById('deleteFavoriteModal'));
+            modal.hide();
         } else {
-            showToast('error', data.error || 'Failed to delete favorite');
+            throw new Error(data.error || 'Failed to delete favorite');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showToast('error', 'An error occurred while deleting the favorite');
+        showToast('error', error.message || 'An error occurred while deleting the favorite');
     })
     .finally(() => {
         button.disabled = false;
-        button.innerHTML = 'Delete';
+        button.innerHTML = originalText;
+        currentFavoriteId = null;
     });
 }
 
+function updateTrackedItemsCount() {
+    const trackedItems = document.querySelectorAll('.tracked-item');
+    const badge = document.querySelector('.card-header .badge');
+    if (badge) {
+        badge.textContent = `${trackedItems.length} items`;
+    }
+}
+
+function updateFavoritesCount() {
+    const favoriteItems = document.querySelectorAll('.favorite-item');
+    const badge = document.querySelector('.col-lg-6:last-child .badge');
+    if (badge) {
+        badge.textContent = `${favoriteItems.length} items`;
+    }
+}
+
+// Enhanced export and refresh functions
 function exportUserData() {
     const button = event.target;
     const originalText = button.innerHTML;
@@ -656,7 +807,7 @@ function refreshTips() {
     fetch('{% url "accounts:refresh_personalized_tips" %}', {
         method: 'POST',
         headers: {
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}',
+            'X-CSRFToken': getCSRFToken(),
         }
     })
     .then(response => response.json())
@@ -680,17 +831,24 @@ function refreshTips() {
     });
 }
 
+// Enhanced toast notification system
 function showToast(type, message) {
+    // Remove existing toasts
+    document.querySelectorAll('.toast-notification').forEach(toast => toast.remove());
+    
     // Create toast element
     const toast = document.createElement('div');
-    toast.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
-    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    toast.className = `alert alert-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info'} alert-dismissible fade show position-fixed toast-notification`;
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 350px; max-width: 400px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
     toast.innerHTML = `
         <div class="d-flex align-items-center">
-            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}-fill me-2"></i>
-            <span>${message}</span>
+            <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'}-fill me-2 fs-5"></i>
+            <div class="flex-grow-1">
+                <strong>${type === 'success' ? 'Success!' : type === 'error' ? 'Error!' : 'Info!'}</strong>
+                <div>${message}</div>
+            </div>
         </div>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     `;
     
     document.body.appendChild(toast);
@@ -698,9 +856,12 @@ function showToast(type, message) {
     // Auto remove after 5 seconds
     setTimeout(() => {
         if (toast.parentNode) {
-            toast.remove();
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 150);
         }
     }, 5000);
 }
+
+console.log('[v0] Dashboard delete functionality initialized');
 </script>
 {% endblock %}
