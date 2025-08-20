@@ -656,33 +656,44 @@ def add_to_nutrition_tracker(request):
 @require_POST
 def remove_tracked_item(request):
     """Remove item from nutrition tracker with confirmation dialog"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request method'})
+    
     try:
         data = json.loads(request.body)
         item_id = data.get('item_id')
         
+        if not item_id:
+            return JsonResponse({'success': False, 'error': 'Item ID is required'})
+        
         tracked_item = get_object_or_404(TrackedItem, id=item_id, user=request.user)
         
         # Remove nutrition from daily goals
-        dietary_goals = DietaryGoal.objects.get(user=request.user)
-        calculated_nutrition = tracked_item.calculated_nutrition
-        
-        if calculated_nutrition:
-            dietary_goals.calories_consumed -= int(calculated_nutrition.get('energy-kcal_100g', 0))
-            dietary_goals.protein_consumed -= int(calculated_nutrition.get('proteins_100g', 0))
-            dietary_goals.fat_consumed -= int(calculated_nutrition.get('fat_100g', 0))
-            dietary_goals.carbs_consumed -= int(calculated_nutrition.get('carbohydrates_100g', 0))
-            dietary_goals.sugar_consumed -= int(calculated_nutrition.get('sugars_100g', 0))
-            dietary_goals.sodium_consumed -= int(calculated_nutrition.get('sodium_100g', 0))
+        try:
+            dietary_goals = DietaryGoal.objects.get(user=request.user)
+            calculated_nutrition = tracked_item.calculated_nutrition
             
-            # Ensure values don't go negative
-            dietary_goals.calories_consumed = max(0, dietary_goals.calories_consumed)
-            dietary_goals.protein_consumed = max(0, dietary_goals.protein_consumed)
-            dietary_goals.fat_consumed = max(0, dietary_goals.fat_consumed)
-            dietary_goals.carbs_consumed = max(0, dietary_goals.carbs_consumed)
-            dietary_goals.sugar_consumed = max(0, dietary_goals.sugar_consumed)
-            dietary_goals.sodium_consumed = max(0, dietary_goals.sodium_consumed)
-            
-            dietary_goals.save()
+            if calculated_nutrition:
+                serving_multiplier = tracked_item.serving_size / 100.0
+                
+                dietary_goals.calories_consumed -= int(calculated_nutrition.get('energy-kcal_100g', 0) * serving_multiplier)
+                dietary_goals.protein_consumed -= float(calculated_nutrition.get('proteins_100g', 0) * serving_multiplier)
+                dietary_goals.fat_consumed -= float(calculated_nutrition.get('fat_100g', 0) * serving_multiplier)
+                dietary_goals.carbs_consumed -= float(calculated_nutrition.get('carbohydrates_100g', 0) * serving_multiplier)
+                dietary_goals.sugar_consumed -= float(calculated_nutrition.get('sugars_100g', 0) * serving_multiplier)
+                dietary_goals.sodium_consumed -= float(calculated_nutrition.get('sodium_100g', 0) * serving_multiplier)
+                
+                # Ensure values don't go negative
+                dietary_goals.calories_consumed = max(0, dietary_goals.calories_consumed)
+                dietary_goals.protein_consumed = max(0, dietary_goals.protein_consumed)
+                dietary_goals.fat_consumed = max(0, dietary_goals.fat_consumed)
+                dietary_goals.carbs_consumed = max(0, dietary_goals.carbs_consumed)
+                dietary_goals.sugar_consumed = max(0, dietary_goals.sugar_consumed)
+                dietary_goals.sodium_consumed = max(0, dietary_goals.sodium_consumed)
+                
+                dietary_goals.save()
+        except DietaryGoal.DoesNotExist:
+            pass  # If no dietary goals exist, just delete the item
         
         product_name = tracked_item.product.name
         tracked_item.delete()
@@ -693,15 +704,24 @@ def remove_tracked_item(request):
         })
         
     except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)})
+        return JsonResponse({
+            'success': False,
+            'error': f'Failed to remove item: {str(e)}'
+        })
 
 @login_required
 @require_POST
 def remove_favorite_product(request):
-    """Remove product from favorites with confirmation dialog"""
+    """Remove product from user's favorites"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request method'})
+    
     try:
         data = json.loads(request.body)
         favorite_id = data.get('favorite_id')
+        
+        if not favorite_id:
+            return JsonResponse({'success': False, 'error': 'Favorite ID is required'})
         
         favorite = get_object_or_404(FavoriteProduct, id=favorite_id, user=request.user)
         product_name = favorite.product.name
@@ -713,7 +733,10 @@ def remove_favorite_product(request):
         })
         
     except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)})
+        return JsonResponse({
+            'success': False,
+            'error': f'Failed to remove favorite: {str(e)}'
+        })
 
 @login_required
 def export_user_data(request):
