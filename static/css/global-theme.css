@@ -42,13 +42,6 @@
   --border-radius: 0.75rem;
   --border-radius-sm: 0.5rem;
   --border-radius-lg: 1rem;
-
-  /* Added health score colors for nutrition grades */
-  --health-excellent: #10b981;
-  --health-good: #84cc16;
-  --health-fair: #f59e0b;
-  --health-poor: #ef4444;
-  --health-unknown: #6b7280;
 }
 
 [data-theme="dark"] {
@@ -59,38 +52,25 @@
   --accent-color: #fbbf24;
   --accent-light: rgba(251, 191, 36, 0.15);
 
-  /* Enhanced text colors for better contrast in dark mode */
+  /* Text colors */
   --text-primary: #f9fafb;
-  --text-secondary: #e5e7eb;
-  --text-muted: #d1d5db;
+  --text-secondary: #d1d5db;
+  --text-muted: #9ca3af;
   --text-inverse: #1f2937;
 
-  /* Improved background colors for better depth */
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --bg-tertiary: #334155;
-  --card-bg: #1e293b;
-  --overlay-bg: rgba(0, 0, 0, 0.8);
+  /* Background colors */
+  --bg-primary: #111827;
+  --bg-secondary: #1f2937;
+  --bg-tertiary: #374151;
+  --card-bg: #1f2937;
+  --overlay-bg: rgba(0, 0, 0, 0.7);
 
-  /* Enhanced border and shadow for dark theme */
-  --border-color: #334155;
-  --border-light: #475569;
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6);
-
-  /* Adjusted status colors for dark theme visibility */
-  --success-color: #22c55e;
-  --warning-color: #fbbf24;
-  --error-color: #f87171;
-  --info-color: #60a5fa;
-
-  /* Dark theme health score colors */
-  --health-excellent: #22c55e;
-  --health-good: #a3e635;
-  --health-fair: #fbbf24;
-  --health-poor: #f87171;
-  --health-unknown: #9ca3af;
+  /* Border and shadow */
+  --border-color: #374151;
+  --border-light: #4b5563;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
 }
 
 /* Global transitions for smooth theme switching */
@@ -110,7 +90,7 @@ body {
   line-height: 1.6;
 }
 
-/* Enhanced typography with better contrast */
+/* Typography */
 h1,
 h2,
 h3,
@@ -134,21 +114,6 @@ div {
 
 .text-secondary {
   color: var(--text-secondary) !important;
-}
-
-/* Added specific styling for dashboard elements */
-.display-6 {
-  color: var(--text-primary) !important;
-}
-
-.fw-medium,
-.fw-semibold,
-.fw-bold {
-  color: var(--text-primary) !important;
-}
-
-small {
-  color: var(--text-muted) !important;
 }
 
 /* Navbar styling */
@@ -214,15 +179,6 @@ small {
 .card-footer {
   background-color: var(--bg-secondary) !important;
   border-top: 1px solid var(--border-color) !important;
-  color: var(--text-secondary) !important;
-}
-
-/* Enhanced card title and text styling */
-.card-title {
-  color: var(--text-primary) !important;
-}
-
-.card-text {
   color: var(--text-secondary) !important;
 }
 
@@ -295,37 +251,6 @@ small {
   background-color: var(--bg-tertiary) !important;
   border-color: var(--border-color) !important;
   color: var(--text-primary) !important;
-}
-
-/* Enhanced button variants for better dark theme support */
-.btn-outline-success {
-  border-color: var(--success-color) !important;
-  color: var(--success-color) !important;
-}
-
-.btn-outline-success:hover {
-  background-color: var(--success-color) !important;
-  color: var(--text-inverse) !important;
-}
-
-.btn-outline-info {
-  border-color: var(--info-color) !important;
-  color: var(--info-color) !important;
-}
-
-.btn-outline-info:hover {
-  background-color: var(--info-color) !important;
-  color: var(--text-inverse) !important;
-}
-
-.btn-outline-danger {
-  border-color: var(--error-color) !important;
-  color: var(--error-color) !important;
-}
-
-.btn-outline-danger:hover {
-  background-color: var(--error-color) !important;
-  color: var(--text-inverse) !important;
 }
 
 /* Dropdown styling */
@@ -457,28 +382,6 @@ small {
   color: var(--text-primary) !important;
 }
 
-/* Added nutrition grade badge styling */
-.badge.bg-a {
-  background-color: var(--health-excellent) !important;
-  color: var(--text-inverse) !important;
-}
-
-.badge.bg-b {
-  background-color: var(--health-good) !important;
-  color: var(--text-inverse) !important;
-}
-
-.badge.bg-c {
-  background-color: var(--health-fair) !important;
-  color: var(--text-inverse) !important;
-}
-
-.badge.bg-d,
-.badge.bg-e {
-  background-color: var(--health-poor) !important;
-  color: var(--text-inverse) !important;
-}
-
 /* Progress bar styling */
 .progress {
   background-color: var(--bg-secondary) !important;
@@ -486,23 +389,6 @@ small {
 }
 
 .progress-bar {
-  background-color: var(--primary-color) !important;
-}
-
-/* Enhanced progress bar variants */
-.progress-bar.bg-success {
-  background-color: var(--success-color) !important;
-}
-
-.progress-bar.bg-info {
-  background-color: var(--info-color) !important;
-}
-
-.progress-bar.bg-warning {
-  background-color: var(--warning-color) !important;
-}
-
-.progress-bar.bg-primary {
   background-color: var(--primary-color) !important;
 }
 
@@ -515,28 +401,6 @@ small {
 
 .list-group-item:hover {
   background-color: var(--bg-secondary) !important;
-}
-
-/* Enhanced border styling for dashboard elements */
-.border-bottom {
-  border-bottom-color: var(--border-color) !important;
-}
-
-.border-top {
-  border-top-color: var(--border-color) !important;
-}
-
-.border {
-  border-color: var(--border-color) !important;
-}
-
-/* Background utilities for dashboard */
-.bg-light {
-  background-color: var(--bg-secondary) !important;
-}
-
-[data-theme="dark"] .bg-light {
-  background-color: var(--bg-tertiary) !important;
 }
 
 /* Footer styling */
@@ -580,42 +444,6 @@ footer h5 {
   transform: scale(0.95) !important;
 }
 
-/* Added dashboard-specific styling */
-.product-image img,
-.product-image div {
-  border: 1px solid var(--border-color) !important;
-}
-
-.tracked-item,
-.favorite-item {
-  transition: background-color 0.2s ease !important;
-}
-
-.tracked-item:hover,
-.favorite-item:hover {
-  background-color: var(--bg-secondary) !important;
-  border-radius: var(--border-radius-sm) !important;
-}
-
-/* Enhanced link styling */
-a {
-  color: var(--primary-color) !important;
-  text-decoration: none !important;
-}
-
-a:hover {
-  color: var(--primary-dark) !important;
-  text-decoration: underline !important;
-}
-
-.text-decoration-none {
-  text-decoration: none !important;
-}
-
-.text-decoration-none:hover {
-  text-decoration: none !important;
-}
-
 /* Utility classes */
 .bg-primary-custom {
   background-color: var(--bg-primary) !important;
@@ -635,26 +463,6 @@ a:hover {
 
 .border-custom {
   border-color: var(--border-color) !important;
-}
-
-/* Added loading and disabled states */
-.loading {
-  opacity: 0.7 !important;
-  pointer-events: none !important;
-}
-
-.btn:disabled {
-  opacity: 0.6 !important;
-  cursor: not-allowed !important;
-}
-
-/* Enhanced spinner styling for dark theme */
-.spinner-border {
-  color: var(--primary-color) !important;
-}
-
-.spinner-border-sm {
-  color: var(--primary-color) !important;
 }
 
 /* Responsive adjustments */
