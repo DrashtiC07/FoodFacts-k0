@@ -26,4 +26,6 @@ urlpatterns = [
     path('get-ml-insights/', views.get_ml_insights_view, name='get_ml_insights'),
     path('insights/', views.insights_dashboard, name='insights_dashboard'),
     path('api/insights/', views.api_insights_data, name='api_insights_data'),
+    path('api/ai-tips/', views.api_get_ai_tips, name='api_get_ai_tips'),
+    path('api/ml-insights/', views.api_get_ml_insights, name='api_get_ml_insights'),
 ]

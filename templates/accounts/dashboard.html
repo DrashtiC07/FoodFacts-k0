@@ -1306,7 +1306,7 @@
 }
 
 .nutrition-bar .progress-fill.bg-warning {
-  background: linear-gradient(90deg, var(--accent-color), #f59e0b);
+  background: linear-gradient( var(--accent-color), #f59e0b);
 }
 
 .nutrition-bar .progress-fill.bg-success {
@@ -2159,8 +2159,11 @@ function deleteReview(reviewId) {
 
 <!-- Added proper script closing and enhanced ML/AI functions -->
 <script>
-// Enhanced ML Insights and AI Tips functionality
 document.addEventListener('DOMContentLoaded', function() {
+    // Load existing data on page load
+    fetchAITipsAndRender();
+    fetchMLInsightsAndRender();
+    
     // Initialize ML Analysis button
     const mlAnalysisBtn = document.querySelector('button[onclick*="generateMLInsights"]');
     if (mlAnalysisBtn) {
@@ -2178,81 +2181,175 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Enhanced ML Insights function
-function generateMLInsights() {
-    console.log("[v0] Starting ML insights generation");
+function fetchAITipsAndRender() {
+    console.log("[v0] Fetching AI tips");
     
-    // Show loading state
-    const container = document.getElementById('ml-insights-container');
-    if (container) {
-        container.innerHTML = `
-            <div class="text-center py-4">
-                <div class="spinner-border text-primary mb-3" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <h6 class="text-muted">Running ML analysis...</h6>
-                <p class="small text-muted">Analyzing your nutrition patterns</p>
-            </div>
-        `;
-    }
-    
-    fetch('/accounts/generate-ml-insights/', {
-        method: 'POST',
+    fetch('/accounts/api/ai-tips/', {
+        method: 'GET',
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
-            'X-CSRFToken': getCookie('csrftoken'),
-            'Content-Type': 'application/json'
+            'X-CSRFToken': getCookie('csrftoken')
         }
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
-        console.log("[v0] ML insights response:", data);
-        
         if (data.success) {
-            showModernAlert(data.message, 'success', 4000);
-            // Reload the page to show updated insights
-            setTimeout(() => {
-                window.location.reload();
-            }, 1500);
+            renderAITips(data.tips);
         } else {
-            if (container) {
-                container.innerHTML = `
-                    <div class="text-center py-3">
-                        <i class="bi bi-exclamation-triangle text-warning fs-1 mb-2"></i>
-                        <p class="text-muted">${data.message}</p>
-                        <button class="btn btn-outline-primary btn-sm" onclick="generateMLInsights()">
-                            <i class="bi bi-arrow-clockwise"></i> Try Again
-                        </button>
-                    </div>
-                `;
-            }
-            showModernAlert(data.message, 'warning', 5000);
+            console.error('[v0] Failed to fetch AI tips:', data.message);
         }
     })
     .catch(error => {
-        console.error('[v0] ML insights error:', error);
-        
-        if (container) {
-            container.innerHTML = `
-                <div class="text-center py-3">
-                    <i class="bi bi-x-circle text-danger fs-1 mb-2"></i>
-                    <p class="text-muted">Failed to generate insights</p>
-                    <button class="btn btn-outline-primary btn-sm" onclick="generateMLInsights()">
-                        <i class="bi bi-arrow-clockwise"></i> Retry
-                    </button>
-                </div>
-            `;
-        }
-        showModernAlert('Error generating ML insights. Please try again.', 'danger');
+        console.error('[v0] AI tips fetch error:', error);
     });
 }
 
-// Enhanced AI Tips function
+function renderAITips(tipsList) {
+    const container = document.getElementById('ai-tips-container');
+    if (!container) return;
+    
+    // Clear existing content
+    container.innerHTML = '';
+    
+    if (tipsList && tipsList.length > 0) {
+        tipsList.forEach(tip => {
+            const tipElement = document.createElement('div');
+            tipElement.className = `alert alert-${getTipAlertClass(tip.tip_type)} alert-dismissible fade show mb-2`;
+            tipElement.setAttribute('role', 'alert');
+            
+            tipElement.innerHTML = `
+                <div class="d-flex align-items-start">
+                    <i class bi-${tip.icon || 'lightbulb'} me-2 flex-shrink-0 mt-1"></i>
+                    <div class="flex-grow-1">
+                        <small class="fw-medium">${tip.message}</small>
+                        <div class="text-muted mt-1" style="font-size: 0.7rem;">
+                            <i class="bi bi-clock me-1"></i>${formatTimeAgo(tip.created_at)}
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            
+            container.appendChild(tipElement);
+        });
+    } else {
+        container.innerHTML = `
+            <div class="text-center py-3">
+                <i class="bi bi-robot display-4 text-muted mb-2"></i>
+                <p class="text-muted">AI tips will appear here based on your nutrition data</p>
+                <button class="btn btn-outline-primary btn-sm" onclick="generateAITips()">
+                    <i class="bi bi-magic me-1"></i>Generate Tips
+                </button>
+            </div>
+        `;
+    }
+}
+
+function fetchMLInsightsAndRender() {
+    console.log("[v0] Fetching ML insights");
+    
+    fetch('/accounts/api/ml-insights/', {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            renderMLInsights(data.insights, data.charts_data);
+        } else {
+            console.error('[v0] Failed to fetch ML insights:', data.message);
+        }
+    })
+    .catch(error => {
+        console.error('[v0] ML insights fetch error:', error);
+    });
+}
+
+function renderMLInsights(insights, chartsData) {
+    const container = document.getElementById('ml-insights-container');
+    if (!container) return;
+    
+    // Clear existing content
+    container.innerHTML = '';
+    
+    if (insights && Object.keys(insights).length > 0) {
+        let insightsHTML = '';
+        
+        // Render trend analysis
+        if (insights.trend_analysis && Object.keys(insights.trend_analysis).length > 0) {
+            insightsHTML += `
+                <div class="mb-3">
+                    <h6 class="fw-medium">Nutrition Trends</h6>
+            `;
+            
+            Object.entries(insights.trend_analysis).forEach(([nutrient, trend]) => {
+                const badgeClass = trend.direction === 'increasing' ? 'success' : 
+                                 trend.direction === 'decreasing' ? 'warning' : 'secondary';
+                insightsHTML += `
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="text-capitalize">${nutrient}:</span>
+                        <span class="badge bg-${badgeClass}">
+                            ${trend.direction} (${trend.strength})
+                        </span>
+                    </div>
+                `;
+            });
+            
+            insightsHTML += '</div>';
+        }
+        
+        // Render goal achievement
+        if (insights.goal_achievement && Object.keys(insights.goal_achievement).length > 0) {
+            insightsHTML += `
+                <div class="mb-3">
+                    <h6 class="fw-medium">Goal Achievement</h6>
+            `;
+            
+            Object.entries(insights.goal_achievement).forEach(([goal, achievement]) => {
+                const percentage = achievement.percentage || 0;
+                const progressClass = percentage >= 80 ? 'success' : percentage >= 50 ? 'warning' : 'danger';
+                insightsHTML += `
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <small class="text-capitalize">${goal}</small>
+                            <small class="fw-medium">${percentage}%</small>
+                        </div>
+                        <div class="progress" style="height: 4px;">
+                            <div class="progress-bar bg-${progressClass}" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            insightsHTML += '</div>';
+        }
+        
+        // Add link to full insights page
+        insightsHTML += `
+            <div class="text-center mt-3">
+                <a href="/accounts/insights/" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-graph-up me-1"></i>View Full Analysis
+                </a>
+            </div>
+        `;
+        
+        container.innerHTML = insightsHTML;
+    } else {
+        container.innerHTML = `
+            <div class="text-center py-3">
+                <i class="bi bi-bar-chart display-4 text-muted mb-2"></i>
+                <p class="text-muted">ML analysis will appear here based on your nutrition data</p>
+                <button class="btn btn-outline-primary btn-sm" onclick="generateMLInsights()">
+                    <i class="bi bi-cpu me-1"></i>Generate Analysis
+                </button>
+            </div>
+        `;
+    }
+}
+
 function generateAITips() {
     console.log("[v0] Starting AI tips generation");
     
@@ -2289,10 +2386,10 @@ function generateAITips() {
         
         if (data.success) {
             showModernAlert(data.message, 'success', 4000);
-            // Reload the page to show new tips
+            // Fetch and render new tips instead of reloading
             setTimeout(() => {
-                window.location.reload();
-            }, 1500);
+                fetchAITipsAndRender();
+            }, 1000);
         } else {
             if (container) {
                 container.innerHTML = `
@@ -2326,21 +2423,100 @@ function generateAITips() {
     });
 }
 
-// Utility function for CSRF token
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
+function generateMLInsights() {
+    console.log("[v0] Starting ML insights generation");
+    
+    // Show loading state
+    const container = document.getElementById('ml-insights-container');
+    if (container) {
+        container.innerHTML = `
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <h6 class="text-muted">Running ML analysis...</h6>
+                <p class="small text-muted">Analyzing your nutrition patterns</p>
+            </div>
+        `;
     }
-    return cookieValue;
+    
+    fetch('/accounts/generate-ml-insights/', {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log("[v0] ML insights response:", data);
+        
+        if (data.success) {
+            showModernAlert(data.message, 'success', 4000);
+            // Fetch and render new insights instead of reloading
+            setTimeout(() => {
+                fetchMLInsightsAndRender();
+            }, 1000);
+        } else {
+            if (container) {
+                container.innerHTML = `
+                    <div class="text-center py-3">
+                        <i class="bi bi-exclamation-triangle text-warning fs-1 mb-2"></i>
+                        <p class="text-muted">${data.message}</p>
+                        <button class="btn btn-outline-primary btn-sm" onclick="generateMLInsights()">
+                            <i class="bi bi-arrow-clockwise"></i> Try Again
+                        </button>
+                    </div>
+                `;
+            }
+            showModernAlert(data.message, 'warning', 5000);
+        }
+    })
+    .catch(error => {
+        console.error('[v0] ML insights error:', error);
+        
+        if (container) {
+            container.innerHTML = `
+                <div class="text-center py-3">
+                    <i class="bi bi-x-circle text-danger fs-1 mb-2"></i>
+                    <p class="text-muted">Failed to generate insights</p>
+                    <button class="btn btn-outline-primary btn-sm" onclick="generateMLInsights()">
+                        <i class="bi bi-arrow-clockwise"></i> Retry
+                    </button>
+                </div>
+            `;
+        }
+        showModernAlert('Error generating ML insights. Please try again.', 'danger');
+    });
 }
+
+function getTipAlertClass(tipType) {
+    switch(tipType) {
+        case 'critical': return 'danger';
+        case 'warning': return 'warning';
+        case 'success': return 'success';
+        default: return 'info';
+    }
+}
+
+function formatTimeAgo(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+    
+    if (diffInSeconds < 60) return 'Just now';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+    return `${Math.floor(diffInSeconds / 86400)}d ago`;
+}
+
+</script>
 </script>
 
 {% endblock %}

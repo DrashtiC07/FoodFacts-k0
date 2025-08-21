@@ -1293,87 +1293,156 @@ def api_insights_data(request):
         from datetime import datetime, timedelta
         import json
         
-        user = request.user
-        analyzer = NutritionMLAnalyzer(user)
+        # Get user's scan history for the last 30 days
+        end_date = timezone.now().date()
+        start_date = end_date - timedelta(days=30)
         
-        # Get comprehensive insights data
-        insights = analyzer.get_comprehensive_analysis()
+        scan_history = ScanHistory.objects.filter(
+            user=request.user,
+            scanned_at__date__range=[start_date, end_date]
+        ).select_related('product')
         
-        # Format data for Chart.js consumption
-        response_data = {
-            'success': True,
-            'data': {
-                'summary_stats': {
-                    'total_days_tracked': insights.get('total_days_tracked', 0),
-                    'avg_goals_met': insights.get('avg_goals_achievement', 0),
-                    'most_consistent_nutrient': insights.get('most_consistent_nutrient', 'Calories'),
-                    'improvement_area': insights.get('improvement_area', 'Protein')
-                },
-                'weekly_trends': {
-                    'labels': insights.get('weekly_labels', []),
-                    'datasets': [
-                        {
-                            'label': 'Calories',
-                            'data': insights.get('weekly_calories', []),
-                            'borderColor': 'rgb(255, 99, 132)',
-                            'backgroundColor': 'rgba(255, 99, 132, 0.2)',
-                        },
-                        {
-                            'label': 'Protein',
-                            'data': insights.get('weekly_protein', []),
-                            'borderColor': 'rgb(54, 162, 235)',
-                            'backgroundColor': 'rgba(54, 162, 235, 0.2)',
-                        },
-                        {
-                            'label': 'Carbs',
-                            'data': insights.get('weekly_carbs', []),
-                            'borderColor': 'rgb(255, 205, 86)',
-                            'backgroundColor': 'rgba(255, 205, 86, 0.2)',
-                        }
-                    ]
-                },
-                'nutrition_histogram': {
-                    'labels': ['Calories', 'Protein', 'Fat', 'Carbs', 'Sugar', 'Sodium'],
-                    'data': [
-                        insights.get('avg_calories', 0),
-                        insights.get('avg_protein', 0),
-                        insights.get('avg_fat', 0),
-                        insights.get('avg_carbs', 0),
-                        insights.get('avg_sugar', 0),
-                        insights.get('avg_sodium', 0)
-                    ],
-                    'backgroundColor': [
-                        'rgba(255, 99, 132, 0.8)',
-                        'rgba(54, 162, 235, 0.8)',
-                        'rgba(255, 205, 86, 0.8)',
-                        'rgba(75, 192, 192, 0.8)',
-                        'rgba(153, 102, 255, 0.8)',
-                        'rgba(255, 159, 64, 0.8)'
-                    ]
-                },
-                'goal_achievement': {
-                    'labels': ['Goals Met', 'Goals Missed'],
-                    'data': [
-                        insights.get('goals_met_percentage', 50),
-                        100 - insights.get('goals_met_percentage', 50)
-                    ],
-                    'backgroundColor': [
-                        'rgba(75, 192, 192, 0.8)',
-                        'rgba(255, 99, 132, 0.8)'
-                    ]
-                },
-                'recommendations': insights.get('recommendations', [
-                    'Keep tracking your nutrition consistently!',
-                    'Try to meet your protein goals daily.',
-                    'Consider adding more variety to your diet.'
-                ])
+        if not scan_history.exists():
+            return JsonResponse({
+                'success': False,
+                'message': 'No scan data available for analysis'
+            })
+        
+        # Initialize ML analyzer
+        analyzer = NutritionMLAnalyzer()
+        insights = analyzer.analyze_nutrition_data(request.user)
+        
+        # Format data for Chart.js
+        charts_data = {
+            'weekly_trends': {
+                'labels': [],
+                'datasets': []
+            },
+            'nutrition_distribution': {
+                'labels': ['Protein', 'Fat', 'Carbs'],
+                'datasets': [{
+                    'data': [],
+                    'backgroundColor': ['#0ea5e9', '#f59e0b', '#10b981']
+                }]
+            },
+            'goal_achievement': {
+                'labels': [],
+                'datasets': [{
+                    'data': [],
+                    'backgroundColor': '#198754'
+                }]
             }
         }
         
-        return JsonResponse(response_data)
+        return JsonResponse({
+            'success': True,
+            'insights': insights,
+            'charts_data': charts_data
+        })
         
     except Exception as e:
         return JsonResponse({
             'success': False,
-            'error': f'Failed to load insights data: {str(e)}'
+            'message': f'Error generating insights data: {str(e)}'
+        })
+
+@login_required
+def api_get_ai_tips(request):
+    """GET API endpoint to fetch existing AI tips for the user"""
+    try:
+        # Get the most recent AI tips for the user (last 10)
+        ai_tips = PersonalizedTip.objects.filter(
+            user=request.user,
+            trigger_condition__icontains='ai_generated'
+        ).order_by('-created_at')[:10]
+        
+        tips_data = []
+        for tip in ai_tips:
+            tips_data.append({
+                'id': tip.id,
+                'message': tip.message,
+                'tip_type': tip.tip_type,
+                'icon': tip.icon,
+                'created_at': tip.created_at.isoformat(),
+                'trigger_condition': tip.trigger_condition
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'tips': tips_data,
+            'count': len(tips_data)
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error fetching AI tips: {str(e)}',
+            'tips': []
+        })
+
+@login_required  
+def api_get_ml_insights(request):
+    """GET API endpoint to fetch existing ML insights for the user"""
+    try:
+        from .ml_insights import NutritionMLAnalyzer
+        
+        # Initialize ML analyzer and get insights
+        analyzer = NutritionMLAnalyzer()
+        insights = analyzer.analyze_nutrition_data(request.user)
+        
+        # Format insights for frontend consumption
+        formatted_insights = {}
+        
+        if insights:
+            # Format trend analysis
+            if 'trend_analysis' in insights:
+                formatted_insights['trend_analysis'] = insights['trend_analysis']
+            
+            # Format goal achievement data
+            if 'goal_achievement' in insights:
+                formatted_insights['goal_achievement'] = insights['goal_achievement']
+            
+            # Format nutrition balance
+            if 'nutrition_balance' in insights:
+                formatted_insights['nutrition_balance'] = insights['nutrition_balance']
+            
+            # Format recommendations
+            if 'recommendations' in insights:
+                formatted_insights['recommendations'] = insights['recommendations']
+        
+        # Prepare chart data for visualization
+        charts_data = {
+            'has_data': bool(insights),
+            'weekly_trends': [],
+            'nutrition_distribution': [],
+            'goal_achievement': []
+        }
+        
+        if insights and 'trend_analysis' in insights:
+            # Format trend data for charts
+            trend_data = insights['trend_analysis']
+            charts_data['weekly_trends'] = {
+                'labels': list(trend_data.keys()),
+                'datasets': [{
+                    'label': 'Nutrition Trends',
+                    'data': [trend.get('strength', 0) for trend in trend_data.values()],
+                    'backgroundColor': 'rgba(54, 162, 235, 0.2)',
+                    'borderColor': 'rgba(54, 162, 235, 1)',
+                    'borderWidth': 1
+                }]
+            }
+        
+        return JsonResponse({
+            'success': True,
+            'insights': formatted_insights,
+            'charts_data': charts_data,
+            'has_sufficient_data': bool(insights)
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error fetching ML insights: {str(e)}',
+            'insights': {},
+            'charts_data': {'has_data': False}
         })
