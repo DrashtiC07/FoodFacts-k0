@@ -1217,21 +1217,13 @@ def generate_ml_insights_view(request):
         
         user = request.user
         
-        # Check if user has enough data for ML analysis
-        weekly_logs = WeeklyNutritionLog.objects.filter(user=user).count()
-        if weekly_logs < 2:
-            return JsonResponse({
-                'success': False,
-                'message': 'Need at least 2 weeks of data for ML analysis. Keep tracking your nutrition!'
-            })
-        
-        # Generate ML insights
+        # Generate ML insights regardless of data amount
         insights = get_ml_insights(user)
         
         if insights.get('basic_analysis'):
             return JsonResponse({
                 'success': True,
-                'message': 'Basic nutrition analysis completed successfully!',
+                'message': 'Nutrition analysis completed successfully! Keep tracking for more detailed insights.',
                 'analysis_type': 'basic'
             })
         else:

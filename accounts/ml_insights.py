@@ -28,8 +28,10 @@ class NutritionMLAnalyzer:
             # Get historical data
             logs = WeeklyNutritionLog.objects.filter(user=user).order_by('week_start_date')
             
-            if logs.count() < 4:
+            if logs.count() < 1:
                 return self._generate_basic_insights(user)
+            elif logs.count() < 3:
+                return self._generate_enhanced_basic_insights(user, logs)
             
             # Prepare data for analysis
             data = []
@@ -273,30 +275,103 @@ class NutritionMLAnalyzer:
         return recommendations
     
     def _generate_basic_insights(self, user):
-        """Generate basic insights when ML analysis isn't possible"""
-        from .models import DietaryGoal
+        """Generate basic insights when no historical data is available"""
+        from .models import DietaryGoal, ScanHistory
         
         dietary_goals = DietaryGoal.objects.filter(user=user).first()
-        
-        if not dietary_goals:
-            return {'message': 'No data available for analysis'}
-        
-        # Calculate current progress
-        calories_progress = (dietary_goals.calories_consumed / dietary_goals.calories_target * 100) if dietary_goals.calories_target > 0 else 0
-        protein_progress = (dietary_goals.protein_consumed / dietary_goals.protein_target * 100) if dietary_goals.protein_target > 0 else 0
+        recent_scans = ScanHistory.objects.filter(user=user).count()
         
         insights = {
             'basic_analysis': True,
-            'current_progress': {
+            'first_time_user': True,
+            'recommendations': []
+        }
+        
+        if dietary_goals:
+            # Calculate current progress
+            calories_progress = (dietary_goals.calories_consumed / dietary_goals.calories_target * 100) if dietary_goals.calories_target > 0 else 0
+            protein_progress = (dietary_goals.protein_consumed / dietary_goals.protein_target * 100) if dietary_goals.protein_target > 0 else 0
+            
+            insights['current_progress'] = {
                 'calories': calories_progress,
                 'protein': protein_progress
-            },
-            'recommendations': [
-                "Continue tracking your nutrition for better insights",
-                "Aim for consistent daily tracking",
-                "Focus on balanced macronutrient intake"
-            ]
+            }
+            
+            # Provide immediate value based on current goals
+            if dietary_goals.calories_target > 0:
+                insights['recommendations'].append(f"Your daily calorie target is {dietary_goals.calories_target}. Great starting point!")
+            
+            if dietary_goals.protein_target > 0:
+                insights['recommendations'].append(f"Aim for {dietary_goals.protein_target}g of protein daily for optimal health.")
+        
+        # Add beginner-friendly tips
+        insights['recommendations'].extend([
+            "Welcome to your nutrition journey! Start by scanning your meals regularly.",
+            "Focus on eating a variety of colorful fruits and vegetables.",
+            "Stay hydrated and aim for balanced meals with protein, healthy fats, and complex carbs.",
+            "Consistency is key - small daily improvements lead to lasting results!",
+            "Track your favorite healthy foods to build good habits."
+        ])
+        
+        if recent_scans == 0:
+            insights['recommendations'].insert(0, "Start by scanning your first food item to begin your nutrition analysis!")
+        elif recent_scans < 3:
+            insights['recommendations'].insert(0, f"Great start with {recent_scans} scans! Keep going to unlock more insights.")
+        
+        return insights
+    
+    def _generate_enhanced_basic_insights(self, user, logs):
+        """Generate enhanced insights for users with 1-2 weeks of data"""
+        from .models import DietaryGoal, ScanHistory
+        
+        dietary_goals = DietaryGoal.objects.filter(user=user).first()
+        recent_scans = ScanHistory.objects.filter(user=user).count()
+        
+        insights = {
+            'basic_analysis': True,
+            'data_weeks': logs.count(),
+            'recommendations': []
         }
+        
+        if dietary_goals:
+            # Calculate current progress
+            calories_progress = (dietary_goals.calories_consumed / dietary_goals.calories_target * 100) if dietary_goals.calories_target > 0 else 0
+            protein_progress = (dietary_goals.protein_consumed / dietary_goals.protein_target * 100) if dietary_goals.protein_target > 0 else 0
+            
+            insights['current_progress'] = {
+                'calories': calories_progress,
+                'protein': protein_progress
+            }
+            
+            # Generate personalized recommendations based on available data
+            if calories_progress < 80:
+                insights['recommendations'].append("You're doing great with calorie control! Consider adding more nutrient-dense foods.")
+            elif calories_progress > 120:
+                insights['recommendations'].append("Consider portion control and focus on high-fiber foods to feel fuller.")
+            else:
+                insights['recommendations'].append("Your calorie intake is well-balanced!")
+            
+            if protein_progress < 80:
+                insights['recommendations'].append("Try to include more protein sources like lean meats, eggs, or legumes.")
+            elif protein_progress > 120:
+                insights['recommendations'].append("Great protein intake! Make sure to balance with healthy carbs and fats.")
+            else:
+                insights['recommendations'].append("Excellent protein balance!")
+        
+        # Add general tips based on scan activity
+        if recent_scans < 5:
+            insights['recommendations'].append("Keep scanning foods regularly to build better nutrition insights!")
+        elif recent_scans < 15:
+            insights['recommendations'].append("Good scanning habits! Try to scan a variety of foods for better analysis.")
+        else:
+            insights['recommendations'].append("Excellent tracking consistency! Your data will provide great insights.")
+        
+        # Add motivational insights
+        insights['recommendations'].extend([
+            "Every scan helps build a better picture of your nutrition patterns.",
+            "Focus on whole foods and balanced meals for optimal health.",
+            "Small consistent changes lead to big results over time!"
+        ])
         
         return insights
 

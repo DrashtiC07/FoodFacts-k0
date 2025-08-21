@@ -2151,9 +2151,196 @@ function deleteReview(reviewId) {
         }
     })
     .catch(error => {
-        console.error('Error:', error);
-        showModernAlert('An error occurred while deleting the review', 'danger');
+        console.error('Error deleting review:', error);
+        showModernAlert('Error deleting review. Please try again.', 'danger');
     });
 }
 </script>
-</html>
+
+<!-- Added proper script closing and enhanced ML/AI functions -->
+<script>
+// Enhanced ML Insights and AI Tips functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize ML Analysis button
+    const mlAnalysisBtn = document.querySelector('button[onclick*="generateMLInsights"]');
+    if (mlAnalysisBtn) {
+        mlAnalysisBtn.onclick = function() {
+            generateMLInsights();
+        };
+    }
+    
+    // Initialize AI Tips button  
+    const aiTipsBtn = document.querySelector('button[onclick*="generateAITips"]');
+    if (aiTipsBtn) {
+        aiTipsBtn.onclick = function() {
+            generateAITips();
+        };
+    }
+});
+
+// Enhanced ML Insights function
+function generateMLInsights() {
+    console.log("[v0] Starting ML insights generation");
+    
+    // Show loading state
+    const container = document.getElementById('ml-insights-container');
+    if (container) {
+        container.innerHTML = `
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <h6 class="text-muted">Running ML analysis...</h6>
+                <p class="small text-muted">Analyzing your nutrition patterns</p>
+            </div>
+        `;
+    }
+    
+    fetch('/accounts/generate-ml-insights/', {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log("[v0] ML insights response:", data);
+        
+        if (data.success) {
+            showModernAlert(data.message, 'success', 4000);
+            // Reload the page to show updated insights
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            if (container) {
+                container.innerHTML = `
+                    <div class="text-center py-3">
+                        <i class="bi bi-exclamation-triangle text-warning fs-1 mb-2"></i>
+                        <p class="text-muted">${data.message}</p>
+                        <button class="btn btn-outline-primary btn-sm" onclick="generateMLInsights()">
+                            <i class="bi bi-arrow-clockwise"></i> Try Again
+                        </button>
+                    </div>
+                `;
+            }
+            showModernAlert(data.message, 'warning', 5000);
+        }
+    })
+    .catch(error => {
+        console.error('[v0] ML insights error:', error);
+        
+        if (container) {
+            container.innerHTML = `
+                <div class="text-center py-3">
+                    <i class="bi bi-x-circle text-danger fs-1 mb-2"></i>
+                    <p class="text-muted">Failed to generate insights</p>
+                    <button class="btn btn-outline-primary btn-sm" onclick="generateMLInsights()">
+                        <i class="bi bi-arrow-clockwise"></i> Retry
+                    </button>
+                </div>
+            `;
+        }
+        showModernAlert('Error generating ML insights. Please try again.', 'danger');
+    });
+}
+
+// Enhanced AI Tips function
+function generateAITips() {
+    console.log("[v0] Starting AI tips generation");
+    
+    // Show loading state
+    const container = document.getElementById('ai-tips-container');
+    if (container) {
+        container.innerHTML = `
+            <div class="text-center py-4">
+                <div class="spinner-border text-warning mb-3" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <h6 class="text-muted">AI is generating tips...</h6>
+                <p class="small text-muted">Creating personalized recommendations</p>
+            </div>
+        `;
+    }
+    
+    fetch('/accounts/generate-ai-tips/', {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log("[v0] AI tips response:", data);
+        
+        if (data.success) {
+            showModernAlert(data.message, 'success', 4000);
+            // Reload the page to show new tips
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            if (container) {
+                container.innerHTML = `
+                    <div class="text-center py-3">
+                        <i class="bi bi-exclamation-triangle text-warning fs-1 mb-2"></i>
+                        <p class="text-muted">${data.message}</p>
+                        <button class="btn btn-outline-warning btn-sm" onclick="generateAITips()">
+                            <i class="bi bi-arrow-clockwise"></i> Try Again
+                        </button>
+                    </div>
+                `;
+            }
+            showModernAlert(data.message, 'warning', 5000);
+        }
+    })
+    .catch(error => {
+        console.error('[v0] AI tips error:', error);
+        
+        if (container) {
+            container.innerHTML = `
+                <div class="text-center py-3">
+                    <i class="bi bi-x-circle text-danger fs-1 mb-2"></i>
+                    <p class="text-muted">Failed to generate AI tips</p>
+                    <button class="btn btn-outline-warning btn-sm" onclick="generateAITips()">
+                        <i class="bi bi-arrow-clockwise"></i> Retry
+                    </button>
+                </div>
+            `;
+        }
+        showModernAlert('Error generating AI tips. Please try again.', 'danger');
+    });
+}
+
+// Utility function for CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+
+{% endblock %}
