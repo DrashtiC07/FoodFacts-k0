@@ -11,7 +11,7 @@ class AITipsGenerator:
     def __init__(self):
         # Initialize OpenAI client (you'll need to add OPENAI_API_KEY to settings)
         self.client = None
-        if hasattr(settings, 'OPENAI_API_KEY') and settings.OPENAI_API_KEY:
+        if hasattr(settings, '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') and settings.OPENAI_API_KEY:
             openai.api_key = settings.OPENAI_API_KEY
             self.client = openai
     

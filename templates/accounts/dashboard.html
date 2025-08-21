@@ -852,6 +852,14 @@
                 {% endif %}
               </div>
             </div>
+            <div class="d-flex justify-content-end mt-2">
+              <a href="{% url 'scanner:edit_review' review.id %}" class="btn btn-sm btn-outline-secondary me-2">
+                <i class="bi bi-pencil"></i> Edit
+              </a>
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteReview({{ review.id }})">
+                <i class="bi bi-trash"></i> Delete
+              </button>
+            </div>
           </div>
           {% endfor %}
         </div>
@@ -859,6 +867,180 @@
     </div>
   </div>
   {% endif %}
+</div>
+
+<!-- ML Insights and AI Tips Section -->
+<div class="row mb-5">
+  <div class="col-12">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent border-0 p-4">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h4 class="fw-bold mb-1" style="font-family: 'Manrope', sans-serif;">
+              <i class="bi bi-graph-up me-2 text-success"></i>ML Insights & AI Tips
+            </h4>
+            <p class="text-muted mb-0">Personalized insights powered by machine learning and AI</p>
+          </div>
+          <button class="btn btn-outline-success btn-sm" onclick="refreshMLInsights()">
+            <i class="bi bi-arrow-clockwise me-1"></i>Refresh Insights
+          </button>
+        </div>
+      </div>
+      <div class="card-body p-4">
+        <div class="row">
+          <!-- AI Tips Section -->
+          <div class="col-md-6 mb-4">
+            <div class="h-100">
+              <h5 class="fw-semibold mb-3">
+                <i class="bi bi-lightbulb text-warning me-2"></i>AI-Powered Tips
+              </h5>
+              <div id="ai-tips-container">
+                {% if ai_tips %}
+                  {% for tip in ai_tips %}
+                  <div class="alert alert-{% if tip.tip_type == 'critical' %}danger{% elif tip.tip_type == 'warning' %}warning{% elif tip.tip_type == 'success' %}success{% else %}info{% endif %} alert-dismissible fade show mb-2" role="alert">
+                    <small class="fw-medium">{{ tip.tip_text }}</small>
+                    <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="alert"></button>
+                  </div>
+                  {% endfor %}
+                {% else %}
+                <div class="text-center py-3">
+                  <i class="bi bi-robot display-4 text-muted mb-2"></i>
+                  <p class="text-muted">AI tips will appear here based on your nutrition data</p>
+                  <button class="btn btn-outline-primary btn-sm" onclick="generateAITips()">
+                    <i class="bi bi-magic me-1"></i>Generate Tips
+                  </button>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          
+          <!-- ML Insights Section -->
+          <div class="col-md-6 mb-4">
+            <div class="h-100">
+              <h5 class="fw-semibold mb-3">
+                <i class="bi bi-bar-chart text-primary me-2"></i>ML Analysis
+              </h5>
+              <div id="ml-insights-container">
+                {% if ml_insights %}
+                  {% if ml_insights.trend_analysis %}
+                  <div class="mb-3">
+                    <h6 class="fw-medium">Nutrition Trends</h6>
+                    {% for nutrient, trend in ml_insights.trend_analysis.items %}
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                      <span class="text-capitalize">{{ nutrient }}:</span>
+                      <span class="badge bg-{% if trend.direction == 'increasing' %}success{% else %}warning{% endif %}">
+                        {{ trend.direction|title }} ({{ trend.strength }})
+                      </span>
+                    </div>
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                  
+                  {% if ml_insights.nutrition_balance %}
+                  <div class="mb-3">
+                    <h6 class="fw-medium">Balance Score</h6>
+                    <div class="progress mb-2" style="height: 8px;">
+                      <div class="progress-bar bg-success" style="width: {{ ml_insights.nutrition_balance.balance_score }}%"></div>
+                    </div>
+                    <small class="text-muted">{{ ml_insights.nutrition_balance.balance_score|floatformat:0 }}% balanced</small>
+                  </div>
+                  {% endif %}
+                  
+                  {% if ml_insights.goal_prediction %}
+                  <div class="mb-3">
+                    <h6 class="fw-medium">Goal Prediction</h6>
+                    <div class="d-flex align-items-center">
+                      <span class="badge bg-{% if ml_insights.goal_prediction.prediction == 'high_achievement' %}success{% else %}warning{% endif %} me-2">
+                        {{ ml_insights.goal_prediction.prediction|title }}
+                      </span>
+                      <small class="text-muted">
+                        Confidence: {{ ml_insights.goal_prediction.confidence|floatformat:2 }}
+                      </small>
+                    </div>
+                  </div>
+                  {% endif %}
+                {% else %}
+                <div class="text-center py-3">
+                  <i class="bi bi-graph-up display-4 text-muted mb-2"></i>
+                  <p class="text-muted">ML insights will appear after tracking for a few weeks</p>
+                  <button class="btn btn-outline-success btn-sm" onclick="generateMLInsights()">
+                    <i class="bi bi-cpu me-1"></i>Analyze Data
+                  </button>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- ML Visualizations -->
+        {% if ml_insights.visualizations %}
+        <div class="row mt-4">
+          <div class="col-12">
+            <h5 class="fw-semibold mb-3">
+              <i class="bi bi-graph-up-arrow text-info me-2"></i>Nutrition Visualizations
+            </h5>
+            
+            <!-- Tabs for different charts -->
+            <ul class="nav nav-tabs" id="chartTabs" role="tablist">
+              {% if ml_insights.visualizations.trends_chart %}
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="trends-tab" data-bs-toggle="tab" data-bs-target="#trends-chart" type="button" role="tab">
+                  <i class="bi bi-graph-up me-1"></i>Trends
+                </button>
+              </li>
+              {% endif %}
+              {% if ml_insights.visualizations.balance_chart %}
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="balance-tab" data-bs-toggle="tab" data-bs-target="#balance-chart" type="button" role="tab">
+                  <i class="bi bi-pie-chart me-1"></i>Balance
+                </button>
+              </li>
+              {% endif %}
+              {% if ml_insights.visualizations.achievement_chart %}
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="achievement-tab" data-bs-toggle="tab" data-bs-target="#achievement-chart" type="button" role="tab">
+                  <i class="bi bi-trophy me-1"></i>Achievement
+                </button>
+              </li>
+              {% endif %}
+            </ul>
+            
+            <div class="tab-content mt-3" id="chartTabContent">
+              {% if ml_insights.visualizations.trends_chart %}
+              <div class="tab-pane fade show active" id="trends-chart" role="tabpanel">
+                <div class="text-center">
+                  <img src="data:image/png;base64,{{ ml_insights.visualizations.trends_chart }}" 
+                       class="img-fluid rounded" alt="Nutrition Trends Chart" style="max-height: 400px;">
+                </div>
+              </div>
+              {% endif %}
+              
+              {% if ml_insights.visualizations.balance_chart %}
+              <div class="tab-pane fade" id="balance-chart" role="tabpanel">
+                <div class="text-center">
+                  <img src="data:image/png;base64,{{ ml_insights.visualizations.balance_chart }}" 
+                       class="img-fluid rounded" alt="Nutrition Balance Chart" style="max-height: 400px;">
+                </div>
+              </div>
+              {% endif %}
+              
+              {% if ml_insights.visualizations.achievement_chart %}
+              <div class="tab-pane fade" id="achievement-chart" role="tabpanel">
+                <div class="text-center">
+                  <img src="data:image/png;base64,{{ ml_insights.visualizations.achievement_chart }}" 
+                       class="img-fluid rounded" alt="Goal Achievement Chart" style="max-height: 400px;">
+                </div>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Enhanced nutrition goals modal with sugar and sodium tracking -->
@@ -1047,166 +1229,6 @@
         <button type="button" class="btn btn-primary" id="confirmPresetBtn">
           <i class="bi bi-check-circle me-1"></i>Apply Preset
         </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ML Insights and AI Tips Section -->
-<div class="row mb-5">
-  <div class="col-12">
-    <div class="card border-0 shadow-sm">
-      <div class="card-header bg-transparent border-0 p-4">
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <h4 class="fw-bold mb-1" style="font-family: 'Manrope', sans-serif;">
-              <i class="bi bi-graph-up me-2 text-success"></i>ML Insights & AI Tips
-            </h4>
-            <p class="text-muted mb-0">Personalized insights powered by machine learning and AI</p>
-          </div>
-          <button class="btn btn-outline-success btn-sm" onclick="refreshMLInsights()">
-            <i class="bi bi-arrow-clockwise me-1"></i>Refresh Insights
-          </button>
-        </div>
-      </div>
-      <div class="card-body p-4">
-        <div class="row">
-          <!-- AI Tips Section -->
-          <div class="col-md-6 mb-4">
-            <div class="h-100">
-              <h5 class="fw-semibold mb-3">
-                <i class="bi bi-lightbulb text-warning me-2"></i>AI-Powered Tips
-              </h5>
-              <div id="ai-tips-container">
-                {% if ai_tips %}
-                  {% for tip in ai_tips %}
-                  <div class="alert alert-{% if tip.tip_type == 'critical' %}danger{% elif tip.tip_type == 'warning' %}warning{% elif tip.tip_type == 'success' %}success{% else %}info{% endif %} alert-dismissible fade show mb-2" role="alert">
-                    <small class="fw-medium">{{ tip.tip_text }}</small>
-                    <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="alert"></button>
-                  </div>
-                  {% endfor %}
-                {% else %}
-                <div class="text-center py-3">
-                  <i class="bi bi-robot display-4 text-muted mb-2"></i>
-                  <p class="text-muted">AI tips will appear here based on your nutrition data</p>
-                  <button class="btn btn-outline-primary btn-sm" onclick="generateAITips()">
-                    <i class="bi bi-magic me-1"></i>Generate Tips
-                  </button>
-                </div>
-                {% endif %}
-              </div>
-            </div>
-          </div>
-          
-          <!-- ML Insights Section -->
-          <div class="col-md-6 mb-4">
-            <div class="h-100">
-              <h5 class="fw-semibold mb-3">
-                <i class="bi bi-bar-chart text-primary me-2"></i>ML Analysis
-              </h5>
-              <div id="ml-insights-container">
-                {% if ml_insights %}
-                  {% if ml_insights.trend_analysis %}
-                  <div class="mb-3">
-                    <h6 class="fw-medium">Nutrition Trends</h6>
-                    {% for nutrient, trend in ml_insights.trend_analysis.items %}
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                      <span class="text-capitalize">{{ nutrient }}:</span>
-                      <span class="badge bg-{% if trend.direction == 'increasing' %}success{% else %}warning{% endif %}">
-                        {{ trend.direction|title }} ({{ trend.strength }})
-                      </span>
-                    </div>
-                    {% endfor %}
-                  </div>
-                  {% endif %}
-                  
-                  {% if ml_insights.nutrition_balance %}
-                  <div class="mb-3">
-                    <h6 class="fw-medium">Balance Score</h6>
-                    <div class="progress mb-2" style="height: 8px;">
-                      <div class="progress-bar bg-success" style="width: {{ ml_insights.nutrition_balance.balance_score }}%"></div>
-                    </div>
-                    <small class="text-muted">{{ ml_insights.nutrition_balance.balance_score|floatformat:0 }}% balanced</small>
-                  </div>
-                  {% endif %}
-                {% else %}
-                <div class="text-center py-3">
-                  <i class="bi bi-graph-up display-4 text-muted mb-2"></i>
-                  <p class="text-muted">ML insights will appear after tracking for a few weeks</p>
-                  <button class="btn btn-outline-success btn-sm" onclick="generateMLInsights()">
-                    <i class="bi bi-cpu me-1"></i>Analyze Data
-                  </button>
-                </div>
-                {% endif %}
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- ML Visualizations -->
-        {% if ml_insights.visualizations %}
-        <div class="row mt-4">
-          <div class="col-12">
-            <h5 class="fw-semibold mb-3">
-              <i class="bi bi-graph-up-arrow text-info me-2"></i>Nutrition Visualizations
-            </h5>
-            
-            <!-- Tabs for different charts -->
-            <ul class="nav nav-tabs" id="chartTabs" role="tablist">
-              {% if ml_insights.visualizations.trends_chart %}
-              <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="trends-tab" data-bs-toggle="tab" data-bs-target="#trends-chart" type="button" role="tab">
-                  <i class="bi bi-graph-up me-1"></i>Trends
-                </button>
-              </li>
-              {% endif %}
-              {% if ml_insights.visualizations.balance_chart %}
-              <li class="nav-item" role="presentation">
-                <button class="nav-link" id="balance-tab" data-bs-toggle="tab" data-bs-target="#balance-chart" type="button" role="tab">
-                  <i class="bi bi-pie-chart me-1"></i>Balance
-                </button>
-              </li>
-              {% endif %}
-              {% if ml_insights.visualizations.achievement_chart %}
-              <li class="nav-item" role="presentation">
-                <button class="nav-link" id="achievement-tab" data-bs-toggle="tab" data-bs-target="#achievement-chart" type="button" role="tab">
-                  <i class="bi bi-trophy me-1"></i>Achievement
-                </button>
-              </li>
-              {% endif %}
-            </ul>
-            
-            <div class="tab-content mt-3" id="chartTabContent">
-              {% if ml_insights.visualizations.trends_chart %}
-              <div class="tab-pane fade show active" id="trends-chart" role="tabpanel">
-                <div class="text-center">
-                  <img src="data:image/png;base64,{{ ml_insights.visualizations.trends_chart }}" 
-                       class="img-fluid rounded" alt="Nutrition Trends Chart" style="max-height: 400px;">
-                </div>
-              </div>
-              {% endif %}
-              
-              {% if ml_insights.visualizations.balance_chart %}
-              <div class="tab-pane fade" id="balance-chart" role="tabpanel">
-                <div class="text-center">
-                  <img src="data:image/png;base64,{{ ml_insights.visualizations.balance_chart }}" 
-                       class="img-fluid rounded" alt="Nutrition Balance Chart" style="max-height: 400px;">
-                </div>
-              </div>
-              {% endif %}
-              
-              {% if ml_insights.visualizations.achievement_chart %}
-              <div class="tab-pane fade" id="achievement-chart" role="tabpanel">
-                <div class="text-center">
-                  <img src="data:image/png;base64,{{ ml_insights.visualizations.achievement_chart }}" 
-                       class="img-fluid rounded" alt="Goal Achievement Chart" style="max-height: 400px;">
-                </div>
-              </div>
-              {% endif %}
-            </div>
-          </div>
-        </div>
-        {% endif %}
       </div>
     </div>
   </div>
