@@ -1310,7 +1310,7 @@ def api_insights_data(request):
         
         # Initialize ML analyzer
         analyzer = NutritionMLAnalyzer()
-        insights = analyzer.analyze_nutrition_data(request.user)
+        insights = analyzer.analyze_nutrition_trends(request.user)
         
         # Format data for Chart.js
         charts_data = {
@@ -1386,9 +1386,9 @@ def api_get_ml_insights(request):
     try:
         from .ml_insights import NutritionMLAnalyzer
         
-        # Initialize ML analyzer and get insights
+        # Initialize ML analyzer
         analyzer = NutritionMLAnalyzer()
-        insights = analyzer.analyze_nutrition_data(request.user)
+        insights = analyzer.analyze_nutrition_trends(request.user)
         
         # Format insights for frontend consumption
         formatted_insights = {}

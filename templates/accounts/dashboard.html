@@ -881,9 +881,15 @@
             </h4>
             <p class="text-muted mb-0">Personalized insights powered by machine learning and AI</p>
           </div>
-          <button class="btn btn-outline-success btn-sm" onclick="refreshMLInsights()">
-            <i class="bi bi-arrow-clockwise me-1"></i>Refresh Insights
-          </button>
+          <div>
+            <!-- Added navigation button to dedicated insights page -->
+            <a href="{% url 'accounts:insights_dashboard' %}" class="btn btn-success btn-sm me-2">
+              <i class="bi bi-graph-up-arrow me-1"></i>View Full Analysis
+            </a>
+            <button class="btn btn-outline-success btn-sm" onclick="refreshMLInsights()">
+              <i class="bi bi-arrow-clockwise me-1"></i>Refresh Insights
+            </button>
+          </div>
         </div>
       </div>
       <div class="card-body p-4">
@@ -1989,17 +1995,18 @@ function refreshMLInsights() {
 }
 
 function generateAITips() {
-    console.log("[v0] Generating AI tips");
+    console.log("[v0] Starting AI tips generation");
     
     // Show loading state
     const container = document.getElementById('ai-tips-container');
     if (container) {
         container.innerHTML = `
-            <div class="text-center py-3">
-                <div class="spinner-border text-warning" role="status">
+            <div class="text-center py-4">
+                <div class="spinner-border text-warning mb-3" role="status">
                     <span class="visually-hidden">Loading...</span>
                 </div>
-                <p class="text-muted mt-2">AI is generating personalized tips...</p>
+                <h6 class="text-muted">AI is generating tips...</h6>
+                <p class="small text-muted">Creating personalized recommendations</p>
             </div>
         `;
     }
@@ -2012,20 +2019,57 @@ function generateAITips() {
             'Content-Type': 'application/json'
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
     .then(data => {
+        console.log("[v0] AI tips response:", data);
+        
         if (data.success) {
-            // Reload the page to show new tips
-            window.location.reload();
+            showModernAlert(data.message, 'success', 4000);
+            setTimeout(() => {
+                fetchAITipsAndRender();
+            }, 1000);
         } else {
-            showNotification('Failed to generate AI tips: ' + (data.message || 'Unknown error'), 'error');
+            if (container) {
+                container.innerHTML = `
+                    <div class="text-center py-3">
+                        <i class="bi bi-exclamation-triangle text-warning fs-1 mb-2"></i>
+                        <p class="text-muted">${data.message}</p>
+                        <button class="btn btn-outline-warning btn-sm" onclick="generateAITips()">
+                            <i class="bi bi-arrow-clockwise"></i> Try Again
+                        </button>
+                    </div>
+                `;
+            }
+            showModernAlert(data.message, 'warning', 5000);
         }
     })
     .catch(error => {
-        console.error('[v0] AI tips generation error:', error);
-        showNotification('Error generating AI tips', 'error');
+        console.error('[v0] AI tips error:', error);
+        
+        if (container) {
+            container.innerHTML = `
+                <div class="text-center py-3">
+                    <i class="bi bi-x-circle text-danger fs-1 mb-2"></i>
+                    <p class="text-muted">Failed to generate AI tips</p>
+                    <button class="btn btn-outline-warning btn-sm" onclick="generateAITips()">
+                        <i class="bi bi-arrow-clockwise"></i> Retry
+                    </button>
+                </div>
+            `;
+        }
+        showModernAlert('Error generating AI tips. Please try again.', 'danger');
     });
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-load existing AI tips on page load
+    fetchAITipsAndRender();
+});
 
 function generateMLInsights() {
     console.log("[v0] Generating ML insights");
