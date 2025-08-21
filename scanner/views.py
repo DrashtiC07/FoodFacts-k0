@@ -827,39 +827,6 @@ def validate_checksum(code, barcode_type):
     except Exception:
         return False
 
-def validate_ean13_checksum(code):
-    """Validate EAN-13 checksum"""
-    if len(code) != 13:
-        return False
-    
-    try:
-        checksum = sum(int(d) * (3 if i % 2 else 1) for i, d in enumerate(code[:12]))
-        return (10 - (checksum % 10)) % 10 == int(code[12])
-    except (ValueError, IndexError):
-        return False
-
-def validate_ean8_checksum(code):
-    """Validate EAN-8 checksum"""
-    if len(code) != 8:
-        return False
-    
-    try:
-        checksum = sum(int(d) * (3 if i % 2 else 1) for i, d in enumerate(code[:7]))
-        return (10 - (checksum % 10)) % 10 == int(code[7])
-    except (ValueError, IndexError):
-        return False
-
-def validate_itf14_checksum(code):
-    """Validate ITF-14 checksum"""
-    if len(code) != 14:
-        return False
-    
-    try:
-        checksum = sum(int(d) * (3 if i % 2 else 1) for i, d in enumerate(code[:13]))
-        return (10 - (checksum % 10)) % 10 == int(code[13])
-    except (ValueError, IndexError):
-        return False
-
 def fetch_product_info_enhanced(barcode, source):
     """Fetch product info with multiple API fallbacks"""
     cache_key = f"product_{barcode}"
@@ -1506,3 +1473,38 @@ def edit_review(request, review_id):
         'review': review,
         'product': product
     })
+
+@login_required
+@require_http_methods(["POST"])
+def delete_review(request, review_id):
+    """Delete an existing product review"""
+    from accounts.models import ProductReview
+    
+    try:
+        # Get the review and ensure it belongs to the current user
+        review = get_object_or_404(ProductReview, id=review_id, user=request.user)
+        product_name = review.product.name
+        
+        # Delete the review
+        review.delete()
+        
+        logger.info(f"Review deleted successfully for user {request.user.username} on product {product_name}")
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Your review for {product_name} has been deleted successfully!'
+        })
+        
+    except ProductReview.DoesNotExist:
+        logger.warning(f"Delete review failed: Review {review_id} not found for user {request.user.username}")
+        return JsonResponse({
+            'success': False,
+            'error': 'Review not found or you do not have permission to delete it.'
+        }, status=404)
+        
+    except Exception as e:
+        logger.error(f"Error deleting review {review_id}: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'error': 'Failed to delete review. Please try again.'
+        }, status=500)
