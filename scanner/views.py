@@ -1453,3 +1453,56 @@ def auto_detect_nova_group(ingredients_text):
         return 2  # Processed culinary ingredients
     else:
         return 3  # Default to processed for ambiguous cases
+
+@login_required
+def edit_review(request, review_id):
+    """Edit an existing product review"""
+    from accounts.models import ProductReview
+    
+    # Get the review and ensure it belongs to the current user
+    review = get_object_or_404(ProductReview, id=review_id, user=request.user)
+    product = review.product
+    
+    if request.method == 'POST':
+        rating = request.POST.get('rating')
+        review_text = request.POST.get('review_text', '').strip()
+        
+        if not rating:
+            messages.error(request, 'Please select a rating')
+            return render(request, 'scanner/edit_review.html', {
+                'review': review,
+                'product': product
+            })
+        
+        try:
+            rating = int(rating)
+            if rating < 1 or rating > 5:
+                raise ValueError
+        except ValueError:
+            messages.error(request, 'Invalid rating value')
+            return render(request, 'scanner/edit_review.html', {
+                'review': review,
+                'product': product
+            })
+        
+        try:
+            # Update the review
+            review.rating = rating
+            review.review_text = review_text
+            review.save()
+            
+            messages.success(request, 'Your review has been updated successfully!')
+            logger.info(f"Review updated successfully for user {request.user.username} on product {product.barcode}")
+            
+            # Redirect to dashboard after successful update
+            return redirect('accounts:dashboard')
+            
+        except Exception as e:
+            logger.error(f"Error updating review: {str(e)}")
+            messages.error(request, 'Failed to update your review. Please try again.')
+    
+    # GET request - show the edit form
+    return render(request, 'scanner/edit_review.html', {
+        'review': review,
+        'product': product
+    })
