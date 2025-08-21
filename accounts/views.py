@@ -256,45 +256,44 @@ def get_trigger_condition(tip_data):
 @login_required
 @require_POST
 def refresh_personalized_tips(request):
-    """Manually refresh personalized tips"""
+    """Refresh personalized tips for the user"""
     try:
-        user = request.user
-        
-        # Get current dietary goals and progress
-        dietary_goals = DietaryGoal.objects.get(user=user)
+        # Get user's current dietary goals and progress
+        dietary_goals = DietaryGoal.objects.filter(user=request.user).first()
+        if not dietary_goals:
+            return JsonResponse({'success': False, 'error': 'No dietary goals found'})
         
         # Calculate current progress
         calories_progress = (dietary_goals.calories_consumed / dietary_goals.calories_target * 100) if dietary_goals.calories_target > 0 else 0
         protein_progress = (dietary_goals.protein_consumed / dietary_goals.protein_target * 100) if dietary_goals.protein_target > 0 else 0
         fat_progress = (dietary_goals.fat_consumed / dietary_goals.fat_target * 100) if dietary_goals.fat_target > 0 else 0
         carbs_progress = (dietary_goals.carbs_consumed / dietary_goals.carbs_target * 100) if dietary_goals.carbs_target > 0 else 0
-        sugar_progress = (dietary_goals.sugar_consumed / dietary_goals.sugar_target * 100) if dietary_goals.sugar_target > 0 else 0
-        sodium_progress = (dietary_goals.sodium_consumed / dietary_goals.sodium_target * 100) if dietary_goals.sodium_target > 0 else 0
         
-        # Get activity stats
-        recent_scans_count = ScanHistory.objects.filter(user=user, scanned_at__gte=timezone.now() - timedelta(days=7)).count()
-        days_active = (timezone.now().date() - user.date_joined.date()).days
+        # Get recent activity stats
+        recent_scans_count = ScanHistory.objects.filter(
+            user=request.user, 
+            scanned_at__gte=timezone.now() - timedelta(days=7)
+        ).count()
         
-        # Force refresh tips by deactivating old ones and creating new ones
-        PersonalizedTip.objects.filter(user=user, is_active=True).update(is_active=False)
+        days_active = (timezone.now().date() - request.user.date_joined.date()).days
+        
+        # Clear existing tips and generate new ones
+        PersonalizedTip.objects.filter(user=request.user).delete()
         
         # Generate fresh tips
-        refreshed_tips = get_or_create_persistent_tips(
-            user, dietary_goals, calories_progress, protein_progress, fat_progress, 
-            carbs_progress, sugar_progress, sodium_progress, recent_scans_count, days_active
+        personalized_tips = get_or_create_persistent_tips(
+            request.user, dietary_goals, calories_progress, protein_progress, 
+            fat_progress, carbs_progress, 0, 0, recent_scans_count, days_active
         )
         
         return JsonResponse({
             'success': True,
             'message': 'Personalized tips refreshed successfully!',
-            'tips_count': len(refreshed_tips)
+            'tips_count': len(personalized_tips)
         })
         
     except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'error': f'Failed to refresh tips: {str(e)}'
-        })
+        return JsonResponse({'success': False, 'error': str(e)})
 
 @login_required
 @require_POST
@@ -1000,3 +999,155 @@ def generate_personalized_tips(dietary_goals, calories_progress, protein_progres
     # Sort by priority (1 = highest, 4 = lowest) and limit to 5 tips
     tips.sort(key=lambda x: x['priority'])
     return tips[:5]
+
+@login_required
+@require_POST
+def export_nutrition_data(request):
+    """Export user's nutrition data as PDF"""
+    try:
+        from reportlab.pdfgen import canvas
+        from reportlab.lib.pagesizes import letter
+        from reportlab.lib import colors
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.units import inch
+        from django.http import HttpResponse
+        import io
+        from datetime import datetime
+        
+        # Create the HttpResponse object with PDF headers
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="nutrition-data-export.pdf"'
+        
+        # Create the PDF object
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        
+        # Container for the 'Flowable' objects
+        elements = []
+        
+        # Get styles
+        styles = getSampleStyleSheet()
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Heading1'],
+            fontSize=24,
+            spaceAfter=30,
+            textColor=colors.darkblue
+        )
+        
+        # Add title
+        title = Paragraph(f"Nutrition Data Export - {request.user.username}", title_style)
+        elements.append(title)
+        elements.append(Spacer(1, 12))
+        
+        # Add export date
+        date_para = Paragraph(f"Export Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", styles['Normal'])
+        elements.append(date_para)
+        elements.append(Spacer(1, 12))
+        
+        # Get user's dietary goals
+        dietary_goals = DietaryGoal.objects.filter(user=request.user).first()
+        if dietary_goals:
+            # Nutrition Goals Table
+            goals_title = Paragraph("Current Nutrition Goals", styles['Heading2'])
+            elements.append(goals_title)
+            
+            goals_data = [
+                ['Nutrient', 'Target', 'Consumed', 'Remaining'],
+                ['Calories', f"{dietary_goals.calories_target} kcal", f"{dietary_goals.calories_consumed} kcal", f"{max(0, dietary_goals.calories_target - dietary_goals.calories_consumed)} kcal"],
+                ['Protein', f"{dietary_goals.protein_target}g", f"{dietary_goals.protein_consumed}g", f"{max(0, dietary_goals.protein_target - dietary_goals.protein_consumed)}g"],
+                ['Fat', f"{dietary_goals.fat_target}g", f"{dietary_goals.fat_consumed}g", f"{max(0, dietary_goals.fat_target - dietary_goals.fat_consumed)}g"],
+                ['Carbs', f"{dietary_goals.carbs_target}g", f"{dietary_goals.carbs_consumed}g", f"{max(0, dietary_goals.carbs_target - dietary_goals.carbs_consumed)}g"],
+                ['Sugar', f"{dietary_goals.sugar_target}g", f"{dietary_goals.sugar_consumed}g", f"{max(0, dietary_goals.sugar_target - dietary_goals.sugar_consumed)}g"],
+                ['Sodium', f"{dietary_goals.sodium_target}mg", f"{dietary_goals.sodium_consumed}mg", f"{max(0, dietary_goals.sodium_target - dietary_goals.sodium_consumed)}mg"],
+            ]
+            
+            goals_table = Table(goals_data)
+            goals_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 14),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black)
+            ]))
+            elements.append(goals_table)
+            elements.append(Spacer(1, 12))
+        
+        # Get tracked items
+        tracked_items = TrackedItem.objects.filter(user=request.user).select_related('product')[:20]
+        if tracked_items:
+            tracked_title = Paragraph("Recent Tracked Items", styles['Heading2'])
+            elements.append(tracked_title)
+            
+            tracked_data = [['Product Name', 'Brand', 'Serving Size', 'Date Added']]
+            for item in tracked_items:
+                tracked_data.append([
+                    item.product.name[:30] + "..." if len(item.product.name) > 30 else item.product.name,
+                    item.product.brand[:20] + "..." if item.product.brand and len(item.product.brand) > 20 else (item.product.brand or "N/A"),
+                    f"{item.serving_size}g",
+                    item.added_at.strftime('%Y-%m-%d')
+                ])
+            
+            tracked_table = Table(tracked_data)
+            tracked_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 12),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black)
+            ]))
+            elements.append(tracked_table)
+            elements.append(Spacer(1, 12))
+        
+        # Get favorite products
+        favorites = FavoriteProduct.objects.filter(user=request.user).select_related('product')[:10]
+        if favorites:
+            fav_title = Paragraph("Favorite Products", styles['Heading2'])
+            elements.append(fav_title)
+            
+            fav_data = [['Product Name', 'Brand', 'Health Score', 'Date Added']]
+            for fav in favorites:
+                fav_data.append([
+                    fav.product.name[:30] + "..." if len(fav.product.name) > 30 else fav.product.name,
+                    fav.product.brand[:20] + "..." if fav.product.brand and len(fav.product.brand) > 20 else (fav.product.brand or "N/A"),
+                    str(fav.product.health_score) if fav.product.health_score else "N/A",
+                    fav.added_at.strftime('%Y-%m-%d')
+                ])
+            
+            fav_table = Table(fav_data)
+            fav_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 12),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black)
+            ]))
+            elements.append(fav_table)
+        
+        # Build PDF
+        doc.build(elements)
+        
+        # Get the value of the BytesIO buffer and write it to the response
+        pdf = buffer.getvalue()
+        buffer.close()
+        response.write(pdf)
+        
+        return response
+        
+    except ImportError:
+        return JsonResponse({
+            'success': False, 
+            'error': 'PDF generation library not available. Please install reportlab: pip install reportlab'
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': f'Error generating PDF: {str(e)}'})

@@ -19,5 +19,6 @@ urlpatterns = [
     path('toggle-theme/', views.toggle_theme, name='toggle_theme'),
     path('weekly-report/', views.weekly_nutrition_report, name='weekly_nutrition_report'),
     path('apply_preset_goals/', views.apply_preset_goals, name='apply_preset_goals'),
-    path('refresh_tips/', views.refresh_personalized_tips, name='refresh_personalized_tips'),
+    path('refresh_personalized_tips/', views.refresh_personalized_tips, name='refresh_personalized_tips'),
+    path('export_nutrition_data/', views.export_nutrition_data, name='export_nutrition_data'),
 ]
