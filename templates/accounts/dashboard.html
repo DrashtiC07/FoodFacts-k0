@@ -37,6 +37,7 @@
             </div>
         </div>
         
+
         <div class="col-md-8">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-transparent">
@@ -216,257 +217,256 @@
                   <span class="badge bg-primary bg-opacity-10 text-primary" 
                         data-bs-toggle="tooltip" 
                         title="{% if calories_progress < 50 %}Low intake - consider adding healthy snacks{% elif calories_progress > 100 %}Over target - monitor portion sizes{% else %}Good progress towards your goal{% endif %}">
-                    {{ dietary_goals.calories_consumed }}/{{ dietary_goals.calories_target }}
-                  </span>
-                </div>
-                <div class="nutrition-bar mb-2" data-bs-toggle="tooltip" 
-                     title="{% if calories_progress == 0 %}No data logged yet - start by scanning products or adding manual entries{% else %}{{ calories_progress|floatformat:1 }}% of daily goal completed{% endif %}">
-                  <div class="progress-fill progress-bar calories-progress" 
-                       style="width: {{ calories_progress|floatformat:1 }}%; 
-                              background: {% if calories_progress < 50 %}linear-gradient(90deg, #dc3545, #fd7e14){% elif calories_progress <= 80 %}linear-gradient(90deg, #ffc107, #fd7e14){% else %}linear-gradient(90deg, #198754, #20c997){% endif %}; 
-                              transition: width 0.8s ease-in-out;">
-                  </div>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <small class="text-muted progress-text">{{ calories_progress|floatformat:0 }}% of goal</small>
-                  <small class="text-muted" data-remaining="calories">{{ calories_remaining }} kcal left</small>
+                  {{ dietary_goals.calories_consumed }}/{{ dietary_goals.calories_target }}
+                </span>
+              </div>
+              <div class="nutrition-bar mb-2" data-bs-toggle="tooltip" 
+                   title="{% if calories_progress == 0 %}No data logged yet - start by scanning products or adding manual entries{% else %}{{ calories_progress|floatformat:1 }}% of daily goal completed{% endif %}">
+                <div class="progress-fill progress-bar calories-progress" 
+                     style="width: {{ calories_progress|floatformat:1 }}%; 
+                            background: {% if calories_progress < 50 %}linear-gradient(90deg, #dc3545, #fd7e14){% elif calories_progress <= 80 %}linear-gradient(90deg, #ffc107, #fd7e14){% else %}linear-gradient(90deg, #198754, #20c997){% endif %}; 
+                            transition: width 0.8s ease-in-out;">
                 </div>
               </div>
-            </div>
-            
-            <!-- Protein -->
-            <div class="col-md-6 col-lg-3 mb-4">
-              <div class="nutrition-goal-card" data-nutrient="protein">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <span class="fw-semibold text-info">
-                    <i class="bi bi-egg me-1"></i>Protein
-                  </span>
-                  <span class="badge bg-info bg-opacity-10 text-info"
-                        data-bs-toggle="tooltip" 
-                        title="{% if protein_progress < 50 %}Low protein - add lean meats, beans, or nuts{% elif protein_progress > 100 %}Excellent protein intake{% else %}Good protein progress{% endif %}">
-                    {{ dietary_goals.protein_consumed }}/{{ dietary_goals.protein_target }}g
-                  </span>
-                </div>
-                <div class="nutrition-bar mb-2" data-bs-toggle="tooltip" 
-                     title="{% if protein_progress == 0 %}No protein logged yet{% else %}{{ protein_progress|floatformat:1 }}% of protein goal completed{% endif %}">
-                  <div class="progress-fill progress-bar protein-progress" 
-                       style="width: {{ protein_progress|floatformat:1 }}%; 
-                              background: {% if protein_progress < 50 %}linear-gradient(90deg, #dc3545, #fd7e14){% elif protein_progress <= 80 %}linear-gradient(90deg, #0ea5e9, #06b6d4){% else %}linear-gradient(90deg, #198754, #20c997){% endif %}; 
-                              transition: width 0.8s ease-in-out;">
-                  </div>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <small class="text-muted progress-text">{{ protein_progress|floatformat:0 }}% of goal</small>
-                  <small class="text-muted" data-remaining="protein">{{ protein_remaining }}g left</small>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Fat -->
-            <div class="col-md-6 col-lg-3 mb-4">
-              <div class="nutrition-goal-card" data-nutrient="fat">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <span class="fw-semibold text-warning">
-                    <i class="bi bi-droplet me-1"></i>Fat
-                  </span>
-                  <span class="badge bg-warning bg-opacity-10 text-warning"
-                        data-bs-toggle="tooltip" 
-                        title="{% if fat_progress < 50 %}Low fat intake - add healthy fats like avocado or nuts{% elif fat_progress > 100 %}High fat intake - monitor portions{% else %}Balanced fat intake{% endif %}">
-                    {{ dietary_goals.fat_consumed }}/{{ dietary_goals.fat_target }}g
-                  </span>
-                </div>
-                <div class="nutrition-bar mb-2" data-bs-toggle="tooltip" 
-                     title="{% if fat_progress == 0 %}No fat logged yet{% else %}{{ fat_progress|floatformat:1 }}% of fat goal completed{% endif %}">
-                  <div class="progress-fill progress-bar fat-progress" 
-                       style="width: {{ fat_progress|floatformat:1 }}%; 
-                              background: {% if fat_progress < 50 %}linear-gradient(90deg, #dc3545, #fd7e14){% elif fat_progress <= 80 %}linear-gradient(90deg, #ffc107, #f59e0b){% else %}linear-gradient(90deg, #198754, #20c997){% endif %}; 
-                              transition: width 0.8s ease-in-out;">
-                  </div>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <small class="text-muted progress-text">{{ fat_progress|floatformat:0 }}% of goal</small>
-                  <small class="text-muted" data-remaining="fat">{{ fat_remaining }}g left</small>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Carbs -->
-            <div class="col-md-6 col-lg-3 mb-4">
-              <div class="nutrition-goal-card" data-nutrient="carbs">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <span class="fw-semibold text-success">
-                    <i class="bi bi-grain me-1"></i>Carbs
-                  </span>
-                  <span class="badge bg-success bg-opacity-10 text-success"
-                        data-bs-toggle="tooltip" 
-                        title="{% if carbs_progress < 50 %}Low carb intake - add whole grains or fruits{% elif carbs_progress > 100 %}High carb intake - focus on complex carbs{% else %}Good carb balance{% endif %}">
-                    {{ dietary_goals.carbs_consumed }}/{{ dietary_goals.carbs_target }}g
-                  </span>
-                </div>
-                <div class="nutrition-bar mb-2" data-bs-toggle="tooltip" 
-                     title="{% if carbs_progress == 0 %}No carbs logged yet{% else %}{{ carbs_progress|floatformat:1 }}% of carb goal completed{% endif %}">
-                  <div class="progress-fill progress-bar carbs-progress" 
-                       style="width: {{ carbs_progress|floatformat:1 }}%; 
-                              background: {% if carbs_progress < 50 %}linear-gradient(90deg, #dc3545, #fd7e14){% elif carbs_progress <= 80 %}linear-gradient(90deg, #198754, #10b981){% else %}linear-gradient(90deg, #198754, #20c997){% endif %}; 
-                              transition: width 0.8s ease-in-out;">
-                  </div>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <small class="text-muted progress-text">{{ carbs_progress|floatformat:0 }}% of goal</small>
-                  <small class="text-muted" data-remaining="carbs">{{ carbs_remaining }}g left</small>
-                </div>
+              <div class="d-flex justify-content-between">
+                <small class="text-muted progress-text">{{ calories_progress|floatformat:0 }}% of goal</small>
+                <small class="text-muted" data-remaining="calories">{{ calories_remaining }} kcal left</small>
               </div>
             </div>
           </div>
           
-          <!-- Added enhanced analytics and achievement tracking -->
-          <div class="row mt-4">
-            <div class="col-md-6 mb-4">
-              <div class="card border-0 bg-light">
-                <div class="card-body p-3">
-                  <h6 class="fw-semibold mb-3">
-                    <i class="bi bi-graph-up me-2 text-success"></i>Weekly Progress
-                  </h6>
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="small text-muted">Scans this week</span>
-                    <span class="fw-semibold text-success">{{ recent_scans_count }}</span>
-                  </div>
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="small text-muted">Goal completion</span>
-                    <span class="fw-semibold text-primary">
-                      {% widthratio calories_progress 100 100 %}%
-                    </span>
-                  </div>
-                  <div class="d-flex justify-content-between align-items-center">
-                    <span class="small text-muted">Streak</span>
-                    <span class="fw-semibold text-warning">{{ days_active }} days</span>
-                  </div>
+          <!-- Protein -->
+          <div class="col-md-6 col-lg-3 mb-4">
+            <div class="nutrition-goal-card" data-nutrient="protein">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-semibold text-info">
+                  <i class="bi bi-egg me-1"></i>Protein
+                </span>
+                <span class="badge bg-info bg-opacity-10 text-info"
+                      data-bs-toggle="tooltip" 
+                      title="{% if protein_progress < 50 %}Low protein - add lean meats, beans, or nuts{% elif protein_progress > 100 %}Excellent protein intake{% else %}Good protein progress{% endif %}">
+                  {{ dietary_goals.protein_consumed }}/{{ dietary_goals.protein_target }}g
+                </span>
+              </div>
+              <div class="nutrition-bar mb-2" data-bs-toggle="tooltip" 
+                   title="{% if protein_progress == 0 %}No protein logged yet{% else %}{{ protein_progress|floatformat:1 }}% of protein goal completed{% endif %}">
+                <div class="progress-fill progress-bar protein-progress" 
+                     style="width: {{ protein_progress|floatformat:1 }}%; 
+                            background: {% if protein_progress < 50 %}linear-gradient(90deg, #dc3545, #fd7e14){% elif protein_progress <= 80 %}linear-gradient(90deg, #0ea5e9, #06b6d4){% else %}linear-gradient(90deg, #198754, #20c997){% endif %}; 
+                            transition: width 0.8s ease-in-out;">
                 </div>
               </div>
-            </div>
-            
-            <div class="col-md-6 mb-4">
-              <div class="card border-0 bg-light">
-                <div class="card-body p-3">
-                  <h6 class="fw-semibold mb-3">
-                    <i class="bi bi-trophy me-2 text-warning"></i>Achievements
-                  </h6>
-                  {% if scan_history|length >= 10 %}
-                  <div class="d-flex align-items-center mb-2">
-                    <i class="bi bi-check-circle-fill text-success me-2"></i>
-                    <span class="small">Scanner Pro (10+ scans)</span>
-                  </div>
-                  {% endif %}
-                  {% if user_reviews|length >= 5 %}
-                  <div class="d-flex align-items-center mb-2">
-                    <i class="bi bi-check-circle-fill text-success me-2"></i>
-                    <span class="small">Reviewer (5+ reviews)</span>
-                  </div>
-                  {% endif %}
-                  {% if favorite_products|length >= 3 %}
-                  <div class="d-flex align-items-center mb-2">
-                    <i class="bi bi-check-circle-fill text-success me-2"></i>
-                    <span class="small">Curator (3+ favorites)</span>
-                  </div>
-                  {% endif %}
-                  {% if days_active >= 7 %}
-                  <div class="d-flex align-items-center">
-                    <i class="bi bi-check-circle-fill text-success me-2"></i>
-                    <span class="small">Consistent User (7+ days)</span>
-                  </div>
-                  {% endif %}
-                </div>
+              <div class="d-flex justify-content-between">
+                <small class="text-muted progress-text">{{ protein_progress|floatformat:0 }}% of goal</small>
+                <small class="text-muted" data-remaining="protein">{{ protein_remaining }}g left</small>
               </div>
             </div>
           </div>
           
-          <!-- Manual Nutrition Input Section -->
-          <div class="row mt-4">
-            <div class="col-12">
-              <div class="card border-0 bg-light">
-                <div class="card-header bg-transparent border-0 p-3">
-                  <h6 class="fw-bold mb-0">
-                    <i class="bi bi-plus-circle me-2 text-primary"></i>Add Manual Entry
-                  </h6>
+          <!-- Fat -->
+          <div class="col-md-6 col-lg-3 mb-4">
+            <div class="nutrition-goal-card" data-nutrient="fat">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-semibold text-warning">
+                  <i class="bi bi-droplet me-1"></i>Fat
+                </span>
+                <span class="badge bg-warning bg-opacity-10 text-warning"
+                      data-bs-toggle="tooltip" 
+                      title="{% if fat_progress < 50 %}Low fat intake - add healthy fats like avocado or nuts{% elif fat_progress > 100 %}High fat intake - monitor portions{% else %}Balanced fat intake{% endif %}">
+                  {{ dietary_goals.fat_consumed }}/{{ dietary_goals.fat_target }}g
+                </span>
+              </div>
+              <div class="nutrition-bar mb-2" data-bs-toggle="tooltip" 
+                   title="{% if fat_progress == 0 %}No fat logged yet{% else %}{{ fat_progress|floatformat:1 }}% of fat goal completed{% endif %}">
+                <div class="progress-fill progress-bar fat-progress" 
+                     style="width: {{ fat_progress|floatformat:1 }}%; 
+                            background: {% if fat_progress < 50 %}linear-gradient(90deg, #dc3545, #fd7e14){% elif fat_progress <= 80 %}linear-gradient(90deg, #ffc107, #f59e0b){% else %}linear-gradient(90deg, #198754, #20c997){% endif %}; 
+                            transition: width 0.8s ease-in-out;">
                 </div>
-                <div class="card-body p-3">
-                  <form id="manualNutritionForm" class="row g-3">
-                    {% csrf_token %}
-                    <div class="col-md-3">
-                      <label class="form-label small">Calories</label>
-                      <div class="input-group input-group-sm">
-                        <input type="number" class="form-control" id="manualCalories" placeholder="0" min="0" max="5000">
-                        <span class="input-group-text">kcal</span>
-                      </div>
-                    </div>
-                    <div class="col-md-2">
-                      <label class="form-label small">Protein</label>
-                      <div class="input-group input-group-sm">
-                        <input type="number" class="form-control" id="manualProtein" placeholder="0" min="0" max="200">
-                        <span class="input-group-text">g</span>
-                      </div>
-                    </div>
-                    <div class="col-md-2">
-                      <label class="form-label small">Fat</label>
-                      <div class="input-group input-group-sm">
-                        <input type="number" class="form-control" id="manualFat" placeholder="0" min="0" max="200">
-                        <span class="input-group-text">g</span>
-                      </div>
-                    </div>
-                    <div class="col-md-2">
-                      <label class="form-label small">Carbs</label>
-                      <div class="input-group input-group-sm">
-                        <input type="number" class="form-control" id="manualCarbs" placeholder="0" min="0" max="300">
-                        <span class="input-group-text">g</span>
-                      </div>
-                    </div>
-                    <div class="col-md-3">
-                      <label class="form-label small">&nbsp;</label>
-                      <button type="submit" class="btn btn-primary btn-sm w-100">
-                        <i class="bi bi-plus me-1"></i>Add to Today
-                      </button>
-                    </div>
-                  </form>
-                </div>
+              </div>
+              <div class="d-flex justify-content-between">
+                <small class="text-muted progress-text">{{ fat_progress|floatformat:0 }}% of goal</small>
+                <small class="text-muted" data-remaining="fat">{{ fat_remaining }}g left</small>
               </div>
             </div>
           </div>
           
-          <!-- Quick Actions -->
-          <div class="row mt-4">
-            <div class="col-12">
-              <div class="d-flex flex-wrap gap-2">
-                <button class="btn btn-sm btn-outline-primary" id="resetBtn">
-                  <i class="bi bi-arrow-clockwise me-1"></i>Reset Today
-                </button>
-                <button class="btn btn-sm btn-outline-secondary" id="resetManualFormBtn">
-                  <i class="bi bi-x-circle me-1"></i>Clear Form
-                </button>
-                <a href="{% url 'scanner:scan' %}" class="btn btn-sm btn-primary">
-                  <i class="bi bi-plus-circle me-1"></i>Add Food
-                </a>
-                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#nutritionTipsModal">
-                  <i class="bi bi-lightbulb me-1"></i>Tips
-                </button>
-                <!-- Added export functionality for user data -->
-                <button class="btn btn-sm btn-outline-info" onclick="exportNutritionData()">
-                  <i class="bi bi-download me-1"></i>Export Data
-                </button>
+          <!-- Carbs -->
+          <div class="col-md-6 col-lg-3 mb-4">
+            <div class="nutrition-goal-card" data-nutrient="carbs">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-semibold text-success">
+                  <i class="bi bi-grain me-1"></i>Carbs
+                </span>
+                <span class="badge bg-success bg-opacity-10 text-success"
+                      data-bs-toggle="tooltip" 
+                      title="{% if carbs_progress < 50 %}Low carb intake - add whole grains or fruits{% elif carbs_progress > 100 %}High carb intake - focus on complex carbs{% else %}Good carb balance{% endif %}">
+                  {{ dietary_goals.carbs_consumed }}/{{ dietary_goals.carbs_target }}g
+                </span>
+              </div>
+              <div class="nutrition-bar mb-2" data-bs-toggle="tooltip" 
+                   title="{% if carbs_progress == 0 %}No carbs logged yet{% else %}{{ carbs_progress|floatformat:1 }}% of carb goal completed{% endif %}">
+                <div class="progress-fill progress-bar carbs-progress" 
+                     style="width: {{ carbs_progress|floatformat:1 }}%; 
+                            background: {% if carbs_progress < 50 %}linear-gradient(90deg, #dc3545, #fd7e14){% elif carbs_progress <= 80 %}linear-gradient(90deg, #198754, #10b981){% else %}linear-gradient(90deg, #198754, #20c997){% endif %}; 
+                            transition: width 0.8s ease-in-out;">
+                </div>
+              </div>
+              <div class="d-flex justify-content-between">
+                <small class="text-muted progress-text">{{ carbs_progress|floatformat:0 }}% of goal</small>
+                <small class="text-muted" data-remaining="carbs">{{ carbs_remaining }}g left</small>
               </div>
             </div>
           </div>
-          {% else %}
-          <!-- No goals set yet -->
-          <div class="text-center py-5">
-            <i class="bi bi-bullseye display-1 text-muted mb-3"></i>
-            <h5 class="fw-semibold mb-3">Set Your Nutrition Goals</h5>
-            <p class="text-muted mb-4">Start tracking your daily nutrition by setting personalized goals</p>
-            <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#nutritionGoalsModal">
-              <i class="bi bi-plus-circle me-2"></i>Set My Goals
-            </button>
-          </div>
-          {% endif %}
         </div>
+        
+        <!-- Added enhanced analytics and achievement tracking -->
+        <div class="row mt-4">
+          <div class="col-md-6 mb-4">
+            <div class="card border-0 bg-light">
+              <div class="card-body p-3">
+                <h6 class="fw-semibold mb-3">
+                  <i class="bi bi-graph-up me-2 text-success"></i>Weekly Progress
+                </h6>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="small text-muted">Scans this week</span>
+                  <span class="fw-semibold text-success">{{ recent_scans_count }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="small text-muted">Goal completion</span>
+                  <span class="fw-semibold text-primary">
+                    {% widthratio calories_progress 100 100 %}%
+                  </span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="small text-muted">Streak</span>
+                  <span class="fw-semibold text-warning">{{ days_active }} days</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-md-6 mb-4">
+            <div class="card border-0 bg-light">
+              <div class="card-body p-3">
+                <h6 class="fw-semibold mb-3">
+                  <i class="bi bi-trophy me-2 text-warning"></i>Achievements
+                </h6>
+                {% if scan_history|length >= 10 %}
+                <div class="d-flex align-items-center mb-2">
+                  <i class="bi bi-check-circle-fill text-success me-2"></i>
+                  <span class="small">Scanner Pro (10+ scans)</span>
+                </div>
+                {% endif %}
+                {% if user_reviews|length >= 5 %}
+                <div class="d-flex align-items-center mb-2">
+                  <i class="bi bi-check-circle-fill text-success me-2"></i>
+                  <span class="small">Reviewer (5+ reviews)</span>
+                </div>
+                {% endif %}
+                {% if favorite_products|length >= 3 %}
+                <div class="d-flex align-items-center mb-2">
+                  <i class="bi bi-check-circle-fill text-success me-2"></i>
+                  <span class="small">Curator (3+ favorites)</span>
+                </div>
+                {% endif %}
+                {% if days_active >= 7 %}
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-check-circle-fill text-success me-2"></i>
+                  <span class="small">Consistent User (7+ days)</span>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Manual Nutrition Input Section -->
+        <div class="row mt-4">
+          <div class="col-12">
+            <div class="card border-0 bg-light">
+              <div class="card-header bg-transparent border-0 p-3">
+                <h6 class="fw-bold mb-0">
+                  <i class="bi bi-plus-circle me-2 text-primary"></i>Add Manual Entry
+                </h6>
+              </div>
+              <div class="card-body p-3">
+                <form id="manualNutritionForm" class="row g-3">
+                  {% csrf_token %}
+                  <div class="col-md-3">
+                    <label class="form-label small">Calories</label>
+                    <div class="input-group input-group-sm">
+                      <input type="number" class="form-control" id="manualCalories" placeholder="0" min="0" max="5000">
+                      <span class="input-group-text">kcal</span>
+                    </div>
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label small">Protein</label>
+                    <div class="input-group input-group-sm">
+                      <input type="number" class="form-control" id="manualProtein" placeholder="0" min="0" max="200">
+                      <span class="input-group-text">g</span>
+                    </div>
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label small">Fat</label>
+                    <div class="input-group input-group-sm">
+                      <input type="number" class="form-control" id="manualFat" placeholder="0" min="0" max="200">
+                      <span class="input-group-text">g</span>
+                    </div>
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label small">Carbs</label>
+                    <div class="input-group input-group-sm">
+                      <input type="number" class="form-control" id="manualCarbs" placeholder="0" min="0" max="300">
+                      <span class="input-group-text">g</span>
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label small">&nbsp;</label>
+                    <button type="submit" class="btn btn-primary btn-sm w-100">
+                      <i class="bi bi-plus me-1"></i>Add to Today
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="row mt-4">
+          <div class="col-12">
+            <div class="d-flex flex-wrap gap-2">
+              <button class="btn btn-sm btn-outline-primary" id="resetBtn">
+                <i class="bi bi-arrow-clockwise me-1"></i>Reset Today
+              </button>
+              <button class="btn btn-sm btn-outline-secondary" id="resetManualFormBtn">
+                <i class="bi bi-x-circle me-1"></i>Clear Form
+              </button>
+              <a href="{% url 'scanner:scan' %}" class="btn btn-sm btn-primary">
+                <i class="bi bi-plus-circle me-1"></i>Add Food
+              </a>
+              <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#nutritionTipsModal">
+                <i class="bi bi-lightbulb me-1"></i>Tips
+              </button>
+              <!-- Added export functionality for user data -->
+              <button class="btn btn-sm btn-outline-info" onclick="exportNutritionData()">
+                <i class="bi bi-download me-1"></i>Export Data
+              </button>
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <!-- No goals set yet -->
+        <div class="text-center py-5">
+          <i class="bi bi-bullseye display-1 text-muted mb-3"></i>
+          <h5 class="fw-semibold mb-3">Set Your Nutrition Goals</h5>
+          <p class="text-muted mb-4">Start tracking your daily nutrition by setting personalized goals</p>
+          <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#nutritionGoalsModal">
+            <i class="bi bi-plus-circle me-2"></i>Set My Goals
+          </button>
+        </div>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -1047,6 +1047,166 @@
         <button type="button" class="btn btn-primary" id="confirmPresetBtn">
           <i class="bi bi-check-circle me-1"></i>Apply Preset
         </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ML Insights and AI Tips Section -->
+<div class="row mb-5">
+  <div class="col-12">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent border-0 p-4">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h4 class="fw-bold mb-1" style="font-family: 'Manrope', sans-serif;">
+              <i class="bi bi-graph-up me-2 text-success"></i>ML Insights & AI Tips
+            </h4>
+            <p class="text-muted mb-0">Personalized insights powered by machine learning and AI</p>
+          </div>
+          <button class="btn btn-outline-success btn-sm" onclick="refreshMLInsights()">
+            <i class="bi bi-arrow-clockwise me-1"></i>Refresh Insights
+          </button>
+        </div>
+      </div>
+      <div class="card-body p-4">
+        <div class="row">
+          <!-- AI Tips Section -->
+          <div class="col-md-6 mb-4">
+            <div class="h-100">
+              <h5 class="fw-semibold mb-3">
+                <i class="bi bi-lightbulb text-warning me-2"></i>AI-Powered Tips
+              </h5>
+              <div id="ai-tips-container">
+                {% if ai_tips %}
+                  {% for tip in ai_tips %}
+                  <div class="alert alert-{% if tip.tip_type == 'critical' %}danger{% elif tip.tip_type == 'warning' %}warning{% elif tip.tip_type == 'success' %}success{% else %}info{% endif %} alert-dismissible fade show mb-2" role="alert">
+                    <small class="fw-medium">{{ tip.tip_text }}</small>
+                    <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="alert"></button>
+                  </div>
+                  {% endfor %}
+                {% else %}
+                <div class="text-center py-3">
+                  <i class="bi bi-robot display-4 text-muted mb-2"></i>
+                  <p class="text-muted">AI tips will appear here based on your nutrition data</p>
+                  <button class="btn btn-outline-primary btn-sm" onclick="generateAITips()">
+                    <i class="bi bi-magic me-1"></i>Generate Tips
+                  </button>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          
+          <!-- ML Insights Section -->
+          <div class="col-md-6 mb-4">
+            <div class="h-100">
+              <h5 class="fw-semibold mb-3">
+                <i class="bi bi-bar-chart text-primary me-2"></i>ML Analysis
+              </h5>
+              <div id="ml-insights-container">
+                {% if ml_insights %}
+                  {% if ml_insights.trend_analysis %}
+                  <div class="mb-3">
+                    <h6 class="fw-medium">Nutrition Trends</h6>
+                    {% for nutrient, trend in ml_insights.trend_analysis.items %}
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                      <span class="text-capitalize">{{ nutrient }}:</span>
+                      <span class="badge bg-{% if trend.direction == 'increasing' %}success{% else %}warning{% endif %}">
+                        {{ trend.direction|title }} ({{ trend.strength }})
+                      </span>
+                    </div>
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+                  
+                  {% if ml_insights.nutrition_balance %}
+                  <div class="mb-3">
+                    <h6 class="fw-medium">Balance Score</h6>
+                    <div class="progress mb-2" style="height: 8px;">
+                      <div class="progress-bar bg-success" style="width: {{ ml_insights.nutrition_balance.balance_score }}%"></div>
+                    </div>
+                    <small class="text-muted">{{ ml_insights.nutrition_balance.balance_score|floatformat:0 }}% balanced</small>
+                  </div>
+                  {% endif %}
+                {% else %}
+                <div class="text-center py-3">
+                  <i class="bi bi-graph-up display-4 text-muted mb-2"></i>
+                  <p class="text-muted">ML insights will appear after tracking for a few weeks</p>
+                  <button class="btn btn-outline-success btn-sm" onclick="generateMLInsights()">
+                    <i class="bi bi-cpu me-1"></i>Analyze Data
+                  </button>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- ML Visualizations -->
+        {% if ml_insights.visualizations %}
+        <div class="row mt-4">
+          <div class="col-12">
+            <h5 class="fw-semibold mb-3">
+              <i class="bi bi-graph-up-arrow text-info me-2"></i>Nutrition Visualizations
+            </h5>
+            
+            <!-- Tabs for different charts -->
+            <ul class="nav nav-tabs" id="chartTabs" role="tablist">
+              {% if ml_insights.visualizations.trends_chart %}
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="trends-tab" data-bs-toggle="tab" data-bs-target="#trends-chart" type="button" role="tab">
+                  <i class="bi bi-graph-up me-1"></i>Trends
+                </button>
+              </li>
+              {% endif %}
+              {% if ml_insights.visualizations.balance_chart %}
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="balance-tab" data-bs-toggle="tab" data-bs-target="#balance-chart" type="button" role="tab">
+                  <i class="bi bi-pie-chart me-1"></i>Balance
+                </button>
+              </li>
+              {% endif %}
+              {% if ml_insights.visualizations.achievement_chart %}
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="achievement-tab" data-bs-toggle="tab" data-bs-target="#achievement-chart" type="button" role="tab">
+                  <i class="bi bi-trophy me-1"></i>Achievement
+                </button>
+              </li>
+              {% endif %}
+            </ul>
+            
+            <div class="tab-content mt-3" id="chartTabContent">
+              {% if ml_insights.visualizations.trends_chart %}
+              <div class="tab-pane fade show active" id="trends-chart" role="tabpanel">
+                <div class="text-center">
+                  <img src="data:image/png;base64,{{ ml_insights.visualizations.trends_chart }}" 
+                       class="img-fluid rounded" alt="Nutrition Trends Chart" style="max-height: 400px;">
+                </div>
+              </div>
+              {% endif %}
+              
+              {% if ml_insights.visualizations.balance_chart %}
+              <div class="tab-pane fade" id="balance-chart" role="tabpanel">
+                <div class="text-center">
+                  <img src="data:image/png;base64,{{ ml_insights.visualizations.balance_chart }}" 
+                       class="img-fluid rounded" alt="Nutrition Balance Chart" style="max-height: 400px;">
+                </div>
+              </div>
+              {% endif %}
+              
+              {% if ml_insights.visualizations.achievement_chart %}
+              <div class="tab-pane fade" id="achievement-chart" role="tabpanel">
+                <div class="text-center">
+                  <img src="data:image/png;base64,{{ ml_insights.visualizations.achievement_chart }}" 
+                       class="img-fluid rounded" alt="Goal Achievement Chart" style="max-height: 400px;">
+                </div>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -1766,5 +1926,148 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// ML Insights and AI Tips Functions
+function refreshMLInsights() {
+    console.log("[v0] Refreshing ML insights");
+    
+    // Show loading state
+    const container = document.getElementById('ml-insights-container');
+    if (container) {
+        container.innerHTML = `
+            <div class="text-center py-3">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="text-muted mt-2">Analyzing your nutrition data...</p>
+            </div>
+        `;
+    }
+    
+    fetch('/accounts/get-ml-insights/', {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Reload the page to show updated insights
+            window.location.reload();
+        } else {
+            showNotification('Failed to refresh ML insights: ' + (data.message || 'Unknown error'), 'error');
+        }
+    })
+    .catch(error => {
+        console.error('[v0] ML insights refresh error:', error);
+        showNotification('Error refreshing ML insights', 'error');
+    });
+}
+
+function generateAITips() {
+    console.log("[v0] Generating AI tips");
+    
+    // Show loading state
+    const container = document.getElementById('ai-tips-container');
+    if (container) {
+        container.innerHTML = `
+            <div class="text-center py-3">
+                <div class="spinner-border text-warning" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="text-muted mt-2">AI is generating personalized tips...</p>
+            </div>
+        `;
+    }
+    
+    fetch('/accounts/generate-ai-tips/', {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Reload the page to show new tips
+            window.location.reload();
+        } else {
+            showNotification('Failed to generate AI tips: ' + (data.message || 'Unknown error'), 'error');
+        }
+    })
+    .catch(error => {
+        console.error('[v0] AI tips generation error:', error);
+        showNotification('Error generating AI tips', 'error');
+    });
+}
+
+function generateMLInsights() {
+    console.log("[v0] Generating ML insights");
+    
+    // Show loading state
+    const container = document.getElementById('ml-insights-container');
+    if (container) {
+        container.innerHTML = `
+            <div class="text-center py-3">
+                <div class="spinner-border text-success" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="text-muted mt-2">Running ML analysis...</p>
+            </div>
+        `;
+    }
+    
+    fetch('/accounts/generate-ml-insights/', {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Reload the page to show new insights
+            window.location.reload();
+        } else {
+            showNotification('Failed to generate ML insights: ' + (data.message || 'Unknown error'), 'error');
+        }
+    })
+    .catch(error => {
+        console.error('[v0] ML insights generation error:', error);
+        showNotification('Error generating ML insights', 'error');
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            let cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function showNotification(message, type = 'info') {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alertDiv);
+}
 </script>
 {% endblock %}
