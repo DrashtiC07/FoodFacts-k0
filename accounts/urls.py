@@ -21,4 +21,6 @@ urlpatterns = [
     path('apply_preset_goals/', views.apply_preset_goals, name='apply_preset_goals'),
     path('refresh_personalized_tips/', views.refresh_personalized_tips, name='refresh_personalized_tips'),
     path('export_nutrition_data/', views.export_nutrition_data, name='export_nutrition_data'),
+    path('generate-ai-tips/', views.generate_ai_tips_view, name='generate_ai_tips'),
+    path('generate-ml-insights/', views.generate_ml_insights_view, name='generate_ml_insights'),
 ]

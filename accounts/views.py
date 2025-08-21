@@ -1151,3 +1151,99 @@ def export_nutrition_data(request):
         })
     except Exception as e:
         return JsonResponse({'success': False, 'error': f'Error generating PDF: {str(e)}'})
+
+@login_required
+@require_POST
+def generate_ai_tips_view(request):
+    """Generate AI-powered personalized tips via AJAX"""
+    try:
+        from .ai_tips import get_ai_personalized_tips
+        
+        user = request.user
+        
+        # Get user's dietary goals and current progress
+        dietary_goals = DietaryGoal.objects.filter(user=user).first()
+        if not dietary_goals:
+            return JsonResponse({
+                'success': False,
+                'message': 'Please set your dietary goals first to generate personalized tips.'
+            })
+        
+        # Calculate current progress
+        calories_progress = (dietary_goals.calories_consumed / dietary_goals.calories_target * 100) if dietary_goals.calories_target > 0 else 0
+        protein_progress = (dietary_goals.protein_consumed / dietary_goals.protein_target * 100) if dietary_goals.protein_target > 0 else 0
+        fat_progress = (dietary_goals.fat_consumed / dietary_goals.fat_target * 100) if dietary_goals.fat_target > 0 else 0
+        carbs_progress = (dietary_goals.carbs_consumed / dietary_goals.carbs_target * 100) if dietary_goals.carbs_target > 0 else 0
+        
+        progress_data = {
+            'calories_progress': calories_progress,
+            'protein_progress': protein_progress,
+            'fat_progress': fat_progress,
+            'carbs_progress': carbs_progress
+        }
+        
+        # Get activity data
+        recent_scans = ScanHistory.objects.filter(
+            user=user,
+            scanned_at__gte=timezone.now() - timedelta(days=7)
+        ).count()
+        
+        activity_data = {
+            'recent_scans_count': recent_scans,
+            'days_active': 7  # Simplified for now
+        }
+        
+        # Generate AI tips
+        tips = get_ai_personalized_tips(user, dietary_goals, progress_data, activity_data)
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Generated {len(tips)} personalized AI tips successfully!',
+            'tips_count': len(tips)
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Failed to generate AI tips: {str(e)}'
+        })
+
+@login_required
+@require_POST
+def generate_ml_insights_view(request):
+    """Generate ML insights and analysis via AJAX"""
+    try:
+        from .ml_insights import get_ml_insights
+        
+        user = request.user
+        
+        # Check if user has enough data for ML analysis
+        weekly_logs = WeeklyNutritionLog.objects.filter(user=user).count()
+        if weekly_logs < 2:
+            return JsonResponse({
+                'success': False,
+                'message': 'Need at least 2 weeks of data for ML analysis. Keep tracking your nutrition!'
+            })
+        
+        # Generate ML insights
+        insights = get_ml_insights(user)
+        
+        if insights.get('basic_analysis'):
+            return JsonResponse({
+                'success': True,
+                'message': 'Basic nutrition analysis completed successfully!',
+                'analysis_type': 'basic'
+            })
+        else:
+            return JsonResponse({
+                'success': True,
+                'message': 'Advanced ML analysis completed successfully!',
+                'analysis_type': 'advanced',
+                'has_visualizations': 'visualizations' in insights
+            })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Failed to generate ML insights: {str(e)}'
+        })
