@@ -2118,7 +2118,7 @@ function deleteReview(reviewId) {
     
     const csrftoken = getCookie('csrftoken');
     
-    fetch(`/scanner/delete_review/${reviewId}/`, {
+    fetch(`/delete_review/${reviewId}/`, {
         method: 'POST',
         headers: {
             'X-CSRFToken': csrftoken,
@@ -2129,12 +2129,7 @@ function deleteReview(reviewId) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Show success message
-            if (window.FoodScanner && window.FoodScanner.showNotification) {
-                window.FoodScanner.showNotification(data.message, 'success');
-            } else {
-                alert(data.message);
-            }
+            showModernAlert(data.message, 'success');
             
             // Remove the review element from DOM
             const reviewElement = document.querySelector(`button[onclick="deleteReview(${reviewId})"]`).closest('.card');
@@ -2152,22 +2147,13 @@ function deleteReview(reviewId) {
                 }, 300);
             }
         } else {
-            // Show error message
-            if (window.FoodScanner && window.FoodScanner.showNotification) {
-                window.FoodScanner.showNotification(data.error || 'Failed to delete review', 'danger');
-            } else {
-                alert(data.error || 'Failed to delete review');
-            }
+            showModernAlert(data.error || 'Failed to delete review', 'danger');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        if (window.FoodScanner && window.FoodScanner.showNotification) {
-            window.FoodScanner.showNotification('An error occurred while deleting the review', 'danger');
-        } else {
-            alert('An error occurred while deleting the review');
-        }
+        showModernAlert('An error occurred while deleting the review', 'danger');
     });
 }
 </script>
-{% endblock %}
+</html>
