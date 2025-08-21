@@ -592,7 +592,7 @@
         </div>
         <div class="card-body p-4" id="personalizedTipsContent">
           {% for tip in personalized_tips %}
-          <div class="alert alert-{{ tip.color }} alert-sm mb-3 tip-item" data-tip-type="{{ tip.type }}" data-priority="{{ tip.priority }}">
+          <div class="alert alert-{% if tip.tip_type == 'critical' %}danger{% elif tip.tip_type == 'warning' %}warning{% elif tip.tip_type == 'success' %}success{% else %}info{% endif %} alert-dismissible fade show mb-2" role="alert">
             <div class="d-flex align-items-start">
               <i class="bi bi-{{ tip.icon }} me-2 flex-shrink-0 mt-1"></i>
               <div>
@@ -898,7 +898,7 @@
                 {% if ai_tips %}
                   {% for tip in ai_tips %}
                   <div class="alert alert-{% if tip.tip_type == 'critical' %}danger{% elif tip.tip_type == 'warning' %}warning{% elif tip.tip_type == 'success' %}success{% else %}info{% endif %} alert-dismissible fade show mb-2" role="alert">
-                    <small class="fw-medium">{{ tip.tip_text }}</small>
+                    <small class="fw-medium">{{ tip.message }}</small>
                     <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="alert"></button>
                   </div>
                   {% endfor %}
