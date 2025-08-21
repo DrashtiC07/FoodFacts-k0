@@ -1,129 +1,31 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Dashboard - FoodFacts{% endblock %}
+{% block title %}Dashboard - Food Facts Scanner{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="display-6">
-                    <i class="bi bi-speedometer2 me-3"></i>Dashboard
-                </h1>
-                <div class="text-muted">
-                    Welcome back, <strong>{{ user.username }}</strong>!
-                </div>
-            </div>
+<div class="container py-4">
+  <!-- Modern Dashboard Header -->
+  <div class="row mb-5">
+    <div class="col-12">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+        <div class="mb-3 mb-md-0">
+          <h1 class="display-5 fw-bold mb-2" style="font-family: 'Manrope', sans-serif;">
+            <i class="bi bi-speedometer2 me-3 text-primary"></i>Dashboard
+          </h1>
+          <p class="text-muted fs-5 mb-0">Welcome back, <strong>{{ user.get_full_name|default:user.username }}</strong>!</p>
         </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#nutritionGoalsModal">
+            <i class="bi bi-gear me-1"></i>Set Goals
+          </button>
+          <a href="{% url 'scanner:scan' %}" class="btn btn-primary">
+            <i class="bi bi-camera me-1"></i>Scan Product
+          </a>
+        </div>
+      </div>
     </div>
-
-    <!-- Account Overview -->
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body text-center">
-                    <div class="avatar-circle mx-auto mb-3">
-                        {% if user.profile_picture %}
-                            <img src="{{ user.profile_picture.url }}" alt="Profile" class="rounded-circle" width="80" height="80">
-                        {% else %}
-                            <i class="bi bi-person-circle display-1 text-primary"></i>
-                        {% endif %}
-                    </div>
-                    <h5 class="card-title">{{ user.get_full_name|default:user.username }}</h5>
-                    <p class="text-muted">{{ user.email }}</p>
-                    <small class="text-muted">Member since {{ user.date_joined|date:"M Y" }}</small>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-8">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-transparent">
-                    <h5 class="mb-0">
-                        <i class="bi bi-bullseye me-2"></i>Daily Nutrition Goals
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-medium">Calories</span>
-                                <span class="text-muted">{{ dietary_goals.calories_consumed }}/{{ dietary_goals.calories_target }} kcal</span>
-                            </div>
-                            <div class="progress" style="height: 8px;">
-                                <div class="progress-bar bg-success" style="width: {{ calories_progress }}%"></div>
-                            </div>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-medium">Protein</span>
-                                <span class="text-muted">{{ dietary_goals.protein_consumed }}/{{ dietary_goals.protein_target }}g</span>
-                            </div>
-                            <div class="progress" style="height: 8px;">
-                                <div class="progress-bar bg-info" style="width: {{ protein_progress }}%"></div>
-                            </div>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-medium">Fat</span>
-                                <span class="text-muted">{{ dietary_goals.fat_consumed }}/{{ dietary_goals.fat_target }}g</span>
-                            </div>
-                            <div class="progress" style="height: 8px;">
-                                <div class="progress-bar bg-warning" style="width: {{ fat_progress }}%"></div>
-                            </div>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="fw-medium">Carbs</span>
-                                <span class="text-muted">{{ dietary_goals.carbs_consumed }}/{{ dietary_goals.carbs_target }}g</span>
-                            </div>
-                            <div class="progress" style="height: 8px;">
-                                <div class="progress-bar bg-primary" style="width: {{ carbs_progress }}%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-transparent">
-                    <h5 class="mb-0">
-                        <i class="bi bi-lightning-charge me-2"></i>Quick Actions
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3 mb-2">
-                            <button class="btn btn-outline-primary w-100" onclick="refreshPersonalizedTips()">
-                                <i class="bi bi-arrow-clockwise me-2"></i>Refresh Tips
-                            </button>
-                        </div>
-                        <div class="col-md-3 mb-2">
-                            <button class="btn btn-outline-success w-100" onclick="exportNutritionData()">
-                                <i class="bi bi-download me-2"></i>Export Data
-                            </button>
-                        </div>
-                        <div class="col-md-3 mb-2">
-                            <button class="btn btn-outline-warning w-100" id="resetBtn">
-                                <i class="bi bi-arrow-counterclockwise me-2"></i>Reset Daily
-                            </button>
-                        </div>
-                        <div class="col-md-3 mb-2">
-                            <a href="{% url 'scanner:scan' %}" class="btn btn-outline-info w-100">
-                                <i class="bi bi-upc-scan me-2"></i>Scan Product
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+  </div>
 
   <!-- Enhanced Stats Cards -->
   <div class="row mb-5">
@@ -760,46 +662,87 @@
 
   <!-- Added Tracked Items panel for nutrition tracker visibility -->
   <!-- Tracked Items Panel -->
-    {% if tracked_items %}
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-transparent">
-                    <h5 class="mb-0">
-                        <i class="bi bi-list-check me-2"></i>Tracked Items
-                    </h5>
-                </div>
-                <div class="card-body">
-                    {% for item in tracked_items %}
-                    <div class="d-flex align-items-center mb-3 {% if not forloop.last %}border-bottom pb-3{% endif %}">
-                        <div class="product-image me-3">
-                            {% if item.product.image_url %}
-                                <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" class="rounded" width="50" height="50" style="object-fit: cover;">
-                            {% else %}
-                                <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-                                    <i class="bi bi-image text-muted"></i>
-                                </div>
-                            {% endif %}
-                        </div>
-                        <div class="flex-grow-1">
-                            <h6 class="mb-1">{{ item.product.name|truncatechars:40 }}</h6>
-                            <small class="text-muted">
-                                Serving: {{ item.serving_size }}g | Added: {{ item.added_at|date:"M d, Y" }}
-                            </small>
-                        </div>
-                        <div class="ms-auto">
-                            <!-- Fixed delete button with proper onclick handler -->
-                            <button class="btn btn-sm btn-outline-danger" onclick="removeTrackedItem({{ item.id }})">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0 p-4">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0" style="font-family: 'Manrope', sans-serif;">
+              <i class="bi bi-clipboard-check me-2 text-success"></i>Tracked Items
+            </h5>
+            <span class="badge bg-primary">{{ tracked_items|length }} item{{ tracked_items|length|pluralize }}</span>
+          </div>
         </div>
+        <div class="card-body p-4">
+          {% if tracked_items %}
+            <div class="row g-3">
+              {% for item in tracked_items %}
+              <div class="col-md-6 col-lg-4">
+                <div class="tracked-item-card p-3 rounded-3 border bg-light bg-opacity-50 h-100">
+                  <div class="d-flex align-items-start mb-2">
+                    <div class="product-image me-3">
+                      {% if item.product.image_url %}
+                      <img
+                        src="{{ item.product.image_url }}"
+                        alt="{{ item.product.name }}"
+                        class="rounded-3"
+                        width="50"
+                        height="50"
+                        style="object-fit: cover"
+                      />
+                      {% else %}
+                      <div class="bg-white rounded-3 d-flex align-items-center justify-content-center border" style="width: 50px; height: 50px">
+                        <i class="bi bi-image text-muted"></i>
+                      </div>
+                      {% endif %}
+                    </div>
+                    <div class="flex-grow-1">
+                      <h6 class="mb-1 fw-semibold">
+                        <a href="{% url 'scanner:product_detail' item.product.barcode %}" class="text-decoration-none text-dark">
+                          {{ item.product.name|truncatechars:25 }}
+                        </a>
+                      </h6>
+                      <div class="d-flex align-items-center gap-2 mb-1">
+                        {% if item.product.health_score %}
+                        <span class="badge bg-{% if item.product.health_score >= 70 %}success{% elif item.product.health_score >= 40 %}warning{% else %}danger{% endif %} badge-sm">
+                          {{ item.product.health_score }}
+                        </span>
+                        {% endif %}
+                        {% if item.product.nova_group %}
+                        <span class="badge bg-{% if item.product.nova_group == 1 %}success{% elif item.product.nova_group == 2 %}info{% elif item.product.nova_group == 3 %}warning{% else %}danger{% endif %} badge-sm">
+                          NOVA {{ item.product.nova_group }}
+                        </span>
+                        {% endif %}
+                      </div>
+                      <small class="text-muted">{{ item.serving_size }}g serving</small>
+                    </div>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                      <i class="bi bi-clock me-1"></i>{{ item.added_at|timesince }} ago
+                    </small>
+                    <button class="btn btn-sm btn-outline-danger" onclick="removeTrackedItem({{ item.id }})" title="Remove from tracker">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-center py-5">
+              <i class="bi bi-clipboard-check display-1 text-muted mb-3"></i>
+              <h6 class="fw-semibold mb-2">No tracked items yet</h6>
+              <p class="text-muted mb-3">Add products to your nutrition tracker to see them here</p>
+              <a href="{% url 'scanner:search' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i>Start Tracking
+              </a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
     </div>
-    {% endif %}
+  </div>
 
   <!-- Recent Reviews -->
   {% if user_reviews %}
@@ -1055,41 +998,7 @@
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 <style>
-/* Enhanced dark theme text contrast */
-[data-bs-theme="dark"] {
-    --bs-body-color: #e9ecef;
-    --bs-body-bg: #212529;
-}
-
-[data-bs-theme="dark"] .text-muted {
-    color: #adb5bd !important;
-}
-
-[data-bs-theme="dark"] .card {
-    background-color: #343a40;
-    border-color: #495057;
-}
-
-[data-bs-theme="dark"] .card-header {
-    background-color: #495057;
-    border-color: #6c757d;
-}
-
-[data-bs-theme="dark"] h1, [data-bs-theme="dark"] h2, [data-bs-theme="dark"] h3, 
-[data-bs-theme="dark"] h4, [data-bs-theme="dark"] h5, [data-bs-theme="dark"] h6 {
-    color: #f8f9fa !important;
-}
-
-[data-bs-theme="dark"] .fw-medium {
-    color: #f8f9fa !important;
-}
-
-[data-bs-theme="dark"] .progress {
-    background-color: #495057;
-}
-
 .nutrition-goal-card {
   padding: 1.5rem;
   background: var(--bg-secondary);
@@ -1201,128 +1110,13 @@
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
-
-.avatar-circle {
-    width: 80px;
-    height: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.progress {
-    background-color: var(--bs-gray-200);
-}
-
-.card {
-    transition: transform 0.2s ease-in-out;
-}
-
-.card:hover {
-    transform: translateY(-2px);
-}
-
-.product-image img,
-.product-image div {
-    border: 1px solid var(--bs-border-color);
-}
-
-.spin {
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
 </style>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/dashboard.js' %}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     console.log(' Dashboard JavaScript loaded');
-    
-    window.exportNutritionData = function() {
-        // Create a form and submit it to trigger PDF download
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '{% url "accounts:export_nutrition_data" %}';
-        
-        // Add CSRF token
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}';
-        const csrfInput = document.createElement('input');
-        csrfInput.type = 'hidden';
-        csrfInput.name = 'csrfmiddlewaretoken';
-        csrfInput.value = csrfToken;
-        form.appendChild(csrfInput);
-        
-        document.body.appendChild(form);
-        form.submit();
-        document.body.removeChild(form);
-        
-        showModernAlert('Generating PDF export...', 'info', 3000);
-    };
-    
-    window.removeTrackedItem = function(itemId) {
-        if (!confirm('Remove this item from your nutrition tracker?')) {
-            return;
-        }
-        
-        fetch('{% url "accounts:remove_tracked_item" %}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}',
-            },
-            body: JSON.stringify({'item_id': itemId})
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showModernAlert(data.message, 'success');
-                setTimeout(() => window.location.reload(), 1000);
-            } else {
-                showModernAlert(data.error || 'Failed to remove item', 'error');
-            }
-        })
-        .catch(error => {
-            showModernAlert('Failed to remove item from tracker', 'error');
-        });
-    };
-    
-    window.refreshPersonalizedTips = function() {
-        console.log('Refreshing personalized tips');
-        
-        const tipsContent = document.getElementById('personalizedTipsContent');
-        if (tipsContent) {
-            const originalContent = tipsContent.innerHTML;
-            tipsContent.innerHTML = '<div class="text-center p-3"><i class="bi bi-arrow-clockwise spin"></i> Refreshing tips...</div>';
-            
-            fetch('{% url "accounts:refresh_personalized_tips" %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}',
-                },
-                body: JSON.stringify({})
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    window.location.reload();
-                } else {
-                    tipsContent.innerHTML = originalContent;
-                    console.error('Failed to refresh tips:', data.error);
-                }
-            })
-            .catch(error => {
-                tipsContent.innerHTML = originalContent;
-                console.error('Error refreshing tips:', error);
-            });
-        }
-    };
     
     function showModernAlert(message, type = 'success', duration = 5000) {
         const alertDiv = document.createElement('div');
@@ -1337,6 +1131,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         document.body.appendChild(alertDiv);
         
+        // Auto-remove alert after duration
         setTimeout(() => {
             if (alertDiv.parentNode) {
                 alertDiv.remove();
@@ -1412,7 +1207,7 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value || '{{ csrf_token }}',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}',
             },
             body: JSON.stringify({'item_id': itemId})
         })
@@ -1779,4 +1574,119 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Ensure tips remain visible
                     const tips = personalizedTipsContent.querySelectorAll('.alert');
                     tips.forEach(tip => {
-                        if (tip.style.display === 'none' && !tip.has
+                        if (tip.style.display === 'none' && !tip.hasAttribute('data-should-hide')) {
+                            tip.style.display = 'block';
+                        }
+                    });
+                }
+            });
+        });
+        
+        observer.observe(personalizedTipsContent, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['style', 'class']
+        });
+    }
+
+    const manualForm = document.getElementById('manualNutritionForm');
+    if (manualForm) {
+        manualForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const calories = parseFloat(document.getElementById('manualCalories').value) || 0;
+            const protein = parseFloat(document.getElementById('manualProtein').value) || 0;
+            const fat = parseFloat(document.getElementById('manualFat').value) || 0;
+            const carbs = parseFloat(document.getElementById('manualCarbs').value) || 0;
+            
+            if (calories === 0 && protein === 0 && fat === 0 && carbs === 0) {
+                showModernAlert('Please enter at least one nutrition value.', 'warning');
+                return;
+            }
+            
+            // Validate ranges
+            if (calories < 0 || calories > 2000) {
+                showModernAlert('Calories must be between 0 and 2000', 'danger');
+                return;
+            }
+            if (protein < 0 || protein > 200) {
+                showModernAlert('Protein must be between 0 and 200g', 'danger');
+                return;
+            }
+            if (fat < 0 || fat > 150) {
+                showModernAlert('Fat must be between 0 and 150g', 'danger');
+                return;
+            }
+            if (carbs < 0 || carbs > 300) {
+                showModernAlert('Carbs must be between 0 and 300g', 'danger');
+                return;
+            }
+            
+            // Send AJAX request to add manual nutrition
+            fetch('{% url "accounts:add_manual_nutrition" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({
+                    calories: calories,
+                    protein: protein,
+                    fat: fat,
+                    carbs: carbs
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update progress bars without page reload
+                    updateProgressBars(data);
+                    
+                    // Update remaining values
+                    updateRemainingValues(data.remaining);
+                    
+                    // Clear form
+                    manualForm.reset();
+                    
+                    // Show modern success message
+                    showModernAlert(data.message, 'success');
+                } else {
+                    showModernAlert('Error: ' + (data.error || 'Unknown error'), 'danger');
+                }
+            })
+            .catch(error => {
+                console.error(' Error adding manual nutrition:', error);
+                showModernAlert('Error adding nutrition. Please try again.', 'danger');
+            });
+        });
+    }
+    
+    // Prevent tips from disappearing by protecting the tips container
+    const tipsContainer = document.getElementById('personalizedTipsContent');
+    if (tipsContainer) {
+        // Create a MutationObserver to prevent tips from being hidden
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList' || mutation.type === 'attributes') {
+                    // Ensure tips remain visible
+                    const tips = tipsContainer.querySelectorAll('.alert');
+                    tips.forEach(tip => {
+                        if (tip.style.display === 'none' && !tip.hasAttribute('data-should-hide')) {
+                            tip.style.display = 'block';
+                        }
+                    });
+                }
+            });
+        });
+        
+        observer.observe(tipsContainer, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['style', 'class']
+        });
+    }
+});
+</script>
+{% endblock %}
