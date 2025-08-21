@@ -1239,3 +1239,40 @@ def generate_ml_insights_view(request):
             'success': False,
             'message': f'Failed to generate ML insights: {str(e)}'
         })
+
+@login_required
+def get_ml_insights_view(request):
+    """Get ML insights data for dashboard display via AJAX"""
+    try:
+        from .ml_insights import get_ml_insights
+        
+        user = request.user
+        
+        # Get ML insights
+        insights = get_ml_insights(user)
+        
+        # Format response for frontend consumption
+        response_data = {
+            'success': True,
+            'insights': insights,
+            'analysis_type': 'basic' if insights.get('basic_analysis') else 'advanced',
+            'recommendations': insights.get('recommendations', []),
+            'has_data': not insights.get('first_time_user', False)
+        }
+        
+        # Add progress data if available
+        if 'current_progress' in insights:
+            response_data['current_progress'] = insights['current_progress']
+        
+        # Add visualization data if available
+        if 'visualizations' in insights:
+            response_data['visualizations'] = insights['visualizations']
+        
+        return JsonResponse(response_data)
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Failed to get ML insights: {str(e)}',
+            'error': str(e)
+        })

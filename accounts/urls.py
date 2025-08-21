@@ -23,4 +23,5 @@ urlpatterns = [
     path('export_nutrition_data/', views.export_nutrition_data, name='export_nutrition_data'),
     path('generate-ai-tips/', views.generate_ai_tips_view, name='generate_ai_tips'),
     path('generate-ml-insights/', views.generate_ml_insights_view, name='generate_ml_insights'),
+    path('get-ml-insights/', views.get_ml_insights_view, name='get_ml_insights'),
 ]

@@ -38,11 +38,11 @@ class NutritionMLAnalyzer:
             for log in logs:
                 data.append({
                     'week': (log.week_start_date - logs.first().week_start_date).days // 7,
-                    'calories': log.avg_calories_consumed,
-                    'protein': log.avg_protein_consumed,
-                    'fat': log.avg_fat_consumed,
-                    'carbs': log.avg_carbs_consumed,
-                    'goal_achievement': log.goal_achievement_rate
+                    'calories': log.avg_calories,
+                    'protein': log.avg_protein,
+                    'fat': log.avg_fat,
+                    'carbs': log.avg_carbs,
+                    'goal_achievement': (log.calories_achievement + log.protein_achievement) / 2
                 })
             
             df = pd.DataFrame(data)
@@ -276,7 +276,8 @@ class NutritionMLAnalyzer:
     
     def _generate_basic_insights(self, user):
         """Generate basic insights when no historical data is available"""
-        from .models import DietaryGoal, ScanHistory
+        from .models import DietaryGoal
+        from scanner.models import ScanHistory
         
         dietary_goals = DietaryGoal.objects.filter(user=user).first()
         recent_scans = ScanHistory.objects.filter(user=user).count()
@@ -322,7 +323,8 @@ class NutritionMLAnalyzer:
     
     def _generate_enhanced_basic_insights(self, user, logs):
         """Generate enhanced insights for users with 1-2 weeks of data"""
-        from .models import DietaryGoal, ScanHistory
+        from .models import DietaryGoal
+        from scanner.models import ScanHistory
         
         dietary_goals = DietaryGoal.objects.filter(user=user).first()
         recent_scans = ScanHistory.objects.filter(user=user).count()
