@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Dashboard - Food Scanner{% endblock %}
+{% block title %}Dashboard - FoodFacts{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -1055,6 +1055,7 @@
 {% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 <style>
 /* Enhanced dark theme text contrast */
 [data-bs-theme="dark"] {
@@ -1238,6 +1239,7 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'js/dashboard.js' %}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     console.log(' Dashboard JavaScript loaded');
@@ -1410,7 +1412,7 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value || '{{ csrf_token }}',
             },
             body: JSON.stringify({'item_id': itemId})
         })
