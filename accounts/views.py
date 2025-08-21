@@ -1276,3 +1276,104 @@ def get_ml_insights_view(request):
             'message': f'Failed to get ML insights: {str(e)}',
             'error': str(e)
         })
+
+@login_required
+def insights_dashboard(request):
+    """Render the ML Insights Dashboard page"""
+    return render(request, 'accounts/insights_dashboard.html', {
+        'user': request.user,
+        'page_title': 'Nutrition Insights Dashboard'
+    })
+
+@login_required
+def api_insights_data(request):
+    """API endpoint to provide comprehensive insights data for dashboard charts"""
+    try:
+        from .ml_insights import NutritionMLAnalyzer
+        from datetime import datetime, timedelta
+        import json
+        
+        user = request.user
+        analyzer = NutritionMLAnalyzer(user)
+        
+        # Get comprehensive insights data
+        insights = analyzer.get_comprehensive_analysis()
+        
+        # Format data for Chart.js consumption
+        response_data = {
+            'success': True,
+            'data': {
+                'summary_stats': {
+                    'total_days_tracked': insights.get('total_days_tracked', 0),
+                    'avg_goals_met': insights.get('avg_goals_achievement', 0),
+                    'most_consistent_nutrient': insights.get('most_consistent_nutrient', 'Calories'),
+                    'improvement_area': insights.get('improvement_area', 'Protein')
+                },
+                'weekly_trends': {
+                    'labels': insights.get('weekly_labels', []),
+                    'datasets': [
+                        {
+                            'label': 'Calories',
+                            'data': insights.get('weekly_calories', []),
+                            'borderColor': 'rgb(255, 99, 132)',
+                            'backgroundColor': 'rgba(255, 99, 132, 0.2)',
+                        },
+                        {
+                            'label': 'Protein',
+                            'data': insights.get('weekly_protein', []),
+                            'borderColor': 'rgb(54, 162, 235)',
+                            'backgroundColor': 'rgba(54, 162, 235, 0.2)',
+                        },
+                        {
+                            'label': 'Carbs',
+                            'data': insights.get('weekly_carbs', []),
+                            'borderColor': 'rgb(255, 205, 86)',
+                            'backgroundColor': 'rgba(255, 205, 86, 0.2)',
+                        }
+                    ]
+                },
+                'nutrition_histogram': {
+                    'labels': ['Calories', 'Protein', 'Fat', 'Carbs', 'Sugar', 'Sodium'],
+                    'data': [
+                        insights.get('avg_calories', 0),
+                        insights.get('avg_protein', 0),
+                        insights.get('avg_fat', 0),
+                        insights.get('avg_carbs', 0),
+                        insights.get('avg_sugar', 0),
+                        insights.get('avg_sodium', 0)
+                    ],
+                    'backgroundColor': [
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(54, 162, 235, 0.8)',
+                        'rgba(255, 205, 86, 0.8)',
+                        'rgba(75, 192, 192, 0.8)',
+                        'rgba(153, 102, 255, 0.8)',
+                        'rgba(255, 159, 64, 0.8)'
+                    ]
+                },
+                'goal_achievement': {
+                    'labels': ['Goals Met', 'Goals Missed'],
+                    'data': [
+                        insights.get('goals_met_percentage', 50),
+                        100 - insights.get('goals_met_percentage', 50)
+                    ],
+                    'backgroundColor': [
+                        'rgba(75, 192, 192, 0.8)',
+                        'rgba(255, 99, 132, 0.8)'
+                    ]
+                },
+                'recommendations': insights.get('recommendations', [
+                    'Keep tracking your nutrition consistently!',
+                    'Try to meet your protein goals daily.',
+                    'Consider adding more variety to your diet.'
+                ])
+            }
+        }
+        
+        return JsonResponse(response_data)
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': f'Failed to load insights data: {str(e)}'
+        })

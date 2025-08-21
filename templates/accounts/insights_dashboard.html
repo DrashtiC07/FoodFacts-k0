@@ -1,0 +1,271 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Nutrition Insights Dashboard - Food Scanner{% endblock %}
+
+{% block extra_css %}
+<style>
+    .insights-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .chart-container {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .chart-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: #2d3748;
+    }
+    
+    .chart-canvas {
+        max-height: 400px;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    
+    .loading-spinner {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 200px;
+        font-size: 1.2rem;
+        color: #666;
+    }
+    
+    .recommendations-list {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .recommendation-item {
+        background: #f7fafc;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        border-left: 4px solid #4299e1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="insights-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2 mb-0">🧠 Nutrition Insights Dashboard</h1>
+        <button id="refreshInsights" class="btn btn-primary">
+            <i class="fas fa-sync-alt"></i> Refresh Data
+        </button>
+    </div>
+    
+    <!-- Summary Statistics -->
+    <div class="stats-grid" id="summaryStats">
+        <div class="loading-spinner">Loading insights...</div>
+    </div>
+    
+    <!-- Weekly Trends Chart -->
+    <div class="chart-container">
+        <h3 class="chart-title">📈 Weekly Nutrition Trends</h3>
+        <canvas id="weeklyTrendsChart" class="chart-canvas"></canvas>
+    </div>
+    
+    <!-- Nutrition Distribution -->
+    <div class="chart-container">
+        <h3 class="chart-title">🥗 Nutrition Distribution</h3>
+        <canvas id="nutritionHistogramChart" class="chart-canvas"></canvas>
+    </div>
+    
+    <!-- Goal Achievement -->
+    <div class="chart-container">
+        <h3 class="chart-title">🎯 Goal Achievement Rate</h3>
+        <canvas id="goalAchievementChart" class="chart-canvas"></canvas>
+    </div>
+    
+    <!-- Recommendations -->
+    <div class="chart-container">
+        <h3 class="chart-title">💡 Personalized Recommendations</h3>
+        <ul class="recommendations-list" id="recommendationsList">
+            <div class="loading-spinner">Loading recommendations...</div>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let charts = {};
+    
+    function loadInsights() {
+        fetch('/accounts/api/insights/')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    renderSummaryStats(data.data.summary_stats);
+                    renderWeeklyTrends(data.data.weekly_trends);
+                    renderNutritionHistogram(data.data.nutrition_histogram);
+                    renderGoalAchievement(data.data.goal_achievement);
+                    renderRecommendations(data.data.recommendations);
+                } else {
+                    showError('Failed to load insights: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading insights:', error);
+                showError('Failed to load insights. Please try again.');
+            });
+    }
+    
+    function renderSummaryStats(stats) {
+        const container = document.getElementById('summaryStats');
+        container.innerHTML = `
+            <div class="stat-card">
+                <div class="stat-value">${stats.total_days_tracked}</div>
+                <div class="stat-label">Days Tracked</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${Math.round(stats.avg_goals_met)}%</div>
+                <div class="stat-label">Average Goals Met</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${stats.most_consistent_nutrient}</div>
+                <div class="stat-label">Most Consistent</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${stats.improvement_area}</div>
+                <div class="stat-label">Improvement Area</div>
+            </div>
+        `;
+    }
+    
+    function renderWeeklyTrends(data) {
+        const ctx = document.getElementById('weeklyTrendsChart').getContext('2d');
+        if (charts.weeklyTrends) charts.weeklyTrends.destroy();
+        
+        charts.weeklyTrends = new Chart(ctx, {
+            type: 'line',
+            data: data,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                }
+            }
+        });
+    }
+    
+    function renderNutritionHistogram(data) {
+        const ctx = document.getElementById('nutritionHistogramChart').getContext('2d');
+        if (charts.nutritionHistogram) charts.nutritionHistogram.destroy();
+        
+        charts.nutritionHistogram = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: 'Average Daily Intake',
+                    data: data.data,
+                    backgroundColor: data.backgroundColor
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+    
+    function renderGoalAchievement(data) {
+        const ctx = document.getElementById('goalAchievementChart').getContext('2d');
+        if (charts.goalAchievement) charts.goalAchievement.destroy();
+        
+        charts.goalAchievement = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    data: data.data,
+                    backgroundColor: data.backgroundColor
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    }
+                }
+            }
+        });
+    }
+    
+    function renderRecommendations(recommendations) {
+        const container = document.getElementById('recommendationsList');
+        if (recommendations && recommendations.length > 0) {
+            container.innerHTML = recommendations.map(rec => 
+                `<li class="recommendation-item">${rec}</li>`
+            ).join('');
+        } else {
+            container.innerHTML = '<li class="recommendation-item">Keep tracking your nutrition to get personalized recommendations!</li>';
+        }
+    }
+    
+    function showError(message) {
+        const container = document.getElementById('summaryStats');
+        container.innerHTML = `<div class="alert alert-danger">${message}</div>`;
+    }
+    
+    // Event listeners
+    document.getElementById('refreshInsights').addEventListener('click', loadInsights);
+    
+    // Initial load
+    loadInsights();
+});
+</script>
+{% endblock %}

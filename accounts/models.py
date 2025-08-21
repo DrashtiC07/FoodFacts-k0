@@ -223,7 +223,6 @@ class PersonalizedTip(models.Model):
     
     class Meta:
         ordering = ['priority', '-created_at']
-        unique_together = ('user', 'trigger_condition')  # Prevent duplicate tips for same condition
     
     def __str__(self):
         return f"{self.user.username} - {self.title} ({self.get_tip_type_display()})"
