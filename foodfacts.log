@@ -620,3 +620,77 @@ Review deleted successfully for user Drashti on product Maggie masala magic
  Environmental impact calculated
  Loaded 0 reviews
  Successfully prepared all product data, rendering template
+ Loading scan history for user: Drashti (ID: 1)
+ Scan history for user Drashti: 68 scans found
+ Scan 1: Original Taste by user Drashti at 2025-08-20 05:10:49.925654+00:00
+ Scan 2: Wrap tortilla by user Drashti at 2025-08-18 17:24:26.113477+00:00
+ Scan 3: Mayonnaise by user Drashti at 2025-08-18 17:22:08.249950+00:00
+ Attempting to load product with barcode: 8908019757675
+ Product found: Go Zero Madagascar Chocolate
+ Nutrition facts parsed from product info
+ NOVA info loaded for group 2
+ Additives analysis completed: 1 additives found
+ Environmental impact calculated
+ Loaded 0 reviews
+ Successfully prepared all product data, rendering template
+ Attempting to load product with barcode: 8908019757675
+ Product found: Go Zero Madagascar Chocolate
+ Nutrition facts parsed from product info
+ NOVA info loaded for group 2
+ Additives analysis completed: 1 additives found
+ Environmental impact calculated
+ Loaded 1 reviews
+ Successfully prepared all product data, rendering template
+ Attempting to load product with barcode: 8901088055772
+ Product found: Saftoa 0ats
+ Nutrition facts parsed from product info
+ Additives analysis completed: 0 additives found
+ Environmental impact calculated
+ Loaded 0 reviews
+ Successfully prepared all product data, rendering template
+ Attempting to load product with barcode: 8901088055772
+ Product found: Saftoa 0ats
+ Nutrition facts parsed from product info
+ NOVA info loaded for group 2
+ Additives analysis completed: 0 additives found
+ Environmental impact calculated
+ Loaded 0 reviews
+ Successfully prepared all product data, rendering template
+ Attempting to load product with barcode: 5449000054227
+ Product found: Original Taste
+ Nutrition facts loaded from database
+ NOVA info loaded for group 4
+ Additives analysis completed: 0 additives found
+ Environmental impact calculated
+ Loaded 0 reviews
+ Successfully prepared all product data, rendering template
+ Attempting to load product with barcode: 5449000054227
+ Product found: Original Taste
+ Nutrition facts loaded from database
+ NOVA info loaded for group 4
+ Additives analysis completed: 0 additives found
+ Environmental impact calculated
+ Loaded 0 reviews
+ Successfully prepared all product data, rendering template
+ Attempting to load product with barcode: 5449000054227
+ Product found: Original Taste
+ Nutrition facts loaded from database
+ NOVA info loaded for group 4
+ Additives analysis completed: 0 additives found
+ Environmental impact calculated
+ Loaded 0 reviews
+ Successfully prepared all product data, rendering template
+ Attempting to load product with barcode: 8906007702263
+ Product found: Wrap tortilla
+ Nutrition facts parsed from product info
+ NOVA info loaded for group 2
+ Additives analysis completed: 0 additives found
+ Environmental impact calculated
+ Loaded 0 reviews
+ Successfully prepared all product data, rendering template
+API <lambda> failed: HTTPSConnectionPool(host='in.openfoodfacts.org', port=443): Read timed out. (read timeout=5)
+API <lambda> failed: 404 Client Error: Not Found for url: https://world.openfoodfacts.org/api/v2/product/402023248.json
+API <lambda> failed: HTTPSConnectionPool(host='api.upcitemdb.com', port=443): Read timed out. (read timeout=5)
+API <lambda> failed: HTTPSConnectionPool(host='in.openfoodfacts.org', port=443): Read timed out. (read timeout=5)
+API <lambda> failed: HTTPSConnectionPool(host='world.openfoodfacts.org', port=443): Read timed out. (read timeout=5)
+API <lambda> failed: list index out of range
